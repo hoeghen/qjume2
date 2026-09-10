@@ -8,12 +8,14 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
+import { contactRef } from './tickets.js';
 import { nextPosition } from './positions.js';
 import {
   FREE_TIER_LIMITS,
   type Queue,
   type Shop,
   type Ticket,
+  type TicketContact,
 } from '../../../src/types/index.js';
 
 export interface AddWalkInRequest {
@@ -113,8 +115,13 @@ export async function performAddWalkIn(
       station: null,
       joinedAt: Date.now(),
       calledAt: null,
-      // Nobody holds this ticket on a device yet. The resume code is what lets
-      // them claim it later if they do have a phone after all.
+      // Nobody holds this ticket on a device, so there is no account to key it
+      // to. The resume code is what lets them claim it later if it turns out
+      // they do have a phone after all.
+      holderKey: null,
+    };
+
+    const contact: TicketContact = {
       customerUid: null,
       anonymousId: null,
       resumeCodeHash: hashResumeCode(queueId, resumeCode),
@@ -125,6 +132,7 @@ export async function performAddWalkIn(
     };
 
     tx.set(ticketRef, ticket);
+    tx.set(contactRef(firestore, shopId, queueId, ticketRef.id), contact);
     tx.update(queueRef, {
       lastIssuedNumber: issuedNumber,
       lastPosition: position,

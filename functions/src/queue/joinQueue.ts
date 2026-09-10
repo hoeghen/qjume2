@@ -8,12 +8,14 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
+import { contactRef, holderKeyFor } from './tickets.js';
 import { nextPosition } from './positions.js';
 import {
   FREE_TIER_LIMITS,
   type Queue,
   type Shop,
   type Ticket,
+  type TicketContact,
 } from '../../../src/types/index.js';
 
 export interface JoinQueueRequest {
@@ -92,7 +94,7 @@ export async function performJoinQueue(
       // One ticket per customer per queue.
       const existing = await tx.get(
         ticketsRef
-          .where(caller.isAnonymous ? 'anonymousId' : 'customerUid', '==', caller.uid)
+          .where('holderKey', '==', holderKeyFor(queueId, caller.uid))
           .where('state', 'in', ['waiting', 'serving'])
           .limit(1),
       );
@@ -132,6 +134,13 @@ export async function performJoinQueue(
         station: null,
         joinedAt: Date.now(),
         calledAt: null,
+        holderKey: holderKeyFor(queueId, caller.uid),
+      };
+
+      // Contact details and the resume code live in a private subcollection,
+      // out of reach of the public reads the monitor and position counting
+      // depend on.
+      const contact: TicketContact = {
         customerUid: caller.isAnonymous ? null : caller.uid,
         anonymousId: caller.isAnonymous ? caller.uid : null,
         resumeCodeHash: hashResumeCode(queueId, resumeCode),
@@ -142,6 +151,7 @@ export async function performJoinQueue(
       };
 
       tx.set(ticketRef, ticket);
+      tx.set(contactRef(firestore, shopId, queueId, ticketRef.id), contact);
       tx.update(queueRef, {
         lastIssuedNumber: issuedNumber,
         lastPosition: position,

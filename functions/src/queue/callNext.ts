@@ -9,6 +9,7 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { placesToMoveBack } from './penalties.js';
+import { foldSample, isUsableSample } from './serviceTime.js';
 import {
   positionAtBack,
   positionBetween,
@@ -163,6 +164,7 @@ export async function performCallNext(
     let resolved: CallNextResult['resolved'] = null;
     let penalisedId: string | null = null;
     let penalisedPosition: number | null = null;
+    let observed: { averageSeconds: number; sampleCount: number } | null = null;
 
     if (current !== null && currentSnap !== null) {
       const currentId = currentSnap.id;
@@ -175,6 +177,23 @@ export async function performCallNext(
           removed: false,
           noShowCount: current.noShowCount,
         };
+
+        // How long this customer actually took, folded into the queue's
+        // average. Only completions count — a no-show resolves in seconds and
+        // would drag the estimate down for everyone behind them (PRD 9.5).
+        if (current.calledAt !== null) {
+          const sample = (Date.now() - current.calledAt) / 1000;
+          if (isUsableSample(sample)) {
+            observed = foldSample(
+              {
+                averageSeconds:
+                  queue.observedServiceTimeSeconds ?? queue.avgServiceTimeSeconds,
+                sampleCount: queue.servedSampleCount,
+              },
+              sample,
+            );
+          }
+        }
       } else {
         const noShowCount = current.noShowCount + 1;
         // Three strikes removes the ticket outright, per ticket per queue.
@@ -252,6 +271,10 @@ export async function performCallNext(
       queueUpdate['waitingCount'] = FieldValue.increment(waitingDelta);
     }
     if (next) queueUpdate['currentNumber'] = next.number;
+    if (observed) {
+      queueUpdate['observedServiceTimeSeconds'] = observed.averageSeconds;
+      queueUpdate['servedSampleCount'] = observed.sampleCount;
+    }
     tx.update(queueRef, queueUpdate);
 
     return {

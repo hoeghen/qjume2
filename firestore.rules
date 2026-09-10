@@ -59,14 +59,28 @@ service cloud.firestore {
         // through a Cloud Function, which uses the Admin SDK and bypasses
         // these rules. There is deliberately no client write path at all —
         // not even a narrow one for the shop owner. See CLAUDE.md invariant 1.
+        //
+        // Reads are public, and have to be. The in-shop monitor shows the next
+        // few customers by name to a room of strangers (PRD 5.7), and a
+        // customer works out their own place by counting the tickets ahead of
+        // them. Both happen without signing in. Nothing here identifies a
+        // person beyond the name they chose to be called by.
         // ------------------------------------------------------------------
         match /tickets/{ticketId} {
-          allow read: if isShopOwner(shopId)
-            || (signedIn() && (
-                 resource.data.customerUid == request.auth.uid
-                 || resource.data.anonymousId == request.auth.uid
-               ));
+          allow read: if true;
           allow write: if false;
+
+          // Contact details and the resume code — which is a credential, not
+          // a label. Only the holder and the shop serving them may read it,
+          // and nobody may write it from a client.
+          match /private/{document} {
+            allow read: if isShopOwner(shopId)
+              || (signedIn() && (
+                   resource.data.customerUid == request.auth.uid
+                   || resource.data.anonymousId == request.auth.uid
+                 ));
+            allow write: if false;
+          }
         }
 
         // Publicly readable so the in-shop monitor can display the current

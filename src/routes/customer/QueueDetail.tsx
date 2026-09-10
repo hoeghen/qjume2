@@ -1,10 +1,16 @@
-import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
 import { estimatedWaitSeconds } from '../../lib/discovery.js';
 import { formatWait } from '../../lib/format.js';
 import { CATEGORY_LABELS } from './components/Filters.js';
+import { JoinQueue } from './JoinQueue.js';
+import { TicketView } from './TicketView.js';
+import { ResumeCodePrompt } from './components/ResumeCodePrompt.js';
+import { ResumeForm } from './components/ResumeForm.js';
+import { heldTicket } from '../../lib/myTickets.js';
 import type { QueueStatus } from '../../types/index.js';
 
 const STATUS_NOTES: Partial<Record<QueueStatus, string>> = {
@@ -17,6 +23,13 @@ const STATUS_NOTES: Partial<Record<QueueStatus, string>> = {
 
 export function QueueDetail() {
   const { shopId = '', queueId = '' } = useParams();
+  const [params] = useSearchParams();
+  // A QR code at the counter drops straight into the join form.
+  const [joining, setJoining] = useState(params.get('join') === '1');
+  const [ticketId, setTicketId] = useState<string | null>(() =>
+    heldTicket(shopId, queueId),
+  );
+  const [freshCode, setFreshCode] = useState<string | null>(null);
 
   const queue = useDoc(shopId && queueId ? queueDoc(shopId, queueId) : null);
   const { data: stations } = useCollection(
@@ -57,18 +70,23 @@ export function QueueDetail() {
         </p>
       )}
 
-      <section className="stats">
-        <div>
-          <span className="stat-value">{q.waitingCount}</span>
-          <span className="stat-label">
-            {q.waitingCount === 1 ? 'person waiting' : 'people waiting'}
-          </span>
-        </div>
-        <div>
-          <span className="stat-value">{formatWait(wait)}</span>
-          <span className="stat-label">estimated wait</span>
-        </div>
-      </section>
+      {/* Once someone holds a ticket, their own position and wait replace the
+          queue-level figures. Showing both invites the reader to compare two
+          numbers that answer different questions. */}
+      {!ticketId && (
+        <section className="stats">
+          <div>
+            <span className="stat-value">{q.waitingCount}</span>
+            <span className="stat-label">
+              {q.waitingCount === 1 ? 'person waiting' : 'people waiting'}
+            </span>
+          </div>
+          <div>
+            <span className="stat-value">{formatWait(wait)}</span>
+            <span className="stat-label">estimated wait</span>
+          </div>
+        </section>
+      )}
 
       {q.description && <p>{q.description}</p>}
 
@@ -89,15 +107,49 @@ export function QueueDetail() {
         )}
       </dl>
 
-      {/* Joining lands in Phase 4. Until it does the control stays disabled and
-          says so: a button that silently does nothing is worse than one that
-          admits it is not ready. The counts above are what this screen is for
-          — deciding whether to set off at all. */}
-      <button type="button" disabled title={note}>
-        {joinable ? 'Join this queue' : 'Not taking joiners'}
-      </button>
-      {joinable && (
-        <p className="hint">Joining from your phone is not switched on yet.</p>
+      {ticketId ? (
+        <TicketView
+          shopId={shopId}
+          queueId={queueId}
+          ticketId={ticketId}
+          queue={q}
+          activeStations={activeStations}
+          onLeft={() => setTicketId(null)}
+        />
+      ) : joining ? (
+        <JoinQueue
+          shopId={shopId}
+          queueId={queueId}
+          onJoined={(id, code) => {
+            setTicketId(id);
+            setJoining(false);
+            setFreshCode(code);
+          }}
+          onCancel={() => setJoining(false)}
+        />
+      ) : (
+        <>
+          <button
+            type="button"
+            disabled={!joinable}
+            title={note}
+            onClick={() => setJoining(true)}
+          >
+            {joinable ? 'Join this queue' : 'Not taking joiners'}
+          </button>
+          {joinable && (
+            <p className="hint">No account needed — just a name to be called by.</p>
+          )}
+          <ResumeForm
+            shopId={shopId}
+            queueId={queueId}
+            onClaimed={(id) => setTicketId(id)}
+          />
+        </>
+      )}
+
+      {freshCode && (
+        <ResumeCodePrompt code={freshCode} onDismiss={() => setFreshCode(null)} />
       )}
     </main>
   );

@@ -14,6 +14,7 @@ import {
   makeShop,
   seedQueue,
   testDb,
+  ticketContact,
   waitingOrder,
   type Fixture,
 } from '../test/harness.js';
@@ -275,9 +276,13 @@ describe('addWalkIn', () => {
       .doc(`shops/${fx.shopId}/queues/${fx.queueId}/tickets/${walkIn.ticketId}`)
       .get();
     const ticket = snap.data() as Ticket;
-    expect(ticket.customerUid).toBeNull();
-    expect(ticket.anonymousId).toBeNull();
-    expect(ticket.resumeCodeHash).toBe(
+    // Nobody holds it on a device, so there is no account to key it to.
+    expect(ticket.holderKey).toBeNull();
+
+    const contact = await ticketContact(fx, walkIn.ticketId);
+    expect(contact.customerUid).toBeNull();
+    expect(contact.anonymousId).toBeNull();
+    expect(contact.resumeCodeHash).toBe(
       hashResumeCode(fx.queueId, walkIn.resumeCode),
     );
   });
@@ -339,15 +344,12 @@ describe('relinkTicket', () => {
     expect(relinked.displayName).toBe('Marta');
     expect(relinked.resumeCode).not.toBe(joined.resumeCode);
 
-    const snap = await testDb
-      .doc(`shops/${fx.shopId}/queues/${fx.queueId}/tickets/${joined.ticketId}`)
-      .get();
-    const ticket = snap.data() as Ticket;
-    expect(ticket.resumeCodeHash).toBe(
+    const contact = await ticketContact(fx, joined.ticketId);
+    expect(contact.resumeCodeHash).toBe(
       hashResumeCode(fx.queueId, relinked.resumeCode),
     );
     // Whoever held the old code can no longer claim this ticket.
-    expect(ticket.resumeCodeHash).not.toBe(
+    expect(contact.resumeCodeHash).not.toBe(
       hashResumeCode(fx.queueId, joined.resumeCode),
     );
   });

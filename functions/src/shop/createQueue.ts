@@ -138,6 +138,8 @@ export async function performCreateQueue(
       lastIssuedNumber: 0,
       lastPosition: 0,
       lastServedAt: null,
+      observedServiceTimeSeconds: null,
+      servedSampleCount: 0,
       waitingCount: 0,
     };
 

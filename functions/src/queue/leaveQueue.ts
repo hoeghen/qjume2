@@ -7,7 +7,11 @@ import {
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
-import type { Ticket } from '../../../src/types/index.js';
+import { contactRef } from './tickets.js';
+import type {
+  Ticket,
+  TicketContact,
+} from '../../../src/types/index.js';
 
 export interface LeaveQueueRequest {
   shopId: string;
@@ -39,14 +43,20 @@ export async function performLeaveQueue(
     const queueRef = firestore.doc(`shops/${shopId}/queues/${queueId}`);
     const ticketRef = queueRef.collection('tickets').doc(ticketId);
 
+    const contact = contactRef(firestore, shopId, queueId, ticketId);
+
     await firestore.runTransaction(async (tx: Transaction) => {
-      const snap = await tx.get(ticketRef);
+      const [snap, contactSnap] = await Promise.all([
+        tx.get(ticketRef),
+        tx.get(contact),
+      ]);
       const ticket = snap.data() as Ticket | undefined;
       if (!ticket) {
         throw fail('not-found', 'ticket-not-found', 'Ticket not found.');
       }
 
-      const owner = ticket.customerUid ?? ticket.anonymousId;
+      const held = contactSnap.data() as TicketContact | undefined;
+      const owner = held?.customerUid ?? held?.anonymousId ?? null;
       if (owner !== caller.uid) {
         throw fail(
           'permission-denied',

@@ -357,3 +357,62 @@ button.link.danger { color: var(--danger); }
   letter-spacing: 0.04em;
 }
 .detail dd { margin: 2px 0 12px; }
+
+/* ---------- customer ticket ---------- */
+.ticket {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  margin: 16px 0;
+}
+.ticket .label {
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.code-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.qr {
+  display: block;
+  width: min(320px, 100%);
+  margin: 12px auto;
+  image-rendering: pixelated;
+  background: #fff;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* ---------- in-shop monitor ---------- */
+/* Read from across a room, so everything is larger than the app elsewhere. */
+.monitor h1 { font-size: 2rem; }
+.monitor h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.monitor-pairings li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  font-size: 1.8rem;
+  padding: 12px 0;
+}
+.monitor-pairings li span { color: var(--muted); font-size: 1.2rem; }
+.monitor-upcoming {
+  list-style: decimal;
+  padding-left: 1.5em;
+  font-size: 1.3rem;
+}
+.monitor-upcoming li { padding: 6px 0; }

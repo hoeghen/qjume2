@@ -1,4 +1,11 @@
-import { limit, orderBy, query, where, type Query } from 'firebase/firestore';
+import {
+  endBefore,
+  limit,
+  orderBy,
+  query,
+  where,
+  type Query,
+} from 'firebase/firestore';
 import { shops, stations, tickets } from './paths.js';
 import type { Queue, Shop, Ticket } from '../../types/index.js';
 import { queues } from './paths.js';
@@ -33,4 +40,18 @@ export function waitingTickets(
 /** Tickets currently at a station, across all stations. */
 export function servingTickets(shopId: string, queueId: string): Query<Ticket> {
   return query(tickets(shopId, queueId), where('state', '==', 'serving'));
+}
+
+/** Every ticket currently ahead of, or level with, a given position. */
+export function ticketsAhead(
+  shopId: string,
+  queueId: string,
+  position: number,
+): Query<Ticket> {
+  return query(
+    tickets(shopId, queueId),
+    where('state', '==', 'waiting'),
+    orderBy('position'),
+    endBefore(position),
+  );
 }

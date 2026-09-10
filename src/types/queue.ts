@@ -83,6 +83,14 @@ export interface Queue {
    * service-time average behind the wait estimate (PRD 9.5).
    */
   lastServedAt: number | null;
+  /**
+   * Service time learnt from how long calls actually take, which replaces the
+   * owner's seed estimate once there is anything to go on. Null until the
+   * first customer has been served.
+   */
+  observedServiceTimeSeconds: number | null;
+  /** How many completions the observed average is built from. */
+  servedSampleCount: number;
   /** Denormalised for list and map queries. */
   waitingCount: number;
 }

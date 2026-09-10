@@ -10,6 +10,7 @@ import { StationPicker } from './components/StationPicker.js';
 import { UpcomingList } from './components/UpcomingList.js';
 import { WalkInDialog } from './components/WalkInDialog.js';
 import { CloseDialog } from './components/CloseDialog.js';
+import { QrDialog } from './components/QrDialog.js';
 
 const STATION_KEY = 'qjume:station';
 
@@ -45,6 +46,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [showClose, setShowClose] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   const queue = useDoc(queueId ? queueDoc(shopId, queueId) : null);
   const { data: waiting } = useCollection(
@@ -228,6 +230,13 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         )}
         <button
           type="button"
+          className="secondary"
+          onClick={() => setShowQr(true)}
+        >
+          Show QR
+        </button>
+        <button
+          type="button"
           className="link"
           onClick={() => {
             rememberStation(queueId, null);
@@ -251,6 +260,14 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           queueId={queueId}
           waitingCount={q.waitingCount}
           onClose={() => setShowClose(false)}
+        />
+      )}
+      {showQr && (
+        <QrDialog
+          shopId={shopId}
+          queueId={queueId}
+          queueName={q.name}
+          onClose={() => setShowQr(false)}
         />
       )}
     </main>

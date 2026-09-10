@@ -57,6 +57,11 @@ export const addWalkIn = callable<
   { ticketId: string; number: number; resumeCode: string }
 >('addWalkIn');
 
+export const claimTicket = callable<
+  { shopId: string; queueId: string; resumeCode: string },
+  { ticketId: string; displayName: string; number: number }
+>('claimTicket');
+
 export const relinkTicket = callable<
   { shopId: string; queueId: string; ticketId: string },
   { resumeCode: string; displayName: string }

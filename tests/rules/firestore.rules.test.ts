@@ -26,6 +26,7 @@ const SHOP = 'shops/shop1';
 const QUEUE = 'shops/shop1/queues/queue1';
 const TICKET = 'shops/shop1/queues/queue1/tickets/ticket1';
 const STATION = 'shops/shop1/queues/queue1/stations/till1';
+const CONTACT = 'shops/shop1/queues/queue1/tickets/ticket1/private/contact';
 
 let env: RulesTestEnvironment;
 
@@ -59,12 +60,21 @@ beforeEach(async () => {
     });
     await setDoc(doc(db, TICKET), {
       displayName: 'Marta',
+      number: 1,
       state: 'waiting',
       position: 1000,
       noShowCount: 0,
       station: null,
+      holderKey: 'opaque-hash',
+    });
+    await setDoc(doc(db, CONTACT), {
       anonymousId: CUSTOMER,
       customerUid: null,
+      resumeCodeHash: 'a'.repeat(64),
+      email: 'marta@example.com',
+      phone: null,
+      fcmTokens: [],
+      dispatchedMilestones: [],
     });
   });
 });
@@ -115,19 +125,56 @@ describe('tickets are server-write-only', () => {
     );
   });
 
-  it('lets a customer read their own ticket, for live position', async () => {
+  it('refuses a client creating the private half directly', async () => {
     const db = env.authenticatedContext(CUSTOMER).firestore();
+    await assertFails(
+      setDoc(doc(db, CONTACT), { resumeCodeHash: 'b'.repeat(64) }),
+    );
+  });
+
+  it('refuses a customer rewriting their own resume code', async () => {
+    // The code is a credential. Reissuing it is relinkTicket's job.
+    const db = env.authenticatedContext(CUSTOMER).firestore();
+    await assertFails(
+      updateDoc(doc(db, CONTACT), { resumeCodeHash: 'c'.repeat(64) }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The public half of a ticket is readable by anyone, because the in-shop
+// monitor and live position counting both need it without a sign-in. The
+// private half is where anything identifying a person lives.
+// ---------------------------------------------------------------------------
+describe('what a ticket exposes', () => {
+  it('lets a passer-by read the public half, for the monitor', async () => {
+    const db = env.unauthenticatedContext().firestore();
     await assertSucceeds(getDoc(doc(db, TICKET)));
   });
 
-  it("refuses to let one customer read another's ticket", async () => {
+  it('lets a customer count the queue ahead of them', async () => {
     const db = env.authenticatedContext(OTHER).firestore();
-    await assertFails(getDoc(doc(db, TICKET)));
+    await assertSucceeds(getDoc(doc(db, TICKET)));
   });
 
-  it('lets the shop owner read tickets in their own queue', async () => {
+  it("refuses a stranger the holder's contact details", async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(getDoc(doc(db, CONTACT)));
+  });
+
+  it('refuses a signed-out visitor the contact details', async () => {
+    const db = env.unauthenticatedContext().firestore();
+    await assertFails(getDoc(doc(db, CONTACT)));
+  });
+
+  it('lets the holder read their own contact details', async () => {
+    const db = env.authenticatedContext(CUSTOMER).firestore();
+    await assertSucceeds(getDoc(doc(db, CONTACT)));
+  });
+
+  it('lets the shop serving them read the contact details', async () => {
     const db = env.authenticatedContext(OWNER).firestore();
-    await assertSucceeds(getDoc(doc(db, TICKET)));
+    await assertSucceeds(getDoc(doc(db, CONTACT)));
   });
 });
 

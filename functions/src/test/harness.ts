@@ -1,6 +1,12 @@
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
-import type { Queue, Shop, Station } from '../../../src/types/index.js';
+import {
+  TICKET_CONTACT_DOC,
+  type Queue,
+  type Shop,
+  type Station,
+  type TicketContact,
+} from '../../../src/types/index.js';
 
 export const PROJECT_ID = 'qjume-local';
 export const OWNER_UID = 'owner-uid';
@@ -48,6 +54,8 @@ export function makeQueue(overrides: Partial<Queue> = {}): Queue {
     lastIssuedNumber: 0,
     lastPosition: 0,
     lastServedAt: null,
+    observedServiceTimeSeconds: null,
+    servedSampleCount: 0,
     waitingCount: 0,
     ...overrides,
   };
@@ -106,4 +114,18 @@ export async function getQueue(fx: Fixture): Promise<Queue> {
     .doc(`shops/${fx.shopId}/queues/${fx.queueId}`)
     .get();
   return snap.data() as Queue;
+}
+
+/** The private half of a ticket: contact details and the resume code hash. */
+export async function ticketContact(
+  fx: Fixture,
+  ticketId: string,
+): Promise<TicketContact> {
+  const snap = await testDb
+    .doc(
+      `shops/${fx.shopId}/queues/${fx.queueId}/tickets/${ticketId}` +
+        `/private/${TICKET_CONTACT_DOC}`,
+    )
+    .get();
+  return snap.data() as TicketContact;
 }

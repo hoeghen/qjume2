@@ -10,6 +10,7 @@ import {
   seedQueue,
   seedStation,
   testDb,
+  ticketContact,
   waitingOrder,
   type Fixture,
 } from '../test/harness.js';
@@ -65,7 +66,13 @@ describe('joinQueue', () => {
     });
 
     expect(result.resumeCode).toMatch(/^[0-9A-HJKMNP-TV-Z]{6}$/);
-    const stored = await ticket(fx, result.ticketId);
+
+    // The code is a credential, so it is kept out of the publicly readable
+    // half of the ticket entirely, and stored only as a hash.
+    const publicHalf = await ticket(fx, result.ticketId);
+    expect(JSON.stringify(publicHalf)).not.toContain(result.resumeCode);
+
+    const stored = await ticketContact(fx, result.ticketId);
     expect(stored.resumeCodeHash).not.toContain(result.resumeCode);
     expect(stored.resumeCodeHash).toHaveLength(64);
   });

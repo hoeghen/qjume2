@@ -4,6 +4,7 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
+import { contactRef } from './tickets.js';
 import type { Shop, Ticket } from '../../../src/types/index.js';
 
 export interface RelinkTicketRequest {
@@ -76,9 +77,11 @@ export async function performRelinkTicket(
 
     // Issuing a new code invalidates the old one: whoever held it can no
     // longer claim this ticket.
-    tx.update(ticketRef, {
-      resumeCodeHash: hashResumeCode(queueId, resumeCode),
-    });
+    tx.set(
+      contactRef(firestore, shopId, queueId, ticketId),
+      { resumeCodeHash: hashResumeCode(queueId, resumeCode) },
+      { merge: true },
+    );
 
     return { resumeCode, displayName: ticket.displayName };
   });
