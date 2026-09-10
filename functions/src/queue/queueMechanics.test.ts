@@ -145,6 +145,7 @@ describe('callNext', () => {
   // ---------------------------------------------------------------------
   it('never assigns the same customer to two stations tapping at once', async () => {
     const rounds = 15;
+    let contendedRounds = 0;
     for (let round = 0; round < rounds; round++) {
       // A fresh queue per round isolates it; wiping the emulator each time is
       // far slower than the test is worth.
@@ -155,13 +156,14 @@ describe('callNext', () => {
         seedStation(fx, 'Till 2'),
       ]);
 
-      // Distinguish the two ways this can fail. A collision is a correctness
-      // bug; an ABORTED transaction means Firestore exhausted its retries
-      // under contention, which is a robustness signal, not a double
-      // assignment. Without this, both surface as an opaque failed round.
-      let first, second;
-      try {
-        [first, second] = await Promise.all([
+      // Contention against the emulator can close a transaction handle before
+      // it commits, surfacing as `unavailable`/`contended`. Nothing has
+      // advanced when that happens, so the round is simply retaken — the
+      // point of this test is that two stations never get the same customer,
+      // and a refused tap is not that. Anything else fails outright, and a
+      // second refusal in the same round fails too.
+      const both = () =>
+        Promise.all([
           performCallNext(testDb, OWNER_UID, {
             shopId: fx.shopId,
             queueId: fx.queueId,
@@ -173,11 +175,22 @@ describe('callNext', () => {
             stationId: b as string,
           }),
         ]);
+
+      let first, second;
+      try {
+        [first, second] = await both();
       } catch (e) {
-        throw new Error(
-          `round ${round}: a Next call threw rather than returning a ` +
-            `customer — ${e instanceof Error ? e.message : String(e)}`,
-        );
+        const contended =
+          (e as { details?: { reason?: string } })?.details?.reason ===
+          'contended';
+        if (!contended) {
+          throw new Error(
+            `round ${round}: a Next call failed for a reason other than ` +
+              `contention — ${e instanceof Error ? e.message : String(e)}`,
+          );
+        }
+        contendedRounds += 1;
+        [first, second] = await both();
       }
 
       expect(first.ticketId, `round ${round}: first station got nobody`).not.toBeNull();
@@ -192,6 +205,12 @@ describe('callNext', () => {
       expect(new Set([first.displayName, second.displayName]).size).toBe(2);
       expect((await getQueue(fx)).waitingCount).toBe(0);
     }
+    // Visible rather than swallowed: if contention starts refusing most
+    // rounds, that is worth knowing even though it is not a collision.
+    expect(
+      contendedRounds,
+      `${contendedRounds} of ${rounds} rounds were refused for contention`,
+    ).toBeLessThan(rounds / 2);
     // Generous: each round provokes real transaction contention, and the
     // emulator's retry backoff is slower than production Firestore.
   }, 120_000);

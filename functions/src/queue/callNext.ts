@@ -1,4 +1,5 @@
 import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions';
 import {
   FieldValue,
   type Firestore,
@@ -10,6 +11,10 @@ import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { placesToMoveBack } from './penalties.js';
 import { foldSample, isUsableSample } from './serviceTime.js';
+import { channelsFromEnv, sweepMilestones } from '../notifications/dispatch.js';
+import { notifyBumped, notifyRemoved } from '../notifications/events.js';
+import { baseUrl } from '../lib/config.js';
+import type { Channels } from '../notifications/channels.js';
 import {
   positionAtBack,
   positionBetween,
@@ -81,10 +86,23 @@ function toWaiting(doc: QueryDocumentSnapshot): WaitingTicket {
  * Separated from the callable wrapper so tests can drive the transaction
  * directly, including running two of them at once.
  */
+/**
+ * Contention can leave the SDK holding a transaction handle the server has
+ * already closed. It is thrown before anything commits, so the queue has not
+ * moved — but the raw message means nothing to someone behind a till.
+ */
+function isTransientTransactionError(error: unknown): boolean {
+  return /Transaction is invalid or closed/i.test(
+    error instanceof Error ? error.message : String(error),
+  );
+}
+
 export async function performCallNext(
   firestore: Firestore,
   callerUid: string,
   input: CallNextRequest,
+  /** Overridden by tests so nothing is actually sent. */
+  channels: Channels = channelsFromEnv(),
 ): Promise<CallNextResult> {
   const { shopId, queueId, stationId, outcome = 'served' } = input;
 
@@ -102,93 +120,109 @@ export async function performCallNext(
   const ticketsRef = queueRef.collection('tickets');
   const waitingQuery = ticketsRef.where('state', '==', 'waiting');
 
-  return firestore.runTransaction(async (tx: Transaction) => {
-    // ================= reads =================
-    // Firestore requires every read to precede every write in a transaction,
-    // so all branching data is gathered up front.
-    const [shopSnap, queueSnap, stationSnap] = await Promise.all([
-      tx.get(shopRef),
-      tx.get(queueRef),
-      tx.get(stationRef),
-    ]);
+  interface TransactionResult extends CallNextResult {
+    /** Internal: drives the post-commit notices, not part of the API. */
+    bumped: {
+      ticketId: string;
+      displayName: string;
+      removed: boolean;
+      noShowCount: number;
+    } | null;
+    /** Carried out rather than read from an outer variable, which TypeScript
+     *  cannot see being assigned inside the transaction body. */
+    queue: Queue;
+  }
 
-    const shop = shopSnap.data() as Shop | undefined;
-    if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-    if (shop.ownerUid !== callerUid) {
-      throw fail(
-        'permission-denied',
-        'not-shop-owner',
-        'Only the shop owner can serve this queue.',
-      );
-    }
+  let result: TransactionResult;
+  try {
+    result = await firestore.runTransaction<TransactionResult>(
+      async (tx: Transaction) => {
+      // ================= reads =================
+      // Firestore requires every read to precede every write in a transaction,
+      // so all branching data is gathered up front.
+      const [shopSnap, queueSnap, stationSnap] = await Promise.all([
+        tx.get(shopRef),
+        tx.get(queueRef),
+        tx.get(stationRef),
+      ]);
 
-    const queue = queueSnap.data() as Queue | undefined;
-    if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');
+      const shop = shopSnap.data() as Shop | undefined;
+      if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
+      if (shop.ownerUid !== callerUid) {
+        throw fail(
+          'permission-denied',
+          'not-shop-owner',
+          'Only the shop owner can serve this queue.',
+        );
+      }
 
-    const station = stationSnap.data() as Station | undefined;
-    if (!station) {
-      throw fail('not-found', 'station-not-found', 'Station not found.');
-    }
+      const queue = queueSnap.data() as Queue | undefined;
+      if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');
 
-    const currentSnap = station.currentTicketId
-      ? await tx.get(ticketsRef.doc(station.currentTicketId))
-      : null;
-    const current =
-      currentSnap?.exists === true ? (currentSnap.data() as Ticket) : null;
+      const station = stationSnap.data() as Station | undefined;
+      if (!station) {
+        throw fail('not-found', 'station-not-found', 'Station not found.');
+      }
 
-    const head = (
-      await tx.get(waitingQuery.orderBy('position').limit(HEAD_LIMIT))
-    ).docs.map(toWaiting);
-
-    const isPenalty =
-      current !== null &&
-      outcome === 'noShow' &&
-      current.noShowCount + 1 < NO_SHOW_REMOVAL_THRESHOLD;
-
-    const places = isPenalty ? placesToMoveBack(queue.noShowPenalty) : 0;
-
-    const placement =
-      isPenalty && current
-        ? placeAfter(head, places, current.position, queue.lastPosition)
+      const currentSnap = station.currentTicketId
+        ? await tx.get(ticketsRef.doc(station.currentTicketId))
         : null;
+      const current =
+        currentSnap?.exists === true ? (currentSnap.data() as Ticket) : null;
 
-    // Splitting the interval can fail only at double precision, which needs
-    // roughly sixty penalties landing between the same two neighbours. Rare,
-    // but it must not emit a duplicate position, so fall back to a reindex.
-    const fullWaiting =
-      placement?.kind === 'reindex'
-        ? (await tx.get(waitingQuery.orderBy('position'))).docs.map(toWaiting)
-        : [];
+      const head = (
+        await tx.get(waitingQuery.orderBy('position').limit(HEAD_LIMIT))
+      ).docs.map(toWaiting);
 
-    // ================= writes =================
-    let resolved: CallNextResult['resolved'] = null;
-    let penalisedId: string | null = null;
-    let penalisedPosition: number | null = null;
-    let observed: { averageSeconds: number; sampleCount: number } | null = null;
+      const isPenalty =
+        current !== null &&
+        outcome === 'noShow' &&
+        current.noShowCount + 1 < NO_SHOW_REMOVAL_THRESHOLD;
 
-    if (current !== null && currentSnap !== null) {
-      const currentId = currentSnap.id;
+      const places = isPenalty ? placesToMoveBack(queue.noShowPenalty) : 0;
 
-      if (outcome === 'served') {
-        tx.update(currentSnap.ref, { state: 'served', station: null });
-        resolved = {
-          ticketId: currentId,
-          outcome: 'served',
-          removed: false,
-          noShowCount: current.noShowCount,
-        };
+      const placement =
+        isPenalty && current
+          ? placeAfter(head, places, current.position, queue.lastPosition)
+          : null;
 
-        // How long this customer actually took, folded into the queue's
-        // average. Only completions count — a no-show resolves in seconds and
-        // would drag the estimate down for everyone behind them (PRD 9.5).
-        if (current.calledAt !== null) {
-          const sample = (Date.now() - current.calledAt) / 1000;
-          if (isUsableSample(sample)) {
-            observed = foldSample(
-              {
-                averageSeconds:
-                  queue.observedServiceTimeSeconds ?? queue.avgServiceTimeSeconds,
-                sampleCount: queue.servedSampleCount,
+      // Splitting the interval can fail only at double precision, which needs
+      // roughly sixty penalties landing between the same two neighbours. Rare,
+      // but it must not emit a duplicate position, so fall back to a reindex.
+      const fullWaiting =
+        placement?.kind === 'reindex'
+          ? (await tx.get(waitingQuery.orderBy('position'))).docs.map(toWaiting)
+          : [];
+
+      // ================= writes =================
+      let resolved: CallNextResult['resolved'] = null;
+      let penalisedId: string | null = null;
+      let penalisedPosition: number | null = null;
+      let observed: { averageSeconds: number; sampleCount: number } | null = null;
+
+      if (current !== null && currentSnap !== null) {
+        const currentId = currentSnap.id;
+
+        if (outcome === 'served') {
+          tx.update(currentSnap.ref, { state: 'served', station: null });
+          resolved = {
+            ticketId: currentId,
+            outcome: 'served',
+            removed: false,
+            noShowCount: current.noShowCount,
+          };
+
+          // How long this customer actually took, folded into the queue's
+          // average. Only completions count — a no-show resolves in seconds and
+          // would drag the estimate down for everyone behind them (PRD 9.5).
+          if (current.calledAt !== null) {
+            const sample = (Date.now() - current.calledAt) / 1000;
+            if (isUsableSample(sample)) {
+              observed = foldSample(
+                {
+                  averageSeconds:
+                    queue.observedServiceTimeSeconds ?? queue.avgServiceTimeSeconds,
+                  sampleCount: queue.servedSampleCount,
               },
               sample,
             );
@@ -281,8 +315,93 @@ export async function performCallNext(
       ticketId: next?.id ?? null,
       displayName: next?.displayName ?? null,
       resolved,
-    };
-  });
+      bumped:
+        resolved?.outcome === 'noShow'
+          ? {
+              ticketId: resolved.ticketId,
+              displayName: current?.displayName ?? '',
+              removed: resolved.removed,
+              noShowCount: resolved.noShowCount,
+            }
+          : null,
+      queue,
+      };
+    },
+    );
+  } catch (error) {
+    if (isTransientTransactionError(error)) {
+      // Deliberately not retried here. The error is raised before a commit,
+      // so nothing has advanced — but proving that for every path is harder
+      // than asking for the tap again, and calling the same customer twice is
+      // a worse failure than a repeated tap.
+      throw fail(
+        'unavailable',
+        'contended',
+        'That did not go through. Tap Next again.',
+      );
+    }
+    throw error;
+  }
+
+  // Everything below runs only once the transaction has committed. A
+  // transaction body can be retried, and a retried send is a duplicate alert.
+  const stations = await stationRef.parent.count().get();
+  const activeStations = Math.max(1, stations.data().count);
+  const shopName = result.queue.shopName;
+
+  try {
+    if (result.bumped) {
+      const target = {
+        shopId,
+        queueId,
+        ticketId: result.bumped.ticketId,
+      };
+      if (result.bumped.removed) {
+        await notifyRemoved(
+          firestore,
+          target,
+          result.bumped.displayName,
+          shopName,
+          baseUrl(),
+          channels,
+          'noShows',
+        );
+      } else {
+        await notifyBumped(
+          firestore,
+          target,
+          result.bumped.displayName,
+          shopName,
+          baseUrl(),
+          channels,
+          NO_SHOW_REMOVAL_THRESHOLD - result.bumped.noShowCount,
+        );
+      }
+    }
+
+    await sweepMilestones(firestore, {
+      shopId,
+      queueId,
+      queue: result.queue,
+      activeStations,
+      baseUrl: baseUrl(),
+      channels,
+    });
+  } catch (error) {
+    // Notifications are an enhancement. The queue has already advanced, and
+    // the live position screen is correct whether or not these land.
+    logger.warn('Notification dispatch failed after advancing the queue', {
+      shopId,
+      queueId,
+      reason: String(error),
+    });
+  }
+
+  return {
+    ticketId: result.ticketId,
+    displayName: result.displayName,
+    resolved: result.resolved,
+  };
 }
 
 export const callNext = onCall<CallNextRequest, Promise<CallNextResult>>(

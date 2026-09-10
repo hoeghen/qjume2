@@ -17,4 +17,6 @@ export type QueueErrorReason =
   | 'not-shop-owner'
   | 'not-ticket-owner'
   | 'ticket-not-waiting'
-  | 'queue-empty';
+  | 'queue-empty'
+  /** Contention closed the transaction before it committed; nothing advanced. */
+  | 'contended';

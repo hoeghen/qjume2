@@ -5,6 +5,7 @@ import { ticketsAhead } from '../../lib/firestore/queries.js';
 import { leaveQueue, messageOf } from '../../lib/functions.js';
 import { forgetTicket } from '../../lib/myTickets.js';
 import { formatWait } from '../../lib/format.js';
+import { EnableNotifications } from './components/EnableNotifications.js';
 import type { Queue } from '../../types/index.js';
 
 interface Props {
@@ -147,6 +148,8 @@ export function TicketView({
           place.
         </p>
       )}
+
+      <EnableNotifications shopId={shopId} queueId={queueId} ticketId={ticketId} />
 
       <button type="button" className="secondary" disabled={busy} onClick={leave}>
         Leave the queue

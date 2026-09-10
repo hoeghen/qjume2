@@ -13,6 +13,7 @@ export { removeTicket } from './queue/removeTicket.js';
 export { addWalkIn } from './queue/addWalkIn.js';
 export { relinkTicket } from './queue/relinkTicket.js';
 export { claimTicket } from './queue/claimTicket.js';
+export { registerPushToken } from './queue/registerPushToken.js';
 
 /**
  * Shop administration. Queue and station creation run here rather than as

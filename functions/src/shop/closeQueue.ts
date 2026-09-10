@@ -3,7 +3,11 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
-import type { Shop, Ticket } from '../../../src/types/index.js';
+import { channelsFromEnv } from '../notifications/dispatch.js';
+import { notifyQueueClosed } from '../notifications/events.js';
+import { baseUrl } from '../lib/config.js';
+import type { Channels } from '../notifications/channels.js';
+import type { Queue, Shop, Ticket } from '../../../src/types/index.js';
 
 /**
  * `drain` stops new joiners and keeps serving those already waiting.
@@ -30,6 +34,8 @@ export async function performCloseQueue(
   firestore: Firestore,
   callerUid: string,
   input: CloseQueueRequest,
+  /** Overridden by tests so nothing is actually sent. */
+  channels: Channels = channelsFromEnv(),
 ): Promise<CloseQueueResult> {
   const { shopId, queueId, mode } = input;
   if (!shopId || !queueId || (mode !== 'drain' && mode !== 'hard')) {
@@ -44,7 +50,7 @@ export async function performCloseQueue(
   const queueRef = firestore.doc(`shops/${shopId}/queues/${queueId}`);
   const ticketsRef = queueRef.collection('tickets');
 
-  return firestore.runTransaction(async (tx: Transaction) => {
+  const result = await firestore.runTransaction(async (tx: Transaction) => {
     const [shopSnap, queueSnap] = await Promise.all([
       tx.get(shopRef),
       tx.get(queueRef),
@@ -66,7 +72,7 @@ export async function performCloseQueue(
     if (mode === 'drain') {
       // Still open to those already holding a ticket, shut to newcomers.
       tx.update(queueRef, { status: 'drainMode' });
-      return { clearedCount: 0 };
+      return { clearedCount: 0, cleared: [] as string[], shopName: shop.name };
     }
 
     const waiting = await tx.get(
@@ -90,8 +96,30 @@ export async function performCloseQueue(
       currentNumber: 0,
     });
 
-    return { clearedCount: waiting.size };
+    return {
+      clearedCount: waiting.size,
+      cleared: waiting.docs.map((d) => d.id),
+      shopName: (queueSnap.data() as Queue).shopName,
+    };
   });
+
+  // After the commit, never inside it: a retried transaction body would send
+  // the same apology twice.
+  if (result.cleared.length > 0) {
+    try {
+      await notifyQueueClosed(
+        firestore,
+        result.cleared.map((ticketId) => ({ shopId, queueId, ticketId })),
+        result.shopName,
+        baseUrl(),
+        channels,
+      );
+    } catch {
+      // The queue is closed either way; a failed apology must not undo it.
+    }
+  }
+
+  return { clearedCount: result.clearedCount };
 }
 
 export const closeQueue = onCall<CloseQueueRequest, Promise<CloseQueueResult>>(

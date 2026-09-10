@@ -62,6 +62,11 @@ export const claimTicket = callable<
   { ticketId: string; displayName: string; number: number }
 >('claimTicket');
 
+export const registerPushToken = callable<
+  { shopId: string; queueId: string; ticketId: string; token: string },
+  { ok: true }
+>('registerPushToken');
+
 export const relinkTicket = callable<
   { shopId: string; queueId: string; ticketId: string },
   { resumeCode: string; displayName: string }
