@@ -44,7 +44,10 @@ service cloud.firestore {
 
       match /queues/{queueId} {
         allow read: if true;
-        allow create: if isShopOwner(shopId);
+        // Creation is server-only: the free-tier "one active queue" limit is
+        // counted in `createQueue`, and a client create would walk straight
+        // past it. Invariant 5.
+        allow create: if false;
         allow update: if isShopOwner(shopId) && touchesOnlyOwnFields();
         allow delete: if isShopOwner(shopId);
 
@@ -66,10 +69,12 @@ service cloud.firestore {
         }
 
         // Publicly readable so the in-shop monitor can display the current
-        // pairings without signing in.
+        // pairings without signing in. Writes are server-only: the free tier
+        // allows one server at a time, enforced in `claimStation`, and
+        // `currentTicketId` is queue state that only `callNext` may set.
         match /stations/{stationId} {
           allow read: if true;
-          allow create, update, delete: if isShopOwner(shopId);
+          allow write: if false;
         }
       }
     }

@@ -13,3 +13,4 @@ database-debug.log
 ui-debug.log
 .DS_Store
 *.tsbuildinfo
+dev-dist/

@@ -45,10 +45,15 @@ export interface Queue {
 
   /** Owner-entered address, geocoded at save time. Never device location. */
   address: string;
-  lat: number;
-  lng: number;
+  /**
+   * Null until the address is geocoded. A queue can be created and served
+   * before it is discoverable on the map, so these are honestly absent rather
+   * than zeroed — a queue at (0, 0) would appear in the Gulf of Guinea.
+   */
+  lat: number | null;
+  lng: number | null;
   /** For radius queries via `geofire-common`. See PRD 9.3. */
-  geohash: string;
+  geohash: string | null;
 
   /** Seeded by the owner, then refined from observed service times. PRD 9.5. */
   avgServiceTimeSeconds: number;

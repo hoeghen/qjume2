@@ -25,6 +25,7 @@ const OTHER = 'other-uid';
 const SHOP = 'shops/shop1';
 const QUEUE = 'shops/shop1/queues/queue1';
 const TICKET = 'shops/shop1/queues/queue1/tickets/ticket1';
+const STATION = 'shops/shop1/queues/queue1/stations/till1';
 
 let env: RulesTestEnvironment;
 
@@ -151,6 +152,59 @@ describe('queue counters are server-owned', () => {
   it('refuses queue edits by anyone else', async () => {
     const db = env.authenticatedContext(OTHER).firestore();
     await assertFails(updateDoc(doc(db, QUEUE), { name: 'Hijacked' }));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The free-tier limits live in Cloud Functions, so the rules must not leave a
+// client write path that walks past them. Invariant 5.
+// ---------------------------------------------------------------------------
+describe('free-tier limits cannot be bypassed by direct writes', () => {
+  it('refuses an owner creating a queue directly', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop1/queues/queue2'), {
+        name: 'Second queue',
+        status: 'open',
+        waitingCount: 0,
+      }),
+    );
+  });
+
+  it('refuses an owner opening a station directly', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop1/queues/queue1/stations/till2'), {
+        label: 'Till 2',
+        activeStaffUid: OWNER,
+        currentTicketId: null,
+      }),
+    );
+  });
+
+  it('refuses an owner pointing a station at a ticket by hand', async () => {
+    // currentTicketId is queue state; only callNext may move it.
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), STATION), {
+        label: 'Till 1',
+        activeStaffUid: OWNER,
+        currentTicketId: null,
+      });
+    });
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, STATION), { currentTicketId: 'ticket1' }));
+  });
+
+  it('still lets the monitor read stations without signing in', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), STATION), {
+        label: 'Till 1',
+        activeStaffUid: OWNER,
+        currentTicketId: null,
+      });
+    });
+    const db = env.unauthenticatedContext().firestore();
+    await assertSucceeds(getDoc(doc(db, STATION)));
   });
 });
 
