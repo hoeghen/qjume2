@@ -1,6 +1,6 @@
 # Qjume — project context
 
-Read `qjume-prd.md` for the full product spec. This file covers conventions and the
+Read `docs/qjume-prd.md` for the full product spec. This file covers conventions and the
 things that are easy to get wrong.
 
 ## Stack
