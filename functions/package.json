@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "main": "lib/functions/src/index.js",
-  "engines": { "node": "22" },
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",

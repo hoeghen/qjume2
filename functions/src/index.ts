@@ -1,14 +1,12 @@
-import { initializeApp } from 'firebase-admin/app';
-
-initializeApp();
+import './lib/admin.js';
 
 /**
- * Phase 1 adds the queue-mechanics callables here: `joinQueue`, `callNext`,
- * `leaveQueue`, `removeTicket`. They are the only path by which a ticket
- * reaches `serving`, `served` or `noShow` — clients never write those states
- * directly (CLAUDE.md invariant 1), and `callNext` resolves the current ticket
- * and assigns the next one inside a single Firestore transaction (invariant 2).
- *
- * Types come from `src/types/`, shared with the app so the two cannot drift.
+ * Queue mechanics. These four callables are the only path by which a ticket
+ * reaches `serving`, `served`, `noShow` or `removed`: the security rules deny
+ * client writes to tickets outright, so a customer cannot advance themselves.
+ * See CLAUDE.md invariant 1.
  */
-export {};
+export { joinQueue } from './queue/joinQueue.js';
+export { callNext } from './queue/callNext.js';
+export { leaveQueue } from './queue/leaveQueue.js';
+export { removeTicket } from './queue/removeTicket.js';

@@ -58,6 +58,18 @@ export interface Queue {
 
   currentNumber: number;
   lastIssuedNumber: number;
+  /**
+   * Highest `position` sort key handed out so far. Monotonic, and the only
+   * source of a "back of the queue" position — deriving one from the ticket
+   * number instead would let a new joiner land ahead of someone a no-show
+   * penalty had just sent to the back.
+   */
+  lastPosition: number;
+  /**
+   * When a customer was last called at this queue. Feeds the rolling
+   * service-time average behind the wait estimate (PRD 9.5).
+   */
+  lastServedAt: number | null;
   /** Denormalised for list and map queries. */
   waitingCount: number;
 }

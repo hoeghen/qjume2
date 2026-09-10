@@ -1,2 +1,3 @@
 node_modules/
-lib/
+# Build output only. A bare `lib/` would also swallow src/lib/.
+/lib/

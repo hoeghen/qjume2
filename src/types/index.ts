@@ -14,3 +14,5 @@ export {
 } from './ticket.js';
 export type { Station } from './station.js';
 export type { Customer, CustomerHistoryEntry } from './customer.js';
+export { FREE_TIER_LIMITS } from './limits.js';
+export type { QueueErrorReason } from './errors.js';
