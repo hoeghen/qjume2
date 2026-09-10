@@ -4,8 +4,16 @@
     ".write": false,
     "status": {
       "$shopId": {
-        ".read": true,
-        ".write": "auth != null && auth.uid != null"
+        "$queueId": {
+          ".read": true,
+          "$connectionId": {
+            ".write": "auth != null",
+            ".validate": "newData.hasChild('at') || !newData.exists()",
+            "at": { ".validate": "newData.isNumber()" },
+            "stationId": { ".validate": "newData.isString()" },
+            "$other": { ".validate": false }
+          }
+        }
       }
     }
   }

@@ -5,6 +5,7 @@ import { queueDoc } from '../../lib/firestore/paths.js';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { servingTickets, waitingTickets } from '../../lib/firestore/queries.js';
 import { callNext, messageOf } from '../../lib/functions.js';
+import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { PauseBanner } from './components/PauseBanner.js';
 import { StationPicker } from './components/StationPicker.js';
 import { UpcomingList } from './components/UpcomingList.js';
@@ -48,6 +49,8 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   const [showClose, setShowClose] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
+  const offline = useOfflineServing(shopId, queueId, station?.id ?? null);
+
   const queue = useDoc(queueId ? queueDoc(shopId, queueId) : null);
   const { data: waiting } = useCollection(
     queueId ? waitingTickets(shopId, queueId) : null,
@@ -72,6 +75,15 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   const q = queue.data;
   const mine = serving?.find((t) => t.station === station?.id) ?? null;
   const others = serving?.filter((t) => t.station !== station?.id) ?? [];
+  // Offline, the server's idea of who is being served is frozen, so the till
+  // reads ahead in its cached waiting list by however many taps it has taken.
+  const offlineCurrent =
+    offline.localOffset > 0 ? (waiting?.[offline.localOffset - 1] ?? null) : null;
+  const currentName = offlineCurrent?.displayName ?? mine?.displayName ?? null;
+  const upcoming = (waiting ?? []).slice(offline.localOffset);
+  // The server's count is frozen while offline; showing it beside a list that
+  // has moved on would have the header contradicting the rows below it.
+  const waitingNow = Math.max(0, q.waitingCount - offline.localOffset);
 
   if (!station) {
     return (
@@ -86,6 +98,15 @@ export function ServingScreen({ shopId }: { shopId: string }) {
 
   function advance(outcome: 'served' | 'noShow') {
     if (!station) return;
+
+    // No network means no Cloud Function, and the client may not write ticket
+    // state itself. Record the decision and keep the till moving; it is
+    // replayed in order when the connection returns.
+    if (!offline.online) {
+      offline.advance(outcome);
+      return;
+    }
+
     setBusy(true);
     setError(null);
     void (async () => {
@@ -115,13 +136,29 @@ export function ServingScreen({ shopId }: { shopId: string }) {
 
   return (
     <main className="serving">
+      {!offline.online && (
+        <div className="status-banner status-unavailable" role="status">
+          <strong>No connection</strong>
+          <span>
+            Keep serving — {offline.pending}{' '}
+            {offline.pending === 1 ? 'tap is' : 'taps are'} saved and will sync
+            when you are back. Nobody new can join meanwhile.
+          </span>
+        </div>
+      )}
+      {offline.online && offline.pending > 0 && (
+        <div className="status-banner status-paused" role="status">
+          <strong>Catching up</strong>
+          <span>Sending {offline.pending} saved from while you were offline.</span>
+        </div>
+      )}
       <PauseBanner status={q.status} />
 
       <header className="serving-header">
         <div>
           <h1>{q.name}</h1>
           <p className="muted">
-            {station.label || 'Serving'} · {q.waitingCount} waiting
+            {station.label || 'Serving'} · {waitingNow} waiting
           </p>
         </div>
         <Link to="/shop" className="link">
@@ -130,10 +167,10 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       </header>
 
       <section className="now-serving">
-        {mine ? (
+        {currentName ? (
           <>
             <p className="label">Now serving</p>
-            <p className="called-name">{mine.displayName}</p>
+            <p className="called-name">{currentName}</p>
             <p className="called-station">{station.label}</p>
           </>
         ) : (
@@ -150,12 +187,12 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           disabled={busy || q.status === 'paused'}
           onClick={() => advance('served')}
         >
-          {mine ? 'Done — next' : 'Call next'}
+          {currentName ? 'Done — next' : 'Call next'}
         </button>
         <button
           type="button"
           className="secondary big-touch"
-          disabled={busy || !mine}
+          disabled={busy || !currentName}
           onClick={() => advance('noShow')}
         >
           Not here
@@ -186,7 +223,8 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <UpcomingList
           shopId={shopId}
           queueId={queueId}
-          waiting={waiting ?? []}
+          waiting={upcoming}
+          online={offline.online}
         />
       </section>
 
@@ -209,8 +247,13 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           type="button"
           className="secondary"
           // Still available while draining: someone at the counter can be
-          // added even once the queue is shut to remote joiners.
-          disabled={q.status !== 'open' && q.status !== 'drainMode'}
+          // added even once the queue is shut to remote joiners. Not available
+          // offline — issuing a ticket number needs the server, and pretending
+          // otherwise would hand someone a place that does not exist.
+          disabled={
+            !offline.online ||
+            (q.status !== 'open' && q.status !== 'drainMode')
+          }
           onClick={() => setShowWalkIn(true)}
         >
           Add walk-in
@@ -223,6 +266,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           <button
             type="button"
             className="secondary"
+            disabled={!offline.online}
             onClick={() => setShowClose(true)}
           >
             Close

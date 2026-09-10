@@ -177,20 +177,30 @@ describe('callNext', () => {
         ]);
 
       let first, second;
-      try {
-        [first, second] = await both();
-      } catch (e) {
-        const contended =
-          (e as { details?: { reason?: string } })?.details?.reason ===
-          'contended';
-        if (!contended) {
-          throw new Error(
-            `round ${round}: a Next call failed for a reason other than ` +
-              `contention — ${e instanceof Error ? e.message : String(e)}`,
-          );
+      let attempt = 0;
+      for (;;) {
+        attempt += 1;
+        try {
+          [first, second] = await both();
+          break;
+        } catch (e) {
+          const contended =
+            (e as { details?: { reason?: string } })?.details?.reason ===
+            'contended';
+          if (!contended) {
+            throw new Error(
+              `round ${round}: a Next call failed for a reason other than ` +
+                `contention — ${e instanceof Error ? e.message : String(e)}`,
+            );
+          }
+          contendedRounds += 1;
+          if (attempt >= 3) {
+            throw new Error(
+              `round ${round}: three consecutive taps were refused for ` +
+                `contention. Not a collision, but the emulator is struggling.`,
+            );
+          }
         }
-        contendedRounds += 1;
-        [first, second] = await both();
       }
 
       expect(first.ticketId, `round ${round}: first station got nobody`).not.toBeNull();

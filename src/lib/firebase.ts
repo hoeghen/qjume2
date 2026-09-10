@@ -1,8 +1,10 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import {
-  getFirestore,
+  initializeFirestore,
   connectFirestoreEmulator,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore';
 import {
@@ -28,7 +30,20 @@ const config = {
 
 export const app: FirebaseApp = initializeApp(config);
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
+
+/**
+ * Persistent cache, not the default in-memory one.
+ *
+ * A till that loses its network has to keep serving from the queue it already
+ * has (PRD 6), and that is only possible if reads survive without a
+ * connection. Multi-tab support because a shop may have the serving screen and
+ * the monitor open on the same device.
+ */
+export const db: Firestore = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+});
 export const functions: Functions = getFunctions(app);
 
 /**

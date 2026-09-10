@@ -24,3 +24,9 @@ export { createQueue } from './shop/createQueue.js';
 export { updateQueue } from './shop/updateQueue.js';
 export { claimStation } from './shop/claimStation.js';
 export { closeQueue } from './shop/closeQueue.js';
+
+/**
+ * Presence. Realtime Database is used for this and nothing else — Firestore
+ * cannot tell a closed tab from a dead network, and RTDB's onDisconnect can.
+ */
+export { mirrorPresence } from './presence/mirror.js';

@@ -12,9 +12,11 @@ interface Props {
   shopId: string;
   queueId: string;
   waiting: WaitingTicket[];
+  /** Both actions call a Cloud Function, so neither works offline. */
+  online: boolean;
 }
 
-export function UpcomingList({ shopId, queueId, waiting }: Props) {
+export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [relinked, setRelinked] = useState<{ name: string; code: string } | null>(
     null,
@@ -49,6 +51,7 @@ export function UpcomingList({ shopId, queueId, waiting }: Props) {
               <button
                 type="button"
                 className="link"
+                disabled={!online}
                 onClick={() =>
                   void run(async () => {
                     const r = await relinkTicket({
@@ -65,6 +68,7 @@ export function UpcomingList({ shopId, queueId, waiting }: Props) {
               <button
                 type="button"
                 className="link danger"
+                disabled={!online}
                 onClick={() =>
                   void run(() =>
                     removeTicket({ shopId, queueId, ticketId: t.id }).then(
