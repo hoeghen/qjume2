@@ -7,7 +7,8 @@ const BANNERS: Partial<Record<QueueStatus, { label: string; detail: string }>> =
   },
   drainMode: {
     label: 'Closing',
-    detail: 'No new joiners. Keep serving everyone already waiting.',
+    detail:
+      'Nobody new can join online. You can still add walk-ins at the counter.',
   },
   unavailable: {
     label: 'Offline',

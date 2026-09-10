@@ -42,7 +42,7 @@ export function CloseDialog({ shopId, queueId, waitingCount, onClose }: Props) {
 
         <div className="stack">
           <button type="button" disabled={busy} onClick={() => run('drain')}>
-            Stop new joiners, finish serving
+            Stop online joiners, finish serving
           </button>
           <button
             type="button"

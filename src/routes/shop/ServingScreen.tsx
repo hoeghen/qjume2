@@ -206,7 +206,9 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <button
           type="button"
           className="secondary"
-          disabled={q.status !== 'open'}
+          // Still available while draining: someone at the counter can be
+          // added even once the queue is shut to remote joiners.
+          disabled={q.status !== 'open' && q.status !== 'drainMode'}
           onClick={() => setShowWalkIn(true)}
         >
           Add walk-in

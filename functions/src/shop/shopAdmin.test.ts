@@ -178,7 +178,7 @@ describe('closeQueue', () => {
     expect(await waitingOrder(fx)).toHaveLength(2);
   });
 
-  it('refuses new joiners once draining', async () => {
+  it('refuses remote joiners once draining, but not walk-ins', async () => {
     const fx = await seedQueue();
     await join(fx, 1);
     await performCloseQueue(testDb, OWNER_UID, {
@@ -186,7 +186,15 @@ describe('closeQueue', () => {
       queueId: fx.queueId,
       mode: 'drain',
     });
+
     await expect(join(fx, 2)).rejects.toThrow(/not accepting/i);
+    await expect(
+      performAddWalkIn(testDb, OWNER_UID, {
+        shopId: fx.shopId,
+        queueId: fx.queueId,
+        displayName: 'At the counter',
+      }),
+    ).resolves.toHaveProperty('ticketId');
   });
 
   it('clears the queue on a hard close', async () => {
@@ -258,6 +266,33 @@ describe('addWalkIn', () => {
       hashResumeCode(fx.queueId, walkIn.resumeCode),
     );
   });
+
+  it('still admits a walk-in while the queue is draining', async () => {
+    // Drain stops remote joiners; someone at the counter can still be added.
+    const fx = await seedQueue({}, { status: 'drainMode' });
+    await expect(
+      performAddWalkIn(testDb, OWNER_UID, {
+        shopId: fx.shopId,
+        queueId: fx.queueId,
+        displayName: 'Late arrival',
+      }),
+    ).resolves.toHaveProperty('number', 1);
+    expect(await waitingOrder(fx)).toEqual(['Late arrival']);
+  });
+
+  it.each(['paused', 'closed', 'unavailable'] as const)(
+    'refuses a walk-in while %s',
+    async (status) => {
+      const fx = await seedQueue({}, { status });
+      await expect(
+        performAddWalkIn(testDb, OWNER_UID, {
+          shopId: fx.shopId,
+          queueId: fx.queueId,
+          displayName: 'Walk-in',
+        }),
+      ).rejects.toThrow(/not accepting/i);
+    },
+  );
 
   it('rejects a non-owner', async () => {
     const fx = await seedQueue();

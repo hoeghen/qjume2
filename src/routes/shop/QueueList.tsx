@@ -6,7 +6,7 @@ import type { QueueStatus } from '../../types/index.js';
 
 const STATUS_LABELS: Record<QueueStatus, string> = {
   open: 'Open',
-  drainMode: 'Closing — no new joiners',
+  drainMode: 'Closing — walk-ins only',
   paused: 'Paused',
   unavailable: 'Offline',
   closed: 'Closed',

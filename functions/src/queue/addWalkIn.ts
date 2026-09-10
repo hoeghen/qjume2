@@ -33,6 +33,9 @@ export interface AddWalkInResult {
  * The owner adding someone who has no smartphone (PRD 4.4). They take the same
  * place in the same queue as everyone else — no separate walk-in line, and no
  * preferential treatment. The in-shop monitor is their notification channel.
+ *
+ * Permitted while the queue is draining, unlike `joinQueue`. See the decisions
+ * section of CLAUDE.md.
  */
 export async function performAddWalkIn(
   firestore: Firestore,
@@ -73,9 +76,11 @@ export async function performAddWalkIn(
     const queue = queueSnap.data() as Queue | undefined;
     if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');
 
-    // A draining queue still admits walk-ins at the counter only if the owner
-    // says so; it does not, by design — drain means no new joiners at all.
-    if (queue.status !== 'open') {
+    // A draining queue still admits walk-ins. Drain stops *remote* joiners:
+    // someone standing at the counter while the shop finishes up can still be
+    // added by staff, which is a judgement the person behind the till is
+    // making in the moment. `joinQueue` remains open-only.
+    if (queue.status !== 'open' && queue.status !== 'drainMode') {
       throw fail(
         'failed-precondition',
         'queue-not-accepting',
