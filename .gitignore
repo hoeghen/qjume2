@@ -1,0 +1,15 @@
+node_modules/
+dist/
+# functions build output only — a bare `lib/` would also swallow src/lib/
+functions/lib/
+*.local
+.env
+.env.*
+!.env.example
+.firebase/
+firebase-debug.log
+firestore-debug.log
+database-debug.log
+ui-debug.log
+.DS_Store
+*.tsbuildinfo

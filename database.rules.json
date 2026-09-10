@@ -1,0 +1,12 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "status": {
+      "$shopId": {
+        ".read": true,
+        ".write": "auth != null && auth.uid != null"
+      }
+    }
+  }
+}

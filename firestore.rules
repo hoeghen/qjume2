@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Phase 0 baseline: deny by default.
+//
+// Rules are written alongside the feature that needs them (see CLAUDE.md), so
+// this file grows one block at a time as Phase 1+ lands. Starting closed rather
+// than open means the server-only invariant on ticket state transitions holds
+// from the first commit: no client path exists to write `serving`, `served`, or
+// `noShow`, because no client write path exists at all yet.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
