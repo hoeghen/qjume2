@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { App } from './App.js';
 import { CustomerHome } from './routes/customer/CustomerHome.js';
+import { QueueDetail } from './routes/customer/QueueDetail.js';
 import { ShopHome } from './routes/shop/ShopHome.js';
 import { ShopIndex } from './routes/shop/ShopIndex.js';
 import { QueueFormRoute } from './routes/shop/QueueFormRoute.js';
@@ -13,6 +14,7 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <CustomerHome /> },
+      { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
       {
         path: 'shop',
         element: <ShopHome />,

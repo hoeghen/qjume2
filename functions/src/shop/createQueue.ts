@@ -121,6 +121,7 @@ export async function performCreateQueue(
 
     const queue: Queue = {
       name: trimmedName,
+      shopName: shop.name,
       description: input.description?.trim() || null,
       category,
       maxSize,

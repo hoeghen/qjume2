@@ -32,6 +32,7 @@ export function makeShop(overrides: Partial<Shop> = {}): Shop {
 export function makeQueue(overrides: Partial<Queue> = {}): Queue {
   return {
     name: 'Test Queue',
+    shopName: 'Test Shop',
     description: null,
     category: 'other',
     maxSize: 1000,

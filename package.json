@@ -8,10 +8,11 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "test": "firebase emulators:exec --only firestore --project qjume-local \"npm run test:rules && npm run test:functions\"",
+    "test": "npm run test:unit && firebase emulators:exec --only firestore --project qjume-local \"npm run test:rules && npm run test:functions\"",
     "emulators": "firebase emulators:start",
-    "test:rules": "vitest run",
-    "test:functions": "npm --prefix functions run test"
+    "test:rules": "vitest run tests/rules",
+    "test:functions": "npm --prefix functions run test",
+    "test:unit": "vitest run tests/unit"
   },
   "dependencies": {
     "firebase": "^11.1.0",

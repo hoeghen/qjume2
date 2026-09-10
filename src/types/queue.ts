@@ -39,6 +39,14 @@ export interface QueueSchedule {
 
 export interface Queue {
   name: string;
+  /**
+   * The owning shop's name, denormalised so a discovery list can render a card
+   * — and match a text search — without a second read per queue.
+   *
+   * Set when the queue is created. Anything that renames a shop must update
+   * every queue beneath it, or the two will drift.
+   */
+  shopName: string;
   description: string | null;
   category: QueueCategory;
   maxSize: number;

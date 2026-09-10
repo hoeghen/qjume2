@@ -80,6 +80,14 @@ service cloud.firestore {
       }
     }
 
+    // Discovery searches every shop's queues at once, which is a collection
+    // group query. The path-scoped rule above does not cover that scope, so it
+    // is granted here — read-only, matching the public readability queues
+    // already have at their own path.
+    match /{path=**}/queues/{queueId} {
+      allow read: if true;
+    }
+
     match /customers/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
