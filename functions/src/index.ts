@@ -19,5 +19,6 @@ export { relinkTicket } from './queue/relinkTicket.js';
  * Invariant 5.
  */
 export { createQueue } from './shop/createQueue.js';
+export { updateQueue } from './shop/updateQueue.js';
 export { claimStation } from './shop/claimStation.js';
 export { closeQueue } from './shop/closeQueue.js';

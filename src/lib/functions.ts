@@ -11,6 +11,13 @@ import type {
  * Typed wrappers for the Cloud Functions. Every queue-state change goes through
  * one of these; there is no client write path to a ticket.
  */
+/** What the geocoder made of an address, for the owner to sanity-check. */
+export interface Geocoded {
+  lat: number;
+  lng: number;
+  formatted: string;
+}
+
 function callable<Req, Res>(name: string) {
   const fn = httpsCallable<Req, Res>(functions, name);
   return async (data: Req): Promise<Res> => (await fn(data)).data;
@@ -67,8 +74,24 @@ export const createQueue = callable<
     schedule?: QueueSchedule | null;
     description?: string | null;
   },
-  { queueId: string }
+  { queueId: string; geocoded: Geocoded | null }
 >('createQueue');
+
+export const updateQueue = callable<
+  {
+    shopId: string;
+    queueId: string;
+    name: string;
+    address: string;
+    category: QueueCategory;
+    maxSize: number;
+    avgServiceTimeSeconds: number;
+    noShowPenalty: NoShowPenalty;
+    schedule?: QueueSchedule | null;
+    description?: string | null;
+  },
+  { geocoded: Geocoded | null }
+>('updateQueue');
 
 export const claimStation = callable<
   { shopId: string; queueId: string; stationId?: string; label?: string },

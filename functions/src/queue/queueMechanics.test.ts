@@ -148,22 +148,38 @@ describe('callNext', () => {
         seedStation(fx, 'Till 2'),
       ]);
 
-      const [first, second] = await Promise.all([
-        performCallNext(testDb, OWNER_UID, {
-          shopId: fx.shopId,
-          queueId: fx.queueId,
-          stationId: a as string,
-        }),
-        performCallNext(testDb, OWNER_UID, {
-          shopId: fx.shopId,
-          queueId: fx.queueId,
-          stationId: b as string,
-        }),
-      ]);
+      // Distinguish the two ways this can fail. A collision is a correctness
+      // bug; an ABORTED transaction means Firestore exhausted its retries
+      // under contention, which is a robustness signal, not a double
+      // assignment. Without this, both surface as an opaque failed round.
+      let first, second;
+      try {
+        [first, second] = await Promise.all([
+          performCallNext(testDb, OWNER_UID, {
+            shopId: fx.shopId,
+            queueId: fx.queueId,
+            stationId: a as string,
+          }),
+          performCallNext(testDb, OWNER_UID, {
+            shopId: fx.shopId,
+            queueId: fx.queueId,
+            stationId: b as string,
+          }),
+        ]);
+      } catch (e) {
+        throw new Error(
+          `round ${round}: a Next call threw rather than returning a ` +
+            `customer — ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
 
-      expect(first.ticketId).not.toBeNull();
-      expect(second.ticketId).not.toBeNull();
-      expect(first.ticketId).not.toBe(second.ticketId);
+      expect(first.ticketId, `round ${round}: first station got nobody`).not.toBeNull();
+      expect(second.ticketId, `round ${round}: second station got nobody`).not.toBeNull();
+      expect(
+        first.ticketId,
+        `round ${round}: both stations were given the same customer ` +
+          `(${first.displayName})`,
+      ).not.toBe(second.ticketId);
 
       // And the persisted state agrees: two distinct customers, one per station.
       expect(new Set([first.displayName, second.displayName]).size).toBe(2);

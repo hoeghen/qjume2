@@ -142,10 +142,29 @@ describe('queue counters are server-owned', () => {
     await assertFails(updateDoc(doc(db, QUEUE), { lastPosition: 1 }));
   });
 
-  it('lets the owner edit their own queue settings', async () => {
+  it('lets the owner pause and reopen the queue', async () => {
     const db = env.authenticatedContext(OWNER).firestore();
-    await assertSucceeds(
-      updateDoc(doc(db, QUEUE), { name: 'Renamed', noShowPenalty: 'back3' }),
+    await assertSucceeds(updateDoc(doc(db, QUEUE), { status: 'paused' }));
+    await assertSucceeds(updateDoc(doc(db, QUEUE), { status: 'open' }));
+  });
+
+  it('rejects a status that is not a real queue state', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, QUEUE), { status: 'bananas' }));
+  });
+
+  it('refuses a direct settings write, which would skip geocoding', async () => {
+    // Settings go through updateQueue. A direct write could change the address
+    // while leaving the old coordinates, listing the queue where it is not.
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, QUEUE), { name: 'Renamed' }));
+    await assertFails(updateDoc(doc(db, QUEUE), { address: '9 Elsewhere' }));
+  });
+
+  it('refuses the owner moving the queue on the map by hand', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      updateDoc(doc(db, QUEUE), { lat: 0, lng: 0, geohash: '0000000000' }),
     );
   });
 

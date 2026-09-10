@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { performCreateQueue } from './createQueue.js';
+import { performUpdateQueue } from './updateQueue.js';
 import { performClaimStation } from './claimStation.js';
 import { performCloseQueue } from './closeQueue.js';
 import { performAddWalkIn } from '../queue/addWalkIn.js';
@@ -50,9 +51,6 @@ describe('createQueue', () => {
     expect(queue.waitingCount).toBe(0);
     expect(queue.lastIssuedNumber).toBe(0);
     expect(queue.lastPosition).toBe(0);
-    // Geocoding is Phase 3; absent, not zeroed.
-    expect(queue.lat).toBeNull();
-    expect(queue.geohash).toBeNull();
   });
 
   it('enforces the free-tier one-queue limit server-side', async () => {
@@ -69,6 +67,23 @@ describe('createQueue', () => {
     await expect(
       performCreateQueue(testDb, OWNER_UID, { shopId, ...settings }),
     ).resolves.toHaveProperty('queueId');
+  });
+
+  it('geocodes the address at save time', async () => {
+    const shopId = await seedShop();
+    const { queueId, geocoded } = await performCreateQueue(testDb, OWNER_UID, {
+      shopId,
+      ...settings,
+    });
+
+    expect(geocoded).not.toBeNull();
+    const snap = await testDb.doc(`shops/${shopId}/queues/${queueId}`).get();
+    const queue = snap.data() as Queue;
+    expect(queue.lat).toBeCloseTo(geocoded!.lat, 6);
+    expect(queue.lng).toBeCloseTo(geocoded!.lng, 6);
+    // The geohash is what radius queries index on; without it the queue is
+    // invisible to distance search.
+    expect(queue.geohash).toMatch(/^[0-9a-z]{10}$/);
   });
 
   it('rejects a non-owner', async () => {
@@ -349,6 +364,88 @@ describe('relinkTicket', () => {
         shopId: fx.shopId,
         queueId: fx.queueId,
         ticketId: joined.ticketId,
+      }),
+    ).rejects.toThrow(/shop owner/i);
+  });
+});
+
+describe('updateQueue', () => {
+  async function createdQueue() {
+    const shopId = await seedShop();
+    const { queueId } = await performCreateQueue(testDb, OWNER_UID, {
+      shopId,
+      ...settings,
+    });
+    return { shopId, queueId };
+  }
+
+  async function read(shopId: string, queueId: string): Promise<Queue> {
+    const snap = await testDb.doc(`shops/${shopId}/queues/${queueId}`).get();
+    return snap.data() as Queue;
+  }
+
+  it('re-geocodes when the address changes', async () => {
+    const { shopId, queueId } = await createdQueue();
+    const before = await read(shopId, queueId);
+
+    const result = await performUpdateQueue(testDb, OWNER_UID, {
+      shopId,
+      queueId,
+      ...settings,
+      address: '99 Somewhere Else',
+    });
+
+    expect(result.geocoded).not.toBeNull();
+    const after = await read(shopId, queueId);
+    expect(after.address).toBe('99 Somewhere Else');
+    // The coordinates must move with the address, never lag behind it.
+    expect(after.geohash).not.toBe(before.geohash);
+    expect(after.lat).toBeCloseTo(result.geocoded!.lat, 6);
+  });
+
+  it('does not re-geocode when the address is unchanged', async () => {
+    const { shopId, queueId } = await createdQueue();
+    const before = await read(shopId, queueId);
+
+    const result = await performUpdateQueue(testDb, OWNER_UID, {
+      shopId,
+      queueId,
+      ...settings,
+      name: 'Renamed',
+    });
+
+    expect(result.geocoded).toBeNull();
+    const after = await read(shopId, queueId);
+    expect(after.name).toBe('Renamed');
+    expect(after.geohash).toBe(before.geohash);
+  });
+
+  it('leaves the counters alone', async () => {
+    const { shopId, queueId } = await createdQueue();
+    await testDb
+      .doc(`shops/${shopId}/queues/${queueId}`)
+      .update({ waitingCount: 4, lastPosition: 4000, status: 'open' });
+
+    await performUpdateQueue(testDb, OWNER_UID, {
+      shopId,
+      queueId,
+      ...settings,
+      name: 'Renamed',
+    });
+
+    const after = await read(shopId, queueId);
+    expect(after.waitingCount).toBe(4);
+    expect(after.lastPosition).toBe(4000);
+    expect(after.status).toBe('open');
+  });
+
+  it('rejects a non-owner', async () => {
+    const { shopId, queueId } = await createdQueue();
+    await expect(
+      performUpdateQueue(testDb, 'someone-else', {
+        shopId,
+        queueId,
+        ...settings,
       }),
     ).rejects.toThrow(/shop owner/i);
   });

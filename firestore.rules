@@ -13,23 +13,22 @@ service cloud.firestore {
            == request.auth.uid;
     }
 
-    // Fields the server derives. A shop owner edits their queue's settings, but
-    // never the counters that `joinQueue` and `callNext` maintain — letting a
-    // client set waitingCount or lastPosition would corrupt queue ordering.
-    function serverOwnedQueueFields() {
-      return [
-        'currentNumber',
-        'lastIssuedNumber',
-        'lastPosition',
-        'lastServedAt',
-        'waitingCount'
-      ];
+    // The only queue field a client may write is `status` — pausing, resuming
+    // and reopening. Everything else goes through a Cloud Function:
+    //
+    //  - counters (waitingCount, lastPosition, …) are queue state that only
+    //    joinQueue and callNext may move;
+    //  - settings go through updateQueue, which re-geocodes when the address
+    //    changes. A client write could otherwise change the address while
+    //    leaving stale coordinates, listing the queue where it no longer is.
+    function changesOnlyStatus() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['status']);
     }
 
-    function touchesOnlyOwnFields() {
-      return !request.resource.data.diff(resource.data)
-        .affectedKeys()
-        .hasAny(serverOwnedQueueFields());
+    function validStatus() {
+      return request.resource.data.status in
+        ['open', 'drainMode', 'paused', 'unavailable', 'closed'];
     }
 
     // Shops and queues are publicly readable: customers discover queues before
@@ -48,7 +47,9 @@ service cloud.firestore {
         // counted in `createQueue`, and a client create would walk straight
         // past it. Invariant 5.
         allow create: if false;
-        allow update: if isShopOwner(shopId) && touchesOnlyOwnFields();
+        allow update: if isShopOwner(shopId)
+          && changesOnlyStatus()
+          && validStatus();
         allow delete: if isShopOwner(shopId);
 
         // ------------------------------------------------------------------

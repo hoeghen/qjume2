@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { updateDoc } from 'firebase/firestore';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { useDoc } from '../../lib/hooks/useFirestore.js';
-import { createQueue, messageOf } from '../../lib/functions.js';
+import { createQueue, messageOf, updateQueue } from '../../lib/functions.js';
 import {
   QUEUE_CATEGORIES,
   type NoShowPenalty,
@@ -60,9 +59,10 @@ export function QueueForm({ shopId }: { shopId: string }) {
     void (async () => {
       try {
         if (queueId) {
-          // Settings only — the server owns the counters, and the rules reject
-          // any attempt to write them from here.
-          await updateDoc(queueDoc(shopId, queueId), values);
+          // Goes through a function, not a direct write: changing the address
+          // has to re-geocode, or the queue would be listed where it no
+          // longer is.
+          await updateQueue({ shopId, queueId, ...values });
           navigate('/shop');
         } else {
           const { queueId: created } = await createQueue({ shopId, ...values });

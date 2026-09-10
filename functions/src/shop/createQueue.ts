@@ -3,6 +3,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { geocodeAddress } from '../geocoding/index.js';
 import {
   FREE_TIER_LIMITS,
   QUEUE_CATEGORIES,
@@ -27,6 +28,12 @@ export interface CreateQueueRequest {
 
 export interface CreateQueueResult {
   queueId: string;
+  /**
+   * Null when the address could not be placed. The queue is still created and
+   * servable — it simply will not appear in distance-sorted results until the
+   * owner corrects the address.
+   */
+  geocoded: { lat: number; lng: number; formatted: string } | null;
 }
 
 const PENALTIES: NoShowPenalty[] = ['back', 'back3', 'back5'];
@@ -81,6 +88,12 @@ export async function performCreateQueue(
   const queuesRef = shopRef.collection('queues');
   const queueRef = queuesRef.doc();
 
+  // Geocode before opening the transaction: it is a network call, and a
+  // transaction body can be retried on contention. A failure here must not
+  // block creating the queue — an un-placed queue still serves customers at
+  // the counter.
+  const located = await geocodeAddress(trimmedAddress).catch(() => null);
+
   await firestore.runTransaction(async (tx: Transaction) => {
     const shopSnap = await tx.get(shopRef);
     const shop = shopSnap.data() as Shop | undefined;
@@ -112,11 +125,9 @@ export async function performCreateQueue(
       category,
       maxSize,
       address: trimmedAddress,
-      // Geocoding lands in Phase 3; the queue is servable before it is
-      // discoverable on a map.
-      lat: null,
-      lng: null,
-      geohash: null,
+      lat: located?.lat ?? null,
+      lng: located?.lng ?? null,
+      geohash: located?.geohash ?? null,
       avgServiceTimeSeconds,
       noShowPenalty: input.noShowPenalty,
       // A new queue is closed until the owner opens it deliberately.
@@ -132,7 +143,12 @@ export async function performCreateQueue(
     tx.set(queueRef, queue);
   });
 
-  return { queueId: queueRef.id };
+  return {
+    queueId: queueRef.id,
+    geocoded: located
+      ? { lat: located.lat, lng: located.lng, formatted: located.formatted }
+      : null,
+  };
 }
 
 export const createQueue = onCall<CreateQueueRequest, Promise<CreateQueueResult>>(
