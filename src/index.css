@@ -408,3 +408,20 @@ button.link.danger { color: var(--danger); }
   font-size: 1.3rem;
 }
 .monitor-upcoming li { padding: 6px 0; }
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+}
+.feature-list li {
+  padding: 6px 0 6px 24px;
+  position: relative;
+}
+.feature-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}

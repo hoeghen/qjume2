@@ -27,6 +27,7 @@ const QUEUE = 'shops/shop1/queues/queue1';
 const TICKET = 'shops/shop1/queues/queue1/tickets/ticket1';
 const STATION = 'shops/shop1/queues/queue1/stations/till1';
 const CONTACT = 'shops/shop1/queues/queue1/tickets/ticket1/private/contact';
+const STAFF = 'shops/shop1/staff/staff-uid';
 
 let env: RulesTestEnvironment;
 
@@ -48,7 +49,12 @@ beforeEach(async () => {
   // Seed as admin, bypassing rules — this is the state a real queue is in.
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
-    await setDoc(doc(db, SHOP), { name: 'Shop', ownerUid: OWNER, plan: 'free' });
+    await setDoc(doc(db, SHOP), {
+      name: 'Shop',
+      ownerUid: OWNER,
+      plan: 'free',
+      exclusiveQueues: false,
+    });
     await setDoc(doc(db, QUEUE), {
       name: 'Queue',
       status: 'open',
@@ -291,5 +297,141 @@ describe('discovery', () => {
     await assertFails(
       setDoc(doc(db, 'shops/shop2'), { name: 'Mine', ownerUid: OWNER }),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The hinge the free tier hangs on. Every limit — one queue, twenty waiting,
+// one server — is enforced by a Cloud Function reading shop.plan. An owner who
+// could write that field would lift all of them in a single request, and every
+// server-side check would become decoration.
+// ---------------------------------------------------------------------------
+describe('the plan is not the owner’s to set', () => {
+  it('refuses an owner upgrading themselves', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, SHOP), { plan: 'paid' }));
+  });
+
+  it('refuses a plan change smuggled alongside a legitimate edit', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      updateDoc(doc(db, SHOP), { name: 'Renamed', plan: 'paid' }),
+    );
+  });
+
+  it('refuses a shop created already paid', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop9'), {
+        name: 'Born Paid',
+        ownerUid: OTHER,
+        plan: 'paid',
+        exclusiveQueues: false,
+      }),
+    );
+  });
+
+  it('allows a shop created on the free plan', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'shops/shop9'), {
+        name: 'Honest Shop',
+        ownerUid: OTHER,
+        plan: 'free',
+        exclusiveQueues: false,
+      }),
+    );
+  });
+
+  it('still lets the owner edit everything else', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, SHOP), { name: 'Renamed', exclusiveQueues: true }),
+    );
+  });
+
+  it('refuses a free shop writing a paid profile', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      updateDoc(doc(db, SHOP), {
+        profile: { logo: null, hours: '9-5', phone: null, description: null },
+      }),
+    );
+  });
+
+  it('allows a profile once the shop is paid', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore(), SHOP), { plan: 'paid' });
+    });
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, SHOP), {
+        profile: { logo: null, hours: '9-5', phone: null, description: null },
+      }),
+    );
+  });
+});
+
+describe('staff records', () => {
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), STAFF), {
+        email: 'staff@example.com',
+        addedAt: 1,
+        addedBy: OWNER,
+      });
+    });
+  });
+
+  it('refuses anyone granting themselves serving rights', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop1/staff/' + OTHER), {
+        email: 'sneaky@example.com',
+        addedAt: 1,
+        addedBy: OTHER,
+      }),
+    );
+  });
+
+  it('refuses even the owner writing one directly', async () => {
+    // Adding staff is a paid feature, counted server-side.
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop1/staff/someone'), {
+        email: 'someone@example.com',
+        addedAt: 1,
+        addedBy: OWNER,
+      }),
+    );
+  });
+
+  it('lets the owner see who has access', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertSucceeds(getDoc(doc(db, STAFF)));
+  });
+
+  it('lets a staff member see their own record', async () => {
+    const db = env.authenticatedContext('staff-uid').firestore();
+    await assertSucceeds(getDoc(doc(db, STAFF)));
+  });
+
+  it("refuses a stranger the shop's staff list", async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(getDoc(doc(db, STAFF)));
+  });
+
+  it('does not let a staff member on a free shop pause the queue', async () => {
+    // The shop is on the free plan, so the staff record grants nothing.
+    const db = env.authenticatedContext('staff-uid').firestore();
+    await assertFails(updateDoc(doc(db, QUEUE), { status: 'paused' }));
+  });
+
+  it('lets a staff member on a paid shop pause the queue', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore(), SHOP), { plan: 'paid' });
+    });
+    const db = env.authenticatedContext('staff-uid').firestore();
+    await assertSucceeds(updateDoc(doc(db, QUEUE), { status: 'paused' }));
   });
 });

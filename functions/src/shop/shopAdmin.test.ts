@@ -239,7 +239,7 @@ describe('closeQueue', () => {
         queueId: fx.queueId,
         mode: 'hard',
       }),
-    ).rejects.toThrow(/shop owner/i);
+    ).rejects.toThrow(/not serving this shop/i);
   });
 });
 
@@ -322,7 +322,7 @@ describe('addWalkIn', () => {
         queueId: fx.queueId,
         displayName: 'Walk-in',
       }),
-    ).rejects.toThrow(/shop owner/i);
+    ).rejects.toThrow(/not serving this shop/i);
   });
 });
 
@@ -367,7 +367,7 @@ describe('relinkTicket', () => {
         queueId: fx.queueId,
         ticketId: joined.ticketId,
       }),
-    ).rejects.toThrow(/shop owner/i);
+    ).rejects.toThrow(/not serving this shop/i);
   });
 });
 

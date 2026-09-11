@@ -28,9 +28,14 @@ export function QueueList({
     <main className="panel">
       <header className="serving-header">
         <h1>{shopName}</h1>
-        <button type="button" className="link" onClick={() => void signOut()}>
-          Sign out
-        </button>
+        <span className="row tight">
+          <Link className="link" to="/shop/billing">
+            Plan
+          </Link>
+          <button type="button" className="link" onClick={() => void signOut()}>
+            Sign out
+          </button>
+        </span>
       </header>
 
       {loading && <p>Loading…</p>}

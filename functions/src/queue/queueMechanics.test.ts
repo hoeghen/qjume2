@@ -125,7 +125,7 @@ describe('callNext', () => {
     expect((await getQueue(fx)).waitingCount).toBe(0);
   });
 
-  it('rejects a caller who does not own the shop', async () => {
+  it('rejects a caller with no business serving this shop', async () => {
     const fx = await seedQueue();
     await join(fx, 1);
     const station = await seedStation(fx, 'Till 1');
@@ -136,7 +136,7 @@ describe('callNext', () => {
         queueId: fx.queueId,
         stationId: station,
       }),
-    ).rejects.toThrow(/shop owner/i);
+    ).rejects.toThrow(/not serving this shop/i);
   });
 
   // ---------------------------------------------------------------------
@@ -158,50 +158,62 @@ describe('callNext', () => {
 
       // Contention against the emulator can close a transaction handle before
       // it commits, surfacing as `unavailable`/`contended`. Nothing has
-      // advanced when that happens, so the round is simply retaken — the
-      // point of this test is that two stations never get the same customer,
-      // and a refused tap is not that. Anything else fails outright, and a
-      // second refusal in the same round fails too.
-      const both = () =>
-        Promise.all([
-          performCallNext(testDb, OWNER_UID, {
-            shopId: fx.shopId,
-            queueId: fx.queueId,
-            stationId: a as string,
-          }),
-          performCallNext(testDb, OWNER_UID, {
-            shopId: fx.shopId,
-            queueId: fx.queueId,
-            stationId: b as string,
-          }),
-        ]);
+      // advanced when that happens, so that tap is retaken.
+      //
+      // Only the refused one is retaken. `Promise.all` rejecting does not
+      // cancel the call beside it, so retrying the pair would re-run a tap
+      // that already succeeded — consuming a second customer and leaving the
+      // other station with nobody. That is a bug in the test, not the queue.
+      const stationIds = [a as string, b as string];
+      const taken: (Awaited<ReturnType<typeof performCallNext>> | null)[] = [
+        null,
+        null,
+      ];
 
-      let first, second;
-      let attempt = 0;
-      for (;;) {
-        attempt += 1;
-        try {
-          [first, second] = await both();
-          break;
-        } catch (e) {
-          const contended =
-            (e as { details?: { reason?: string } })?.details?.reason ===
-            'contended';
-          if (!contended) {
+      for (let attempt = 1; ; attempt++) {
+        const outstanding = [0, 1].filter((i) => taken[i] === null);
+        const settled = await Promise.allSettled(
+          outstanding.map((i) =>
+            performCallNext(testDb, OWNER_UID, {
+              shopId: fx.shopId,
+              queueId: fx.queueId,
+              stationId: stationIds[i] as string,
+            }),
+          ),
+        );
+
+        settled.forEach((outcome, k) => {
+          const i = outstanding[k] as number;
+          if (outcome.status === 'fulfilled') {
+            taken[i] = outcome.value;
+            return;
+          }
+          const reason = (outcome.reason as { details?: { reason?: string } })
+            ?.details?.reason;
+          if (reason !== 'contended') {
             throw new Error(
               `round ${round}: a Next call failed for a reason other than ` +
-                `contention — ${e instanceof Error ? e.message : String(e)}`,
+                `contention — ${
+                  outcome.reason instanceof Error
+                    ? outcome.reason.message
+                    : String(outcome.reason)
+                }`,
             );
           }
           contendedRounds += 1;
-          if (attempt >= 3) {
-            throw new Error(
-              `round ${round}: three consecutive taps were refused for ` +
-                `contention. Not a collision, but the emulator is struggling.`,
-            );
-          }
+        });
+
+        if (taken[0] && taken[1]) break;
+        if (attempt >= 3) {
+          throw new Error(
+            `round ${round}: a tap was refused for contention three times. ` +
+              `Not a collision, but the emulator is struggling.`,
+          );
         }
       }
+
+      const first = taken[0] as NonNullable<(typeof taken)[0]>;
+      const second = taken[1] as NonNullable<(typeof taken)[1]>;
 
       expect(first.ticketId, `round ${round}: first station got nobody`).not.toBeNull();
       expect(second.ticketId, `round ${round}: second station got nobody`).not.toBeNull();
@@ -450,6 +462,6 @@ describe('leaving and removal', () => {
         queueId: fx.queueId,
         ticketId: ids[0] as string,
       }),
-    ).rejects.toThrow(/shop owner/i);
+    ).rejects.toThrow(/not serving this shop/i);
   });
 });

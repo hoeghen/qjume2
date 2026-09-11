@@ -72,6 +72,26 @@ export const relinkTicket = callable<
   { resumeCode: string; displayName: string }
 >('relinkTicket');
 
+export const startCheckout = callable<
+  { shopId: string; plan: 'free' | 'paid' },
+  { url: string }
+>('startCheckout');
+
+export const completeCheckout = callable<
+  { sessionId: string },
+  { plan: 'free' | 'paid' }
+>('completeCheckout');
+
+export const addStaff = callable<
+  { shopId: string; email: string },
+  { uid: string }
+>('addStaff');
+
+export const removeStaff = callable<
+  { shopId: string; uid: string },
+  { ok: true }
+>('removeStaff');
+
 export const createQueue = callable<
   {
     shopId: string;

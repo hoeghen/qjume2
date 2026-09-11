@@ -3,6 +3,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { requireServeAccess } from '../lib/access.js';
 import {
   FREE_TIER_LIMITS,
   type Shop,
@@ -47,17 +48,12 @@ export async function performClaimStation(
     .doc(`shops/${shopId}/queues/${queueId}`)
     .collection('stations');
 
+  await requireServeAccess(firestore, shopId, callerUid);
+
   return firestore.runTransaction(async (tx: Transaction) => {
     const shopSnap = await tx.get(shopRef);
     const shop = shopSnap.data() as Shop | undefined;
     if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-    if (shop.ownerUid !== callerUid) {
-      throw fail(
-        'permission-denied',
-        'not-shop-owner',
-        'Only the shop owner can serve this queue.',
-      );
-    }
 
     if (stationId) {
       const ref = stationsRef.doc(stationId);

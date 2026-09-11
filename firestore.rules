@@ -13,6 +13,17 @@ service cloud.firestore {
            == request.auth.uid;
     }
 
+    // Anyone who may work the counter. Staff are a paid feature, so a staff
+    // record on a free shop grants nothing — otherwise a downgrade would leave
+    // staff quietly still able to serve.
+    function canServe(shopId) {
+      return isShopOwner(shopId)
+        || (signedIn()
+            && get(/databases/$(database)/documents/shops/$(shopId)).data.plan
+               == 'paid'
+            && exists(/databases/$(database)/documents/shops/$(shopId)/staff/$(request.auth.uid)));
+    }
+
     // The only queue field a client may write is `status` — pausing, resuming
     // and reopening. Everything else goes through a Cloud Function:
     //
@@ -33,13 +44,47 @@ service cloud.firestore {
 
     // Shops and queues are publicly readable: customers discover queues before
     // signing in, and joining is anonymous by default.
+    // ----------------------------------------------------------------------
+    // `plan` is server-owned, and this is the hinge the whole free tier hangs
+    // on. Every limit — one queue, twenty waiting, one server at a time — is
+    // enforced by a Cloud Function reading shop.plan. An owner who could write
+    // that field would lift all of them in a single request, and the limits
+    // would be decoration. It changes only through a verified payment.
+    //
+    // `profile` is a paid feature, so it is gated on the plan rather than on
+    // the UI merely hiding the form.
+    // ----------------------------------------------------------------------
+    function keepsServerOwnedShopFields() {
+      return request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.plan == resource.data.plan;
+    }
+
+    function profileAllowed() {
+      return resource.data.plan == 'paid'
+        || !request.resource.data.diff(resource.data)
+             .affectedKeys().hasAny(['profile']);
+    }
+
     match /shops/{shopId} {
       allow read: if true;
+      // Nobody starts paid, whatever they put in the request.
       allow create: if signedIn()
-        && request.resource.data.ownerUid == request.auth.uid;
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.plan == 'free';
       allow update: if isShopOwner(shopId)
-        && request.resource.data.ownerUid == resource.data.ownerUid;
+        && keepsServerOwnedShopFields()
+        && profileAllowed();
       allow delete: if isShopOwner(shopId);
+
+      // Staff records are server-written: adding one is a paid feature, and a
+      // client that could write here would grant itself serving rights.
+      // Readable by the owner, and by the person it names, so a staff member's
+      // app can tell it has access.
+      match /staff/{uid} {
+        allow read: if isShopOwner(shopId)
+          || (signedIn() && request.auth.uid == uid);
+        allow write: if false;
+      }
 
       match /queues/{queueId} {
         allow read: if true;
@@ -47,7 +92,8 @@ service cloud.firestore {
         // counted in `createQueue`, and a client create would walk straight
         // past it. Invariant 5.
         allow create: if false;
-        allow update: if isShopOwner(shopId)
+        // Pausing and reopening is running the counter, so staff may do it.
+        allow update: if canServe(shopId)
           && changesOnlyStatus()
           && validStatus();
         allow delete: if isShopOwner(shopId);
@@ -74,7 +120,7 @@ service cloud.firestore {
           // a label. Only the holder and the shop serving them may read it,
           // and nobody may write it from a client.
           match /private/{document} {
-            allow read: if isShopOwner(shopId)
+            allow read: if canServe(shopId)
               || (signedIn() && (
                    resource.data.customerUid == request.auth.uid
                    || resource.data.anonymousId == request.auth.uid

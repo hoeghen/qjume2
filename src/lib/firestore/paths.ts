@@ -9,10 +9,18 @@ import {
   customerConverter,
   queueConverter,
   shopConverter,
+  staffConverter,
   stationConverter,
   ticketConverter,
 } from './converters.js';
-import type { Customer, Queue, Shop, Station, Ticket } from '../../types/index.js';
+import type {
+  Customer,
+  Queue,
+  Shop,
+  StaffMember,
+  Station,
+  Ticket,
+} from '../../types/index.js';
 
 /**
  * Every collection path in one place, typed and converter-bound. Components and
@@ -25,6 +33,9 @@ export const shops = (): CollectionReference<Shop> =>
 
 export const shopDoc = (shopId: string): DocumentReference<Shop> =>
   doc(db, 'shops', shopId).withConverter(shopConverter);
+
+export const staff = (shopId: string): CollectionReference<StaffMember> =>
+  collection(db, 'shops', shopId, 'staff').withConverter(staffConverter);
 
 export const queues = (shopId: string): CollectionReference<Queue> =>
   collection(db, 'shops', shopId, 'queues').withConverter(queueConverter);

@@ -10,4 +10,6 @@ export const FREE_TIER_LIMITS = {
   maxWaiting: 20,
   /** One server at a time; parallel stations are a paid feature. */
   maxStations: 1,
+  /** The owner alone. Staff members are a paid feature. */
+  maxStaff: 0,
 } as const;

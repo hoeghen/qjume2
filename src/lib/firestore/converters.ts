@@ -3,7 +3,14 @@ import type {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
-import type { Customer, Queue, Shop, Station, Ticket } from '../../types/index.js';
+import type {
+  Customer,
+  Queue,
+  Shop,
+  StaffMember,
+  Station,
+  Ticket,
+} from '../../types/index.js';
 
 /**
  * Firestore hands back `DocumentData`; these converters are the one place that
@@ -22,3 +29,4 @@ export const queueConverter = converterFor<Queue>();
 export const ticketConverter = converterFor<Ticket>();
 export const stationConverter = converterFor<Station>();
 export const customerConverter = converterFor<Customer>();
+export const staffConverter = converterFor<StaffMember>();

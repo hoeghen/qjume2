@@ -24,6 +24,13 @@ export { createQueue } from './shop/createQueue.js';
 export { updateQueue } from './shop/updateQueue.js';
 export { claimStation } from './shop/claimStation.js';
 export { closeQueue } from './shop/closeQueue.js';
+export { addStaff, removeStaff } from './shop/staff.js';
+
+/**
+ * Billing. The plan is server-owned — every free-tier limit reads it, so an
+ * owner who could write it would lift all of them at once.
+ */
+export { startCheckout, completeCheckout } from './billing/checkout.js';
 
 /**
  * Presence. Realtime Database is used for this and nothing else — Firestore

@@ -19,4 +19,8 @@ export type QueueErrorReason =
   | 'ticket-not-waiting'
   | 'queue-empty'
   /** Contention closed the transaction before it committed; nothing advanced. */
-  | 'contended';
+  | 'contended'
+  | 'payment-unverified'
+  | 'downgrade-blocked'
+  | 'not-shop-staff'
+  | 'free-tier-staff-limit';

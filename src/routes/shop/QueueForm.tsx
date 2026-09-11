@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { useDoc } from '../../lib/hooks/useFirestore.js';
 import { createQueue, messageOf, updateQueue } from '../../lib/functions.js';
@@ -29,7 +29,13 @@ const PENALTY_LABELS: Record<NoShowPenalty, string> = {
   back5: 'Move back 5 places',
 };
 
-export function QueueForm({ shopId }: { shopId: string }) {
+export function QueueForm({
+  shopId,
+  paid,
+}: {
+  shopId: string;
+  paid: boolean;
+}) {
   const { queueId } = useParams();
   const navigate = useNavigate();
   const existing = useDoc(queueId ? queueDoc(shopId, queueId) : null);
@@ -151,8 +157,15 @@ export function QueueForm({ shopId }: { shopId: string }) {
           id="description"
           name="description"
           rows={2}
+          disabled={!paid}
           defaultValue={q?.description ?? ''}
         />
+        {!paid && (
+          <p className="hint">
+            Descriptions are part of the paid plan.{' '}
+            <Link to="/shop/billing">See plans</Link>.
+          </p>
+        )}
 
         <div className="row">
           <button type="submit" disabled={busy}>

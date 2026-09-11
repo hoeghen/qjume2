@@ -9,6 +9,7 @@ import {
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { assertServeAccessInTransaction } from '../lib/access.js';
 import { placesToMoveBack } from './penalties.js';
 import { foldSample, isUsableSample } from './serviceTime.js';
 import { channelsFromEnv, sweepMilestones } from '../notifications/dispatch.js';
@@ -148,13 +149,15 @@ export async function performCallNext(
 
       const shop = shopSnap.data() as Shop | undefined;
       if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-      if (shop.ownerUid !== callerUid) {
-        throw fail(
-          'permission-denied',
-          'not-shop-owner',
-          'Only the shop owner can serve this queue.',
-        );
-      }
+      // Uses the shop this transaction has already read, rather than fetching
+      // it again — one fewer round-trip on every tap of Next.
+      await assertServeAccessInTransaction(
+        tx,
+        firestore,
+        shopId,
+        shop,
+        callerUid,
+      );
 
       const queue = queueSnap.data() as Queue | undefined;
       if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');

@@ -7,6 +7,7 @@ import {
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { requireServeAccess } from '../lib/access.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
 import { contactRef } from './tickets.js';
 import { nextPosition } from './positions.js';
@@ -57,6 +58,9 @@ export async function performAddWalkIn(
   const shopRef = firestore.doc(`shops/${shopId}`);
   const queueRef = firestore.doc(`shops/${shopId}/queues/${queueId}`);
   const ticketRef = queueRef.collection('tickets').doc();
+  // Working the counter, so staff on a paid shop may do this too.
+  await requireServeAccess(firestore, shopId, callerUid);
+
   const resumeCode = generateResumeCode();
 
   const { number } = await firestore.runTransaction(async (tx: Transaction) => {
@@ -67,13 +71,6 @@ export async function performAddWalkIn(
 
     const shop = shopSnap.data() as Shop | undefined;
     if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-    if (shop.ownerUid !== callerUid) {
-      throw fail(
-        'permission-denied',
-        'not-shop-owner',
-        'Only the shop owner can add a walk-in.',
-      );
-    }
 
     const queue = queueSnap.data() as Queue | undefined;
     if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');

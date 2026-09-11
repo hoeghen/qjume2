@@ -3,6 +3,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { requireServeAccess } from '../lib/access.js';
 import { channelsFromEnv } from '../notifications/dispatch.js';
 import { notifyQueueClosed } from '../notifications/events.js';
 import { baseUrl } from '../lib/config.js';
@@ -50,6 +51,9 @@ export async function performCloseQueue(
   const queueRef = firestore.doc(`shops/${shopId}/queues/${queueId}`);
   const ticketsRef = queueRef.collection('tickets');
 
+  // Closing up is running the counter, not changing a setting.
+  await requireServeAccess(firestore, shopId, callerUid);
+
   const result = await firestore.runTransaction(async (tx: Transaction) => {
     const [shopSnap, queueSnap] = await Promise.all([
       tx.get(shopRef),
@@ -58,13 +62,6 @@ export async function performCloseQueue(
 
     const shop = shopSnap.data() as Shop | undefined;
     if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-    if (shop.ownerUid !== callerUid) {
-      throw fail(
-        'permission-denied',
-        'not-shop-owner',
-        'Only the shop owner can close this queue.',
-      );
-    }
     if (!queueSnap.exists) {
       throw fail('not-found', 'queue-not-found', 'Queue not found.');
     }

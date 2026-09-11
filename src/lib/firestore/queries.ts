@@ -6,7 +6,7 @@ import {
   where,
   type Query,
 } from 'firebase/firestore';
-import { shops, stations, tickets } from './paths.js';
+import { shops, staff, stations, tickets } from './paths.js';
 import type { Queue, Shop, Ticket } from '../../types/index.js';
 import { queues } from './paths.js';
 
@@ -54,4 +54,8 @@ export function ticketsAhead(
     orderBy('position'),
     endBefore(position),
   );
+}
+
+export function staffOf(shopId: string) {
+  return staff(shopId);
 }
