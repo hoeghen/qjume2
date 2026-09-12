@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // `display: standalone` is a hard requirement, not a preference: iOS only
 // delivers web push to a PWA installed via Add to Home Screen. See CLAUDE.md.
 export default defineConfig({
+  base: '/qjume2/',
   plugins: [
     react(),
     VitePWA({
@@ -14,15 +15,15 @@ export default defineConfig({
         short_name: 'Qjume',
         description: 'Join and run queues.',
         display: 'standalone',
-        start_url: '/',
-        scope: '/',
+        start_url: '/qjume2/',
+        scope: '/qjume2/',
         background_color: '#ffffff',
         theme_color: '#1a1a1a',
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/qjume2/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/qjume2/icon-512.png', sizes: '512x512', type: 'image/png' },
           {
-            src: '/icon-512-maskable.png',
+            src: '/qjume2/icon-512-maskable.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
