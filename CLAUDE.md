@@ -33,6 +33,24 @@ These are correctness requirements, not preferences.
 
 5. **Free tier limits are enforced server-side**, not just hidden in the UI.
 
+## Decisions that override the PRD
+
+Product decisions taken during implementation. Where these conflict with
+`docs/qjume-prd.md`, these win — that file is the original spec as handed over,
+kept unedited.
+
+1. **Shop sign-in is a magic link, not an emailed code.** PRD 5.1 says "email
+   with a code sent back". Firebase Auth's native email flow is a sign-in link;
+   an OTP code would need a custom function and an email provider for no real
+   gain. Phase 4 uses the same link flow for customers.
+
+2. **Drain mode still admits walk-ins.** PRD's glossary says drain "stops
+   accepting new joiners"; that applies to remote joiners only. Staff can still
+   add someone standing at the counter while the shop finishes up —
+   `addWalkIn` accepts `open` and `drainMode`, `joinQueue` accepts `open`
+   alone. Keep that asymmetry: it is the point of the decision, not an
+   oversight.
+
 ## iOS push — read before touching notifications
 
 Web push does not work in a Safari tab. The PWA must be added to the Home Screen first

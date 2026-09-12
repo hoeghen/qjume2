@@ -1,0 +1,427 @@
+:root {
+  --bg: #ffffff;
+  --fg: #16181d;
+  --muted: #5c6370;
+  --line: #d9dce3;
+  --accent: #1b4dd8;
+  --accent-fg: #ffffff;
+  --danger: #b3261e;
+  --warn-bg: #ffe8b8;
+  --warn-fg: #4a3200;
+  --stop-bg: #fbdad7;
+  --stop-fg: #5c1512;
+  --surface: #f5f6f8;
+
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --fg: #eceef2;
+    --muted: #a0a7b4;
+    --line: #333842;
+    --accent: #7ea2ff;
+    --accent-fg: #0b1020;
+    --danger: #ff8a80;
+    --warn-bg: #4a3a12;
+    --warn-fg: #ffe0a3;
+    --stop-bg: #4d1f1c;
+    --stop-fg: #ffd5d1;
+    --surface: #1c1f26;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  /* Respect the notch when installed to the Home Screen. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.app { padding: 16px; max-width: 900px; margin: 0 auto; }
+
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.05rem; margin: 24px 0 8px; }
+.muted { color: var(--muted); }
+.hint { color: var(--muted); font-size: 0.85rem; margin: -4px 0 8px; }
+
+/* ---------- forms ---------- */
+.panel { display: block; }
+.stack { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row.tight { gap: 12px; }
+
+label { font-weight: 600; font-size: 0.9rem; }
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  width: 100%;
+}
+.checkbox { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
+.checkbox input { width: auto; margin-top: 4px; }
+
+button, .button {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  /* Comfortable for a thumb on a counter tablet. */
+  min-height: 48px;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.secondary, .button.secondary {
+  background: var(--bg);
+  color: var(--fg);
+  border-color: var(--line);
+}
+button.danger { background: var(--danger); color: #fff; }
+button.link, .link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 4px;
+  min-height: auto;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+button.link.danger { color: var(--danger); }
+
+.divider {
+  text-align: center;
+  color: var(--muted);
+  margin: 16px 0;
+  font-size: 0.85rem;
+}
+.notice {
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 8px;
+}
+.error { color: var(--danger); font-weight: 600; }
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.12em;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.code.big {
+  display: block;
+  font-size: 2rem;
+  text-align: center;
+  padding: 16px;
+}
+
+/* ---------- status ---------- */
+/* A paused queue nobody notices is worse than a closed one: customers keep
+   waiting for a turn that is not coming. Full width, high contrast, top of
+   screen — legible from across a counter. */
+.status-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+.status-banner strong { font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.status-banner.status-paused,
+.status-banner.status-drainMode { background: var(--warn-bg); color: var(--warn-fg); }
+.status-banner.status-closed,
+.status-banner.status-unavailable { background: var(--stop-bg); color: var(--stop-fg); }
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  background: var(--surface);
+  color: var(--muted);
+}
+.badge.status-open { background: #d7f0dc; color: #14532d; }
+.badge.status-paused, .badge.status-drainMode { background: var(--warn-bg); color: var(--warn-fg); }
+.badge.status-closed, .badge.status-unavailable { background: var(--stop-bg); color: var(--stop-fg); }
+
+/* ---------- serving ---------- */
+.serving-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.now-serving {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.now-serving .label {
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+.called-name { margin: 4px 0; font-size: 2.25rem; font-weight: 700; line-height: 1.15; }
+.called-station { margin: 0; color: var(--muted); font-size: 1.1rem; }
+
+.serve-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+.big-touch { min-height: 72px; font-size: 1.15rem; }
+
+.pairings { list-style: none; padding: 0; margin: 0; }
+.pairings li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+
+.upcoming { list-style: none; padding: 0; margin: 0; }
+.upcoming li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.upcoming .place {
+  width: 28px;
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.upcoming .name { flex: 1; font-weight: 600; }
+.upcoming .strikes {
+  font-size: 0.75rem;
+  color: var(--warn-fg);
+  background: var(--warn-bg);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.serve-footer {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.queue-list { list-style: none; padding: 0; margin: 0 0 16px; }
+.queue-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.queue-list p { margin: 4px 0 0; font-size: 0.9rem; }
+
+/* ---------- dialog ---------- */
+.dialog {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10;
+}
+.dialog-body {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 20px;
+  width: min(480px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+}
+.dialog-body h2 { margin-top: 0; }
+
+@media (max-width: 480px) {
+  .serve-actions { grid-template-columns: 1fr; }
+  .called-name { font-size: 1.75rem; }
+}
+
+/* ---------- discovery ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.filters { margin: 16px 0; }
+.filters input[type='search'] { margin-bottom: 12px; }
+.filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.filter-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+  flex: 1 1 140px;
+}
+.filter-row select { font-size: 0.95rem; padding: 10px; }
+
+.queue-cards { list-style: none; padding: 0; margin: 16px 0 0; }
+.queue-card + .queue-card { border-top: 1px solid var(--line); }
+.queue-card a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 4px;
+  text-decoration: none;
+  color: inherit;
+}
+.queue-card a:hover { background: var(--surface); }
+.queue-card-main strong { display: block; font-size: 1.05rem; }
+.queue-card-main p { margin: 2px 0 0; font-size: 0.9rem; }
+.queue-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.distance {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+.stats > div {
+  flex: 1;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-value { display: block; font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+.stat-label { display: block; color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+.detail { margin: 16px 0; }
+.detail dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.detail dd { margin: 2px 0 12px; }
+
+/* ---------- customer ticket ---------- */
+.ticket {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  margin: 16px 0;
+}
+.ticket .label {
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.code-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.qr {
+  display: block;
+  width: min(320px, 100%);
+  margin: 12px auto;
+  image-rendering: pixelated;
+  background: #fff;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* ---------- in-shop monitor ---------- */
+/* Read from across a room, so everything is larger than the app elsewhere. */
+.monitor h1 { font-size: 2rem; }
+.monitor h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.monitor-pairings li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  font-size: 1.8rem;
+  padding: 12px 0;
+}
+.monitor-pairings li span { color: var(--muted); font-size: 1.2rem; }
+.monitor-upcoming {
+  list-style: decimal;
+  padding-left: 1.5em;
+  font-size: 1.3rem;
+}
+.monitor-upcoming li { padding: 6px 0; }
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+}
+.feature-list li {
+  padding: 6px 0 6px 24px;
+  position: relative;
+}
+.feature-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
