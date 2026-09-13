@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { updateDoc } from 'firebase/firestore';
 import { queueDoc } from '../../lib/firestore/paths.js';
+import { setQueueStatus } from '../../lib/firestore/writes.js';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { servingTickets, waitingTickets } from '../../lib/firestore/queries.js';
 import { callNext, messageOf } from '../../lib/functions.js';
@@ -128,7 +128,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   async function setStatus(status: 'open' | 'paused') {
     setError(null);
     try {
-      await updateDoc(queueDoc(shopId, queueId), { status });
+      await setQueueStatus(shopId, queueId, status);
     } catch (e) {
       setError(messageOf(e));
     }

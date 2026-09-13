@@ -5,7 +5,7 @@ import {
   positionAtBack,
   positionBetween,
   reindexedPositions,
-} from './positions.js';
+} from '../../../src/lib/queue/positions.js';
 
 describe('positions', () => {
   it('issues increasing positions with room between them', () => {

@@ -7,6 +7,7 @@ import {
   set,
 } from 'firebase/database';
 import { presenceDb } from './firebase.js';
+import { isDemo } from './demo/mode.js';
 
 /**
  * Tell the server this device is serving a queue, and — more importantly —
@@ -22,6 +23,9 @@ export function announcePresence(
   queueId: string,
   stationId: string,
 ): () => void {
+  // Nothing to announce to, and nothing that could notice this tab closing.
+  if (isDemo) return () => undefined;
+
   const connectionId = `${stationId}-${Math.random().toString(36).slice(2, 10)}`;
   const here = ref(presenceDb, `status/${shopId}/${queueId}/${connectionId}`);
   const connected = ref(presenceDb, '.info/connected');
@@ -44,6 +48,11 @@ export function announcePresence(
 
 /** Whether this device currently has a connection to the backend. */
 export function watchConnection(fn: (online: boolean) => void): () => void {
+  if (isDemo) {
+    // The demo is always "online": everything it needs is in this tab.
+    fn(true);
+    return () => undefined;
+  }
   return onValue(ref(presenceDb, '.info/connected'), (snapshot) => {
     fn(snapshot.val() === true);
   });

@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_DATABASE_URL: string;
   readonly VITE_FIREBASE_VAPID_KEY: string;
   readonly VITE_USE_EMULATORS?: string;
+  /** "true" builds the no-backend demo. See src/lib/demo/. */
+  readonly VITE_DEMO?: string;
 }
 
 interface ImportMeta {

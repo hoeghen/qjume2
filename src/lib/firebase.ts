@@ -1,4 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { isDemo } from './demo/mode.js';
 import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import {
   initializeFirestore,
@@ -54,7 +55,9 @@ export const presenceDb: Database = getDatabase(app);
 
 const useEmulators = import.meta.env.VITE_USE_EMULATORS !== 'false';
 
-if (useEmulators) {
+// The demo has no backend to connect to, and pointing the SDK at emulators
+// that are not there would leave every read hanging.
+if (useEmulators && !isDemo) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { placesToMoveBack } from './penalties.js';
+import { placesToMoveBack } from '../../../src/lib/queue/penalties.js';
 
 describe('no-show penalties', () => {
   it('maps each configured penalty to a number of places', () => {

@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+# Publishes the no-backend demo build. This is not the full app: it runs
+# entirely in the browser with invented data, so it needs no Firebase project,
+# no secrets and no billing. The real build deploys to Firebase Hosting, which
+# can also serve the Cloud Functions the app actually needs.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Matches the version the Cloud Functions target.
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the demo
+        env:
+          VITE_DEMO: 'true'
+          # Pages serves a project repo from /<repo>/, so assets, the router
+          # basename and the PWA manifest all hang off this.
+          VITE_BASE: /${{ github.event.repository.name }}/
+        run: npm run build
+
+      - name: Add the SPA fallback
+        # Pages has no rewrite rule, so a deep link like /shop would hit its
+        # own 404. Serving index.html there lets the router handle the route.
+        run: cp dist/index.html dist/404.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
