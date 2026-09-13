@@ -5,6 +5,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 // `display: standalone` is a hard requirement, not a preference: iOS only
 // delivers web push to a PWA installed via Add to Home Screen. See CLAUDE.md.
 export default defineConfig({
+  // GitHub Pages serves a project repo at /<repo>/, so absolute asset paths
+  // would resolve against the domain root and 404 — a blank page with no
+  // error. Set VITE_BASE=/qjume2/ for a Pages build; anywhere served from the
+  // root needs nothing.
+  base: process.env['VITE_BASE'] ?? '/',
   plugins: [
     react(),
     VitePWA({

@@ -1,8 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { setDoc } from 'firebase/firestore';
-import { doc } from 'firebase/firestore';
-import { db } from '../../lib/firebase.js';
-import { shopConverter } from '../../lib/firestore/converters.js';
+import { createShop } from '../../lib/firestore/writes.js';
 import { messageOf } from '../../lib/functions.js';
 import type { Shop } from '../../types/index.js';
 
@@ -27,7 +24,7 @@ export function CreateShop({ ownerUid }: { ownerUid: string }) {
           plan: 'free',
           exclusiveQueues: exclusive,
         };
-        await setDoc(doc(db, 'shops', ownerUid).withConverter(shopConverter), shop);
+        await createShop(ownerUid, shop);
       } catch (e) {
         setError(messageOf(e));
       } finally {

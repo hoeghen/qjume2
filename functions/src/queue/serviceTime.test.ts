@@ -3,7 +3,7 @@ import {
   SERVICE_TIME_WINDOW,
   foldSample,
   isUsableSample,
-} from './serviceTime.js';
+} from '../../../src/lib/queue/serviceTime.js';
 
 describe('service time samples', () => {
   it.each([

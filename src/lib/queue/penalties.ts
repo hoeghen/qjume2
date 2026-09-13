@@ -1,4 +1,4 @@
-import type { NoShowPenalty } from '../../../src/types/index.js';
+import type { NoShowPenalty } from '../../types/index.js';
 
 /**
  * How many waiting customers overtake a no-show, by the queue's configured

@@ -9,25 +9,30 @@ import { ServingRoute } from './routes/shop/ServingRoute.js';
 import { Billing } from './routes/shop/Billing.js';
 import { MonitorHome } from './routes/monitor/MonitorHome.js';
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    children: [
-      { index: true, element: <CustomerHome /> },
-      { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
-      {
-        path: 'shop',
-        element: <ShopHome />,
-        children: [
-          { index: true, element: <ShopIndex /> },
-          { path: 'billing', element: <Billing /> },
-          { path: 'q/new', element: <QueueFormRoute /> },
-          { path: 'q/:queueId/settings', element: <QueueFormRoute /> },
-          { path: 'q/:queueId/serve', element: <ServingRoute /> },
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <App />,
+      children: [
+        { index: true, element: <CustomerHome /> },
+        { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
+        {
+          path: 'shop',
+          element: <ShopHome />,
+          children: [
+            { index: true, element: <ShopIndex /> },
+            { path: 'billing', element: <Billing /> },
+            { path: 'q/new', element: <QueueFormRoute /> },
+            { path: 'q/:queueId/settings', element: <QueueFormRoute /> },
+            { path: 'q/:queueId/serve', element: <ServingRoute /> },
+          ],
+        },
+        { path: 'monitor', element: <MonitorHome /> },
         ],
       },
-      { path: 'monitor', element: <MonitorHome /> },
     ],
-  },
-]);
+  // Served from a subdirectory on GitHub Pages, from the root everywhere else.
+  // Vite fills this in from `base` at build time.
+  { basename: import.meta.env.BASE_URL },
+);

@@ -5,6 +5,8 @@ import {
   type DocumentReference,
 } from 'firebase/firestore';
 import { db } from '../firebase.js';
+import { isDemo } from '../demo/mode.js';
+import { demoRef } from '../hooks/useFirestore.js';
 import {
   customerConverter,
   queueConverter,
@@ -28,30 +30,51 @@ import type {
  * Layout follows PRD 9.2.
  */
 
+
+/**
+ * In demo mode these return a path descriptor rather than a Firestore
+ * reference. Both are accepted by `useDoc`/`useCollection`, so no component
+ * has to know which build it is running in — the cast is the price of keeping
+ * every call site identical, and it is confined to this file.
+ */
+function ref<T>(path: string, real: () => T): T {
+  return isDemo ? (demoRef(path) as unknown as T) : real();
+}
+
 export const shops = (): CollectionReference<Shop> =>
-  collection(db, 'shops').withConverter(shopConverter);
+  ref('shops', () => collection(db, 'shops').withConverter(shopConverter));
 
 export const shopDoc = (shopId: string): DocumentReference<Shop> =>
-  doc(db, 'shops', shopId).withConverter(shopConverter);
+  ref(`shops/${shopId}`, () =>
+    doc(db, 'shops', shopId).withConverter(shopConverter),
+  );
 
 export const staff = (shopId: string): CollectionReference<StaffMember> =>
-  collection(db, 'shops', shopId, 'staff').withConverter(staffConverter);
+  ref(`shops/${shopId}/staff`, () =>
+    collection(db, 'shops', shopId, 'staff').withConverter(staffConverter),
+  );
 
 export const queues = (shopId: string): CollectionReference<Queue> =>
-  collection(db, 'shops', shopId, 'queues').withConverter(queueConverter);
+  ref(`shops/${shopId}/queues`, () =>
+    collection(db, 'shops', shopId, 'queues').withConverter(queueConverter),
+  );
 
 export const queueDoc = (
   shopId: string,
   queueId: string,
 ): DocumentReference<Queue> =>
-  doc(db, 'shops', shopId, 'queues', queueId).withConverter(queueConverter);
+  ref(`shops/${shopId}/queues/${queueId}`, () =>
+    doc(db, 'shops', shopId, 'queues', queueId).withConverter(queueConverter),
+  );
 
 export const tickets = (
   shopId: string,
   queueId: string,
 ): CollectionReference<Ticket> =>
-  collection(db, 'shops', shopId, 'queues', queueId, 'tickets').withConverter(
-    ticketConverter,
+  ref(`shops/${shopId}/queues/${queueId}/tickets`, () =>
+    collection(db, 'shops', shopId, 'queues', queueId, 'tickets').withConverter(
+      ticketConverter,
+    ),
   );
 
 export const ticketDoc = (
@@ -59,22 +82,26 @@ export const ticketDoc = (
   queueId: string,
   ticketId: string,
 ): DocumentReference<Ticket> =>
-  doc(
-    db,
-    'shops',
-    shopId,
-    'queues',
-    queueId,
-    'tickets',
-    ticketId,
-  ).withConverter(ticketConverter);
+  ref(`shops/${shopId}/queues/${queueId}/tickets/${ticketId}`, () =>
+    doc(
+      db,
+      'shops',
+      shopId,
+      'queues',
+      queueId,
+      'tickets',
+      ticketId,
+    ).withConverter(ticketConverter),
+  );
 
 export const stations = (
   shopId: string,
   queueId: string,
 ): CollectionReference<Station> =>
-  collection(db, 'shops', shopId, 'queues', queueId, 'stations').withConverter(
-    stationConverter,
+  ref(`shops/${shopId}/queues/${queueId}/stations`, () =>
+    collection(db, 'shops', shopId, 'queues', queueId, 'stations').withConverter(
+      stationConverter,
+    ),
   );
 
 export const stationDoc = (

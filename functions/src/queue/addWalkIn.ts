@@ -10,7 +10,7 @@ import { requireCaller } from '../lib/auth.js';
 import { requireServeAccess } from '../lib/access.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
 import { contactRef } from './tickets.js';
-import { nextPosition } from './positions.js';
+import { nextPosition } from '../../../src/lib/queue/positions.js';
 import {
   FREE_TIER_LIMITS,
   type Queue,

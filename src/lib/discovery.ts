@@ -9,6 +9,8 @@ import {
 import { distanceBetween, geohashQueryBounds } from 'geofire-common';
 import { db } from './firebase.js';
 import { queueConverter } from './firestore/converters.js';
+import { isDemo } from './demo/mode.js';
+import { demoStore } from './demo/store.js';
 import type { Queue, QueueCategory, QueueStatus } from '../types/index.js';
 
 export interface DiscoveredQueue extends Queue {
@@ -50,6 +52,24 @@ export async function findQueuesNear(
   center: Coordinates,
   radiusKm: number,
 ): Promise<DiscoveredQueue[]> {
+  if (isDemo) {
+    // A handful of seeded queues, so the geohash ranges buy nothing — the true
+    // distance filter below is the whole of it.
+    return demoStore
+      .listGroup<Queue>('queues')
+      .flatMap((queue) => {
+        if (queue.lat === null || queue.lng === null) return [];
+        const distanceKm = distanceBetween(
+          [queue.lat, queue.lng],
+          [center.lat, center.lng],
+        );
+        if (distanceKm > radiusKm) return [];
+        const shopId = queue.path.split('/')[1];
+        if (!shopId) return [];
+        return [{ ...queue, shopId, distanceKm }];
+      });
+  }
+
   const radiusM = radiusKm * 1000;
   const bounds = geohashQueryBounds([center.lat, center.lng], radiusM);
 

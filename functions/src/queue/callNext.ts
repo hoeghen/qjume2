@@ -10,8 +10,8 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { assertServeAccessInTransaction } from '../lib/access.js';
-import { placesToMoveBack } from './penalties.js';
-import { foldSample, isUsableSample } from './serviceTime.js';
+import { placesToMoveBack } from '../../../src/lib/queue/penalties.js';
+import { foldSample, isUsableSample } from '../../../src/lib/queue/serviceTime.js';
 import { channelsFromEnv, sweepMilestones } from '../notifications/dispatch.js';
 import { notifyBumped, notifyRemoved } from '../notifications/events.js';
 import { baseUrl } from '../lib/config.js';
@@ -20,7 +20,7 @@ import {
   positionAtBack,
   positionBetween,
   reindexedPositions,
-} from './positions.js';
+} from '../../../src/lib/queue/positions.js';
 import {
   NO_SHOW_REMOVAL_THRESHOLD,
   type Queue,

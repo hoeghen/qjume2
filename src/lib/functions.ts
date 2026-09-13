@@ -1,5 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase.js';
+import { isDemo } from './demo/mode.js';
+import { demoApi } from './demo/api.js';
 import type {
   NoShowPenalty,
   QueueCategory,
@@ -19,8 +21,17 @@ export interface Geocoded {
 }
 
 function callable<Req, Res>(name: string) {
-  const fn = httpsCallable<Req, Res>(functions, name);
-  return async (data: Req): Promise<Res> => (await fn(data)).data;
+  return async (data: Req): Promise<Res> => {
+    if (isDemo) {
+      const handler = (demoApi as Record<string, unknown>)[name];
+      if (typeof handler !== 'function') {
+        throw new Error(`${name} is not available in the demo.`);
+      }
+      return (handler as (d: Req) => Res)(data);
+    }
+    const fn = httpsCallable<Req, Res>(functions, name);
+    return (await fn(data)).data;
+  };
 }
 
 export const joinQueue = callable<

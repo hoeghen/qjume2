@@ -11,8 +11,27 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth } from './firebase.js';
+import { isDemo } from './demo/mode.js';
 
 const EMAIL_KEY = 'qjume:pending-email';
+
+/**
+ * The demo has no Firebase Auth, so it keeps a pretend session in memory.
+ * Signing in is instant and accepts anything — there is nothing to protect.
+ */
+const demoUser = {
+  uid: 'demo-owner',
+  email: 'you@example.com',
+  isAnonymous: false,
+} as unknown as User;
+
+let demoSignedIn = false;
+const demoWatchers = new Set<(user: User | null) => void>();
+
+function setDemoUser(signedIn: boolean) {
+  demoSignedIn = signedIn;
+  for (const watcher of demoWatchers) watcher(signedIn ? demoUser : null);
+}
 
 /**
  * Firebase's native email flow is a sign-in link, not the numeric code the PRD
@@ -20,6 +39,10 @@ const EMAIL_KEY = 'qjume:pending-email';
  * link is what Auth supports out of the box, and reaches the same place.
  */
 export async function sendEmailLink(email: string): Promise<void> {
+  if (isDemo) {
+    setDemoUser(true);
+    return;
+  }
   await sendSignInLinkToEmail(auth, email, {
     url: `${window.location.origin}/shop`,
     handleCodeInApp: true,
@@ -41,6 +64,7 @@ let emailLinkAttempted = false;
 
 /** Completes sign-in if the current URL is an email link. */
 export async function completeEmailLinkSignIn(): Promise<boolean> {
+  if (isDemo) return false;
   if (emailLinkAttempted) return false;
   if (!isSignInWithEmailLink(auth, window.location.href)) return false;
   emailLinkAttempted = true;
@@ -73,18 +97,35 @@ export async function signInWithGoogle(): Promise<void> {
  * wrapper ever ships. See PRD 5.1.
  */
 export async function signInWithApple(): Promise<void> {
+  if (isDemo) {
+    setDemoUser(true);
+    return;
+  }
   await signInWithPopup(auth, new OAuthProvider('apple.com'));
 }
 
 /** Customers join without an account; anonymous auth still gives them a uid. */
 export async function signInAsGuest(): Promise<void> {
+  if (isDemo) {
+    setDemoUser(true);
+    return;
+  }
   await signInAnonymously(auth);
 }
 
 export function signOut(): Promise<void> {
+  if (isDemo) {
+    setDemoUser(false);
+    return Promise.resolve();
+  }
   return fbSignOut(auth);
 }
 
 export function watchAuth(fn: (user: User | null) => void): () => void {
+  if (isDemo) {
+    demoWatchers.add(fn);
+    fn(demoSignedIn ? demoUser : null);
+    return () => demoWatchers.delete(fn);
+  }
   return onAuthStateChanged(auth, fn);
 }

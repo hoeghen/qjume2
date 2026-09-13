@@ -9,7 +9,7 @@ import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
 import { contactRef, holderKeyFor } from './tickets.js';
-import { nextPosition } from './positions.js';
+import { nextPosition } from '../../../src/lib/queue/positions.js';
 import {
   FREE_TIER_LIMITS,
   type Queue,
