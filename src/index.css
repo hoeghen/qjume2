@@ -435,3 +435,142 @@ button.link.danger { color: var(--danger); }
   font-size: 0.85rem;
   line-height: 1.4;
 }
+
+/* ---------- splash ---------- */
+
+/*
+ * The front door. Sized to what it holds rather than to the viewport: a 100vh
+ * opener would push the actions off a short phone screen in landscape.
+ */
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  padding: 40px 0 32px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.splash-brand { display: flex; flex-direction: column; gap: 6px; }
+
+.splash-eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.splash-wordmark {
+  margin: 0;
+  font-size: clamp(2.75rem, 14vw, 3.75rem);
+  font-weight: 700;
+  /* Tight tracking is where the wordmark gets its character — there is no web
+     font here on purpose: a splash that waits on a font download shows nothing
+     on first paint, and nothing at all offline. */
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/*
+ * The strip and its caption are one thing: the caption names what the strip is
+ * showing, so it sits closer to the strip than the strip does to anything else.
+ */
+.splash-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* The queue itself, advancing. */
+.splash-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 52px;
+}
+
+.tile {
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.tile-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 10px;
+}
+
+.tile-serving {
+  height: 44px;
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+/* The people between you and the counter — countable, not identified. */
+.tile-waiting {
+  height: 44px;
+  width: 14px;
+  background: var(--line);
+}
+
+.tile-you {
+  height: 44px;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.tile-you-up {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.splash-status { margin: 0; font-size: 0.95rem; }
+
+.splash-lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  text-wrap: balance;
+  max-width: 32ch;
+}
+
+.splash-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.splash-primary {
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 16px 18px;
+}
+
+/* Deliberately quiet: a shop owner needs to find this once, a customer never. */
+.splash-secondary {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.splash-secondary a { color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: none; }
+}
+
+.monitor-link { margin-top: 16px; }
