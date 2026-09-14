@@ -56,7 +56,7 @@ export function QueueDetail() {
   return (
     <main>
       <p>
-        <Link to="/" className="link">
+        <Link to="/find" className="link">
           ← All queues
         </Link>
       </p>

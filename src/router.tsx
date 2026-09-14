@@ -1,5 +1,6 @@
 import { createBrowserRouter, createHashRouter } from 'react-router-dom';
 import { App } from './App.js';
+import { Splash } from './routes/Splash.js';
 import { CustomerHome } from './routes/customer/CustomerHome.js';
 import { QueueDetail } from './routes/customer/QueueDetail.js';
 import { ShopHome } from './routes/shop/ShopHome.js';
@@ -20,7 +21,8 @@ export const router = (isPortable ? createHashRouter : createBrowserRouter)(
       path: '/',
       element: <App />,
       children: [
-        { index: true, element: <CustomerHome /> },
+        { index: true, element: <Splash /> },
+        { path: 'find', element: <CustomerHome /> },
         { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
         {
           path: 'shop',
