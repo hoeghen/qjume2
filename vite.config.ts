@@ -8,15 +8,20 @@ import { VitePWA } from 'vite-plugin-pwa';
 // server, Firebase Hosting) needs nothing.
 const base = process.env['VITE_BASE'] ?? '/';
 
+// A portable build runs from a path it cannot know at build time, on a host
+// with no rewrite rules — relative asset paths, and no service worker, whose
+// scope would be wrong and whose cache would outlive the page. See src/router.
+const isPortable = process.env['VITE_PORTABLE'] === 'true';
+
 // `display: standalone` is a hard requirement, not a preference: iOS only
 // delivers web push to a PWA installed via Add to Home Screen. See CLAUDE.md.
 // start_url and scope follow the base, or an installed PWA would launch at a
 // path that does not exist.
 export default defineConfig({
-  base,
+  base: isPortable ? './' : base,
   plugins: [
     react(),
-    VitePWA({
+    ...(isPortable ? [] : [VitePWA({
       registerType: 'autoUpdate',
       manifest: {
         name: 'Qjume',
@@ -39,7 +44,7 @@ export default defineConfig({
         ],
       },
       devOptions: { enabled: true, type: 'module' },
-    }),
+    })]),
   ],
   server: { port: 5173 },
 });
