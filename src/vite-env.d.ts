@@ -13,6 +13,11 @@ interface ImportMetaEnv {
   readonly VITE_USE_EMULATORS?: string;
   /** "true" builds the no-backend demo. See src/lib/demo/. */
   readonly VITE_DEMO?: string;
+  /**
+   * "true" builds for an unknown path on a static host with no rewrite rules:
+   * hash routing, relative asset paths, no service worker.
+   */
+  readonly VITE_PORTABLE?: string;
 }
 
 interface ImportMeta {
