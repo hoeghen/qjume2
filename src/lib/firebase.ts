@@ -29,8 +29,35 @@ const config = {
   databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
 };
 
-export const app: FirebaseApp = initializeApp(config);
-export const auth: Auth = getAuth(app);
+/**
+ * A demo build has no Firebase project, and initialising the SDK without one
+ * throws `auth/invalid-api-key` while this module is still evaluating. That
+ * kills the bundle before React mounts, so the page goes blank with the real
+ * cause buried in the console.
+ *
+ * A local build hides it: a .env with placeholder values is enough for the SDK
+ * to construct. .env is gitignored, so the failure only appears where no .env
+ * exists — which is CI, and therefore only ever in the deployed site.
+ *
+ * Every caller already branches on `isDemo`, so nothing should reach one of
+ * these. If something does, name it here rather than fail later as an
+ * undefined property.
+ */
+function absentInDemo<T extends object>(name: string): T {
+  return new Proxy({} as T, {
+    get() {
+      throw new Error(
+        `Firebase ${name} was used in a demo build, which has no project ` +
+          'to talk to. That code path needs an isDemo branch.',
+      );
+    },
+  });
+}
+
+export const app: FirebaseApp = isDemo
+  ? absentInDemo('app')
+  : initializeApp(config);
+export const auth: Auth = isDemo ? absentInDemo('auth') : getAuth(app);
 
 /**
  * Persistent cache, not the default in-memory one.
@@ -40,18 +67,24 @@ export const auth: Auth = getAuth(app);
  * connection. Multi-tab support because a shop may have the serving screen and
  * the monitor open on the same device.
  */
-export const db: Firestore = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager(),
-  }),
-});
-export const functions: Functions = getFunctions(app);
+export const db: Firestore = isDemo
+  ? absentInDemo('db')
+  : initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+export const functions: Functions = isDemo
+  ? absentInDemo('functions')
+  : getFunctions(app);
 
 /**
  * Realtime Database is used **only** for shop heartbeat/presence — Firestore
  * has no native presence. Nothing else belongs here. See CLAUDE.md.
  */
-export const presenceDb: Database = getDatabase(app);
+export const presenceDb: Database = isDemo
+  ? absentInDemo('presenceDb')
+  : getDatabase(app);
 
 const useEmulators = import.meta.env.VITE_USE_EMULATORS !== 'false';
 
