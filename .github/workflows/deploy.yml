@@ -1,9 +1,9 @@
 name: Deploy to GitHub Pages
 
-# Publishes the no-backend demo build. This is not the full app: it runs
-# entirely in the browser with invented data, so it needs no Firebase project,
-# no secrets and no billing. The real build deploys to Firebase Hosting, which
-# can also serve the Cloud Functions the app actually needs.
+# Publishes the app running on its in-browser backend: the full feature set,
+# with storage and the seventeen callables implemented client-side, so it needs
+# no Firebase project, no secrets and no billing. A Firebase build of the same
+# app deploys to Firebase Hosting instead.
 #
 # Pages is configured with GitHub Actions as its source, so the build is
 # uploaded as an artifact and served directly. There is no gh-pages branch and
@@ -45,9 +45,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build the demo
+      - name: Build
         env:
-          VITE_DEMO: 'true'
+          # No Firebase project is configured here, so the build selects the
+          # in-browser backend. Stated rather than inferred: a deploy should
+          # not change shape because someone added a secret.
+          VITE_BACKEND: mock
           # Pages serves a project repo from /<repo>/, so assets, the router
           # basename and the PWA manifest all hang off this.
           VITE_BASE: /${{ github.event.repository.name }}/

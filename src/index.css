@@ -565,15 +565,6 @@ button.link.danger { color: var(--danger); }
   font-weight: 700;
 }
 
-.demo-banner {
-  margin: 0 0 16px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: var(--warn-bg);
-  color: var(--warn-fg);
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
 
 /* ---------- logo ---------- */
 

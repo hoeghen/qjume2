@@ -1,6 +1,6 @@
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { app } from './firebase.js';
-import { isDemo } from './demo/mode.js';
+import { isMock } from './mock/mode.js';
 import { isIos, isStandalone } from './platform.js';
 
 export type PushAvailability =
@@ -33,7 +33,7 @@ export async function pushAvailability(): Promise<PushAvailability> {
  */
 export async function enablePush(): Promise<string | null> {
   // No project to mint a token against, and no server to send to it.
-  if (isDemo) return null;
+  if (isMock) return null;
 
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return null;

@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { isDemo } from './demo/mode.js';
+import { isMock } from './mock/mode.js';
 import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import {
   initializeFirestore,
@@ -30,34 +30,35 @@ const config = {
 };
 
 /**
- * A demo build has no Firebase project, and initialising the SDK without one
+ * A mock build has no Firebase project, and initialising the SDK without one
  * throws `auth/invalid-api-key` while this module is still evaluating. That
  * kills the bundle before React mounts, so the page goes blank with the real
  * cause buried in the console.
  *
- * A local build hides it: a .env with placeholder values is enough for the SDK
- * to construct. .env is gitignored, so the failure only appears where no .env
- * exists — which is CI, and therefore only ever in the deployed site.
+ * A local build hid it: a .env with placeholder values is enough for the SDK
+ * to construct. .env is gitignored, so the failure only appeared where no .env
+ * exists — which is CI, and therefore only ever in the deployed site. Backend
+ * selection now keys off the same config, so the two cannot disagree.
  *
- * Every caller already branches on `isDemo`, so nothing should reach one of
+ * Every caller already branches on `isMock`, so nothing should reach one of
  * these. If something does, name it here rather than fail later as an
  * undefined property.
  */
-function absentInDemo<T extends object>(name: string): T {
+function absentInMock<T extends object>(name: string): T {
   return new Proxy({} as T, {
     get() {
       throw new Error(
-        `Firebase ${name} was used in a demo build, which has no project ` +
-          'to talk to. That code path needs an isDemo branch.',
+        `Firebase ${name} was used in a mock build, which has no project ` +
+          'to talk to. That code path needs an isMock branch.',
       );
     },
   });
 }
 
-export const app: FirebaseApp = isDemo
-  ? absentInDemo('app')
+export const app: FirebaseApp = isMock
+  ? absentInMock('app')
   : initializeApp(config);
-export const auth: Auth = isDemo ? absentInDemo('auth') : getAuth(app);
+export const auth: Auth = isMock ? absentInMock('auth') : getAuth(app);
 
 /**
  * Persistent cache, not the default in-memory one.
@@ -67,30 +68,30 @@ export const auth: Auth = isDemo ? absentInDemo('auth') : getAuth(app);
  * connection. Multi-tab support because a shop may have the serving screen and
  * the monitor open on the same device.
  */
-export const db: Firestore = isDemo
-  ? absentInDemo('db')
+export const db: Firestore = isMock
+  ? absentInMock('db')
   : initializeFirestore(app, {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
       }),
     });
-export const functions: Functions = isDemo
-  ? absentInDemo('functions')
+export const functions: Functions = isMock
+  ? absentInMock('functions')
   : getFunctions(app);
 
 /**
  * Realtime Database is used **only** for shop heartbeat/presence — Firestore
  * has no native presence. Nothing else belongs here. See CLAUDE.md.
  */
-export const presenceDb: Database = isDemo
-  ? absentInDemo('presenceDb')
+export const presenceDb: Database = isMock
+  ? absentInMock('presenceDb')
   : getDatabase(app);
 
 const useEmulators = import.meta.env.VITE_USE_EMULATORS !== 'false';
 
-// The demo has no backend to connect to, and pointing the SDK at emulators
+// A mock build has no backend to connect to, and pointing the SDK at emulators
 // that are not there would leave every read hanging.
-if (useEmulators && !isDemo) {
+if (useEmulators && !isMock) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);

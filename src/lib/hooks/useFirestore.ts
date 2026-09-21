@@ -4,7 +4,7 @@ import {
   type DocumentReference,
   type Query,
 } from 'firebase/firestore';
-import { demoStore } from '../demo/store.js';
+import { mockStore } from '../mock/store.js';
 
 export interface Loadable<T> {
   data: T | null;
@@ -13,25 +13,25 @@ export interface Loadable<T> {
 }
 
 /**
- * A demo reference carries only its path; the store needs nothing else.
+ * A mock reference carries only its path; the store needs nothing else.
  * Shaped like a Firestore reference so callers cannot tell the difference.
  */
-export interface DemoRef {
-  readonly __demoPath: string;
+export interface MockRef {
+  readonly __mockPath: string;
   readonly path: string;
 }
 
-export function demoRef(path: string): DemoRef {
-  return { __demoPath: path, path };
+export function mockRef(path: string): MockRef {
+  return { __mockPath: path, path };
 }
 
 function pathOf(ref: unknown): string | null {
-  return (ref as DemoRef | null)?.__demoPath ?? null;
+  return (ref as MockRef | null)?.__mockPath ?? null;
 }
 
 /** Live subscription to one document. */
 export function useDoc<T>(
-  ref: DocumentReference<T> | DemoRef | null,
+  ref: DocumentReference<T> | MockRef | null,
 ): Loadable<T> {
   const [state, setState] = useState<Loadable<T>>({
     data: null,
@@ -46,16 +46,16 @@ export function useDoc<T>(
       return;
     }
 
-    const demoPath = pathOf(ref);
-    if (demoPath !== null) {
+    const mockPath = pathOf(ref);
+    if (mockPath !== null) {
       const read = () =>
         setState({
-          data: demoStore.get<T>(demoPath),
+          data: mockStore.get<T>(mockPath),
           loading: false,
           error: null,
         });
       read();
-      return demoStore.subscribe(read);
+      return mockStore.subscribe(read);
     }
 
     setState({ data: null, loading: true, error: null });
@@ -78,25 +78,25 @@ export interface WithId {
 }
 
 /**
- * A demo query: a collection path plus the filtering the real query expressed
+ * A mock query: a collection path plus the filtering the real query expressed
  * in Firestore terms. Applied in memory, over a handful of documents.
  */
-export interface DemoQuery extends DemoRef {
+export interface MockQuery extends MockRef {
   readonly where?: (row: Record<string, unknown>) => boolean;
   readonly sortBy?: string;
   readonly max?: number;
 }
 
-export function demoQuery(
+export function mockQuery(
   path: string,
-  options: Omit<DemoQuery, '__demoPath' | 'path'> = {},
-): DemoQuery {
-  return { __demoPath: path, path, ...options };
+  options: Omit<MockQuery, '__mockPath' | 'path'> = {},
+): MockQuery {
+  return { __mockPath: path, path, ...options };
 }
 
 /** Live subscription to a query, with document ids attached. */
 export function useCollection<T>(
-  query: Query<T> | DemoQuery | null,
+  query: Query<T> | MockQuery | null,
   /** Changes to this string restart the subscription. */
   key: string,
 ): Loadable<(T & WithId)[]> {
@@ -112,11 +112,11 @@ export function useCollection<T>(
       return;
     }
 
-    const demoPath = pathOf(query);
-    if (demoPath !== null) {
-      const q = query as DemoQuery;
+    const mockPath = pathOf(query);
+    if (mockPath !== null) {
+      const q = query as MockQuery;
       const read = () => {
-        let rows = demoStore.list<T>(demoPath) as (T & WithId)[];
+        let rows = mockStore.list<T>(mockPath) as (T & WithId)[];
         if (q.where) {
           rows = rows.filter((row) =>
             q.where!(row as unknown as Record<string, unknown>),
@@ -134,7 +134,7 @@ export function useCollection<T>(
         setState({ data: rows, loading: false, error: null });
       };
       read();
-      return demoStore.subscribe(read);
+      return mockStore.subscribe(read);
     }
 
     setState({ data: null, loading: true, error: null });

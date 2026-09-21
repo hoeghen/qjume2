@@ -57,6 +57,31 @@ kept unedited.
    wait — a sort key you cannot see is a poor trade. `DiscoveredQueue` already
    carries both, so this costs no extra read.
 
+## Two backends, one app
+
+The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and
+two implementations plug into it:
+
+- **Firebase** — Firestore, Auth, and the seventeen Cloud Functions.
+- **`src/lib/mock/`** — the same surface implemented in the browser, storing to
+  `localStorage`. Not a cut-down preview: every callable is implemented, and
+  ordering comes from `src/lib/queue/`, the same modules the Cloud Functions
+  import, so the two cannot disagree about who is next.
+
+`src/lib/mock/mode.ts` picks one **at build time**, so the unused one is
+tree-shaken away. Firebase is chosen when `VITE_FIREBASE_API_KEY` is set,
+because a build with no credentials cannot reach a project — that was a blank
+page on deploy once. `VITE_BACKEND=mock|firebase` overrides the inference.
+
+What the mock does not do is *enforce*. Every invariant above is a trust
+boundary, and with the whole database on one device there is nobody to defend
+it from. Enforcement lives in the rules and functions, which is why they still
+carry the tests.
+
+Do not reintroduce "demo" framing. The mock build is the product running on a
+local backend, not a preview of it — no banners, and no copy telling people
+their data is fake.
+
 ## Design system
 
 `src/index.css` is the implementation of the QjuMe design canvas; the extracted
