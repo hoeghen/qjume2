@@ -106,7 +106,8 @@ page, and it carries the mark at full size already.
 
 - **Filters as a bottom sheet.** The canvas replaces the inline filter controls
   with a "Filters" button opening a sheet (search, distance slider, category),
-  plus a chip row for status. The app still shows the controls inline. This is
-  an interaction change rather than a styling one.
+  plus a chip row for status. The app now hides them behind a button as the
+  canvas intended, but reveals them in place rather than in a sheet, and the
+  status control is still a select rather than a chip row.
 - **Shop admin screens** (queue list, settings, billing, serving) were not drawn.
   They inherit the tokens and components but have no artboard to match.

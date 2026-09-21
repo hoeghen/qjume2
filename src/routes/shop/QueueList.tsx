@@ -63,6 +63,15 @@ export function QueueList({
               <Link className="link" to={`/shop/q/${q.id}/settings`}>
                 Settings
               </Link>
+              {/* The wall display, for this queue. The monitor needs both ids,
+                  so it can only be linked from somewhere that knows them —
+                  which is here, not a bare link in the footer. */}
+              <Link
+                className="link"
+                to={`/monitor?shop=${shopId}&queue=${q.id}`}
+              >
+                Monitor
+              </Link>
             </span>
           </li>
         ))}
@@ -71,14 +80,6 @@ export function QueueList({
       <Link className="button" to="/shop/q/new">
         New queue
       </Link>
-
-      {/* The wall display. It belongs to the shop, so this is the only place
-          it needs to be reachable from — open it on the screen customers see. */}
-      <p className="hint monitor-link">
-        <Link className="link" to="/monitor">
-          Open the in-shop monitor
-        </Link>
-      </p>
     </main>
   );
 }
