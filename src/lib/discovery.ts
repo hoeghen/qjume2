@@ -57,32 +57,66 @@ export interface Filters {
  * radius — that avoids a composite index per filter combination, at the cost of
  * not scaling to a radius containing tens of thousands of queues.
  */
-export async function findQueuesNear(
+/**
+ * Rings the Firestore search widens through until it has enough.
+ *
+ * There is no such thing as an unbounded geohash query: `geohashQueryBounds`
+ * is given a radius and returns the prefix ranges covering that circle. Asking
+ * for "everywhere" means reading every queue in the database on every search.
+ *
+ * So instead of one fixed radius acting as a hidden distance filter, the
+ * search starts small and widens only while it still needs results. Someone in
+ * a dense city pays for the 10km ring; someone with nothing for a thousand
+ * kilometres widens all the way and still gets an answer.
+ */
+const SEARCH_RINGS_KM = [10, 50, 250, 1000, 5000];
+
+export async function findNearest(
   center: Coordinates,
-  radiusKm: number,
+  limit: number,
 ): Promise<DiscoveredQueue[]> {
   if (isMock) {
     // The seeded shops are invented, so they belong around whoever is asking
     // rather than at fixed coordinates in one city.
     placeMockShopsNear(center);
 
-    // A handful of seeded queues, so the geohash ranges buy nothing — the true
-    // distance filter below is the whole of it.
-    return mockStore
-      .listGroup<Queue>('queues')
-      .flatMap((queue) => {
+    // Everything is already in memory, so there is no radius to impose: take
+    // the closest, however far away they happen to be.
+    return byDistance(
+      mockStore.listGroup<Queue>('queues').flatMap((queue) => {
         if (queue.lat === null || queue.lng === null) return [];
-        const distanceKm = distanceBetween(
-          [queue.lat, queue.lng],
-          [center.lat, center.lng],
-        );
-        if (distanceKm > radiusKm) return [];
         const shopId = queue.path.split('/')[1];
         if (!shopId) return [];
-        return [{ ...queue, shopId, distanceKm }];
-      });
+        return [
+          {
+            ...queue,
+            shopId,
+            distanceKm: distanceBetween(
+              [queue.lat, queue.lng],
+              [center.lat, center.lng],
+            ),
+          },
+        ];
+      }),
+    ).slice(0, limit);
   }
 
+  let found: DiscoveredQueue[] = [];
+  for (const radiusKm of SEARCH_RINGS_KM) {
+    found = await queryRing(center, radiusKm);
+    if (found.length >= limit) break;
+  }
+  return byDistance(found).slice(0, limit);
+}
+
+function byDistance(queues: DiscoveredQueue[]): DiscoveredQueue[] {
+  return [...queues].sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
+async function queryRing(
+  center: Coordinates,
+  radiusKm: number,
+): Promise<DiscoveredQueue[]> {
   const radiusM = radiusKm * 1000;
   const bounds = geohashQueryBounds([center.lat, center.lng], radiusM);
 

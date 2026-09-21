@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   applyFilters,
-  findQueuesNear,
+  findNearest,
   type DiscoveredQueue,
   type Filters as FilterState,
 } from '../../lib/discovery.js';
@@ -9,15 +9,6 @@ import { useGeolocation } from '../../lib/hooks/useGeolocation.js';
 import { messageOf } from '../../lib/functions.js';
 import { Filters } from './components/Filters.js';
 import { QueueCard } from './components/QueueCard.js';
-
-/**
- * How far the query reaches — a bound on the search, not the filter.
- * Firestore's geohash lookup needs *some* range, and by default the list is
- * cut by count rather than by distance, so this only has to be wide enough
- * that the twenty closest are all inside it. The distance filter in the panel
- * narrows what comes back; it never reaches past this.
- */
-const SEARCH_RADIUS_KM = 50;
 
 const DEFAULTS: FilterState = {
   // No distance limit unless someone opens the panel and sets one.
@@ -35,6 +26,17 @@ const DEFAULTS: FilterState = {
 
 /** How many the list shows before it asks to be opened up. */
 const NEAREST = 20;
+
+/**
+ * How many are fetched to filter over.
+ *
+ * Larger than what is shown, because the filters have to be able to find
+ * something: searching for a barber among only the twenty closest would come
+ * back empty while the twenty-first is a barber. A count is a safe bound in a
+ * way a distance is not — it can never produce an empty list when queues
+ * exist, it only decides how deep the filters can reach.
+ */
+const WORKING_SET = 100;
 
 /**
  * How many filters are narrowing the results.
@@ -76,7 +78,7 @@ export function CustomerHome() {
 
     setLoading(true);
     setError(null);
-    findQueuesNear(coords, SEARCH_RADIUS_KM)
+    findNearest(coords, WORKING_SET)
       .then((found) => {
         if (!cancelled) setQueues(found);
       })
@@ -92,8 +94,6 @@ export function CustomerHome() {
     };
   }, [coords]);
 
-  // Distance sorting is meaningless without a location; fall back to name so
-  // the list still has a sensible order.
   // The list is always in distance order. Name is the fallback for when the
   // browser has actually refused or cannot answer — without a position there
   // is no distance to order by, and an arbitrary order would be worse.
@@ -198,7 +198,7 @@ export function CustomerHome() {
       {queues && visible.length === 0 && !loading && (
         <p className="muted">
           {queues.length === 0
-            ? 'No queues near you yet.'
+            ? 'No queues anywhere yet.'
             : 'No queues match these filters.'}
         </p>
       )}

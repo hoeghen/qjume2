@@ -51,15 +51,18 @@ kept unedited.
    alone. Keep that asymmetry: it is the point of the decision, not an
    oversight.
 
-5. **Discovery is always ordered by distance, closest twenty.** The list is
-   cut by count, not by distance: `Filters.radiusKm` is `null` by default and
-   the distance filter is one of the controls in the panel, off until someone
-   sets it. `SEARCH_RADIUS_KM` in `CustomerHome` is a separate thing — the
-   bound the geohash lookup queries against, which the filter narrows but can
-   never widen past. There is no sort control; `applyFilters` still supports
-   the other sort keys and is still tested, the screen just never asks for
-   them. Name order is the fallback for when the browser refuses a position,
-   because then there is no distance to order by.
+5. **Discovery is always ordered by distance, closest twenty, and nothing is
+   bounded by distance.** `findNearest(centre, limit)` takes a count, not a
+   radius. The mock reads every queue and takes the closest; Firestore widens
+   through `SEARCH_RINGS_KM` only while it still needs results, because
+   `geohashQueryBounds` has to be given *some* radius and one fixed radius
+   would be an invisible distance filter. Cut by count, never by distance: a
+   count cannot produce an empty list when queues exist. `Filters.radiusKm` is
+   `null` by default and is a control in the panel, off until someone sets it.
+   There is no sort control; `applyFilters` still supports the other sort keys
+   and is still tested, the screen just never asks for them. Name order is the
+   fallback for when the browser refuses a position, because then there is no
+   distance to order by.
 
 4. **Discovery rows show the wait and the waiting count.** PRD 4.1 keeps the
    list to shop name and address, with numbers behind the tap-through. The
