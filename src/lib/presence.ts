@@ -7,7 +7,7 @@ import {
   set,
 } from 'firebase/database';
 import { presenceDb } from './firebase.js';
-import { isDemo } from './demo/mode.js';
+import { isMock } from './mock/mode.js';
 
 /**
  * Tell the server this device is serving a queue, and — more importantly —
@@ -24,7 +24,7 @@ export function announcePresence(
   stationId: string,
 ): () => void {
   // Nothing to announce to, and nothing that could notice this tab closing.
-  if (isDemo) return () => undefined;
+  if (isMock) return () => undefined;
 
   const connectionId = `${stationId}-${Math.random().toString(36).slice(2, 10)}`;
   const here = ref(presenceDb, `status/${shopId}/${queueId}/${connectionId}`);
@@ -48,8 +48,8 @@ export function announcePresence(
 
 /** Whether this device currently has a connection to the backend. */
 export function watchConnection(fn: (online: boolean) => void): () => void {
-  if (isDemo) {
-    // The demo is always "online": everything it needs is in this tab.
+  if (isMock) {
+    // The mock backend is always "online": everything it needs is on this device.
     fn(true);
     return () => undefined;
   }

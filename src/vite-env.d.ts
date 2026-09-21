@@ -11,8 +11,11 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_DATABASE_URL: string;
   readonly VITE_FIREBASE_VAPID_KEY: string;
   readonly VITE_USE_EMULATORS?: string;
-  /** "true" builds the no-backend demo. See src/lib/demo/. */
-  readonly VITE_DEMO?: string;
+  /**
+   * "mock" or "firebase". Omit to infer: Firebase when a project is
+   * configured, the in-browser backend when there is none. See src/lib/mock/.
+   */
+  readonly VITE_BACKEND?: string;
   /**
    * "true" builds for an unknown path on a static host with no rewrite rules:
    * hash routing, relative asset paths, no service worker.

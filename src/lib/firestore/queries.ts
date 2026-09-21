@@ -7,15 +7,15 @@ import {
   type Query,
 } from 'firebase/firestore';
 import { shops, staff, stations, tickets } from './paths.js';
-import { isDemo } from '../demo/mode.js';
-import { demoQuery } from '../hooks/useFirestore.js';
+import { isMock } from '../mock/mode.js';
+import { mockQuery } from '../hooks/useFirestore.js';
 import type { Queue, Shop, Ticket } from '../../types/index.js';
 import { queues } from './paths.js';
 
 /** The signed-in owner's shop. */
 export function shopsOwnedBy(uid: string): Query<Shop> {
-  if (isDemo) {
-    return demoQuery('shops', {
+  if (isMock) {
+    return mockQuery('shops', {
       where: (row) => row['ownerUid'] === uid,
       max: 1,
     }) as unknown as Query<Shop>;
@@ -37,8 +37,8 @@ export function waitingTickets(
   queueId: string,
   max = 50,
 ): Query<Ticket> {
-  if (isDemo) {
-    return demoQuery(`shops/${shopId}/queues/${queueId}/tickets`, {
+  if (isMock) {
+    return mockQuery(`shops/${shopId}/queues/${queueId}/tickets`, {
       where: (row) => row['state'] === 'waiting',
       sortBy: 'position',
       max,
@@ -54,8 +54,8 @@ export function waitingTickets(
 
 /** Tickets currently at a station, across all stations. */
 export function servingTickets(shopId: string, queueId: string): Query<Ticket> {
-  if (isDemo) {
-    return demoQuery(`shops/${shopId}/queues/${queueId}/tickets`, {
+  if (isMock) {
+    return mockQuery(`shops/${shopId}/queues/${queueId}/tickets`, {
       where: (row) => row['state'] === 'serving',
     }) as unknown as Query<Ticket>;
   }
@@ -68,8 +68,8 @@ export function ticketsAhead(
   queueId: string,
   position: number,
 ): Query<Ticket> {
-  if (isDemo) {
-    return demoQuery(`shops/${shopId}/queues/${queueId}/tickets`, {
+  if (isMock) {
+    return mockQuery(`shops/${shopId}/queues/${queueId}/tickets`, {
       where: (row) =>
         row['state'] === 'waiting' && Number(row['position']) < position,
       sortBy: 'position',

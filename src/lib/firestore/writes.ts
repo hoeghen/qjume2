@@ -1,8 +1,8 @@
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { shopConverter } from './converters.js';
-import { isDemo } from '../demo/mode.js';
-import { demoStore } from '../demo/store.js';
+import { isMock } from '../mock/mode.js';
+import { mockStore } from '../mock/store.js';
 import type { QueueStatus, Shop } from '../../types/index.js';
 
 /**
@@ -20,8 +20,8 @@ export async function setQueueStatus(
   queueId: string,
   status: QueueStatus,
 ): Promise<void> {
-  if (isDemo) {
-    demoStore.update(`shops/${shopId}/queues/${queueId}`, { status });
+  if (isMock) {
+    mockStore.update(`shops/${shopId}/queues/${queueId}`, { status });
     return;
   }
   await updateDoc(
@@ -31,8 +31,8 @@ export async function setQueueStatus(
 }
 
 export async function createShop(ownerUid: string, shop: Shop): Promise<void> {
-  if (isDemo) {
-    demoStore.set(`shops/${ownerUid}`, shop as unknown as Record<string, unknown>);
+  if (isMock) {
+    mockStore.set(`shops/${ownerUid}`, shop as unknown as Record<string, unknown>);
     return;
   }
   await setDoc(doc(db, 'shops', ownerUid).withConverter(shopConverter), shop);

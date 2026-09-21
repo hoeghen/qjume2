@@ -1,4 +1,4 @@
-import { demoStore, demoId } from './store.js';
+import { mockStore, mockId } from './store.js';
 import { firstPosition, nextPosition } from '../queue/positions.js';
 import type {
   Queue,
@@ -8,8 +8,8 @@ import type {
   TicketContact,
 } from '../../types/index.js';
 
-/** Roughly central London, so the seeded shops sit a believable distance apart. */
-export const DEMO_CENTRE = { lat: 51.5072, lng: -0.1276 };
+/** Roughly central London, so the shops sit a believable distance apart. */
+export const MOCK_CENTRE = { lat: 51.5072, lng: -0.1276 };
 
 interface SeedShop {
   shop: string;
@@ -22,7 +22,9 @@ interface SeedShop {
   waiting: string[];
   status: Queue['status'];
   plan: Shop['plan'];
-  /** True for the one shop the demo visitor signs in as. */
+  /** Average seconds per customer — what turns a count into a wait. */
+  serviceSeconds: number;
+  /** True for the one shop signing in puts you in charge of. */
   yours?: boolean;
 }
 
@@ -38,6 +40,7 @@ const SHOPS: SeedShop[] = [
     waiting: ['Ana', 'Bilal', 'Chen'],
     status: 'open',
     plan: 'paid',
+    serviceSeconds: 240,
     // Signing in lands on this one, mid-service, so the shop side has
     // something to do from the first tap.
     yours: true,
@@ -53,6 +56,8 @@ const SHOPS: SeedShop[] = [
     waiting: ['Dara', 'Eve', 'Femi', 'Gus', 'Hana', 'Ivo'],
     status: 'open',
     plan: 'free',
+    // A bakery counter moves fast, so six people is a short wait.
+    serviceSeconds: 70,
   },
   {
     shop: 'Town Hall',
@@ -65,6 +70,8 @@ const SHOPS: SeedShop[] = [
     waiting: ['Jo', 'Kit', 'Lena', 'Mo', 'Nia', 'Omar', 'Pia', 'Quinn'],
     status: 'open',
     plan: 'paid',
+    // The slowest counter here: appointments run long.
+    serviceSeconds: 600,
   },
   {
     shop: 'Northside Barbers',
@@ -77,6 +84,7 @@ const SHOPS: SeedShop[] = [
     waiting: ['Rae'],
     status: 'drainMode',
     plan: 'free',
+    serviceSeconds: 1500,
   },
   {
     shop: 'Quay Parade Bank',
@@ -89,17 +97,83 @@ const SHOPS: SeedShop[] = [
     waiting: [],
     status: 'closed',
     plan: 'free',
+    serviceSeconds: 420,
+  },
+  {
+    shop: 'Bridge Street Clinic',
+    queue: 'Walk-in',
+    address: '2 Bridge Street, SW1',
+    category: 'health-and-medical',
+    description: 'Minor injuries and same-day appointments.',
+    lat: 51.5008,
+    lng: -0.1246,
+    waiting: ['Sana', 'Theo', 'Uma', 'Viktor', 'Wren', 'Xan', 'Yara', 'Zeke', 'Aria'],
+    status: 'open',
+    plan: 'paid',
+    serviceSeconds: 480,
+  },
+  {
+    shop: 'Camden Phone Repair',
+    queue: 'Repairs',
+    address: '31 Camden High Street, NW1',
+    category: 'retail-and-shopping',
+    description: 'Screen swaps while you wait.',
+    lat: 51.5390,
+    lng: -0.1426,
+    waiting: ['Brett', 'Cleo'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 900,
+  },
+  {
+    shop: 'Southbank Passport Office',
+    queue: 'Applications',
+    address: '9 Belvedere Road, SE1',
+    category: 'government-and-public-services',
+    description: 'Bring both forms of ID.',
+    lat: 51.5055,
+    lng: -0.1160,
+    waiting: ['Dita', 'Emre', 'Fleur', 'Gio', 'Hugo', 'Inga', 'Jonas'],
+    status: 'paused',
+    plan: 'paid',
+    serviceSeconds: 540,
+  },
+  {
+    shop: 'Whitechapel Tyre & MOT',
+    queue: 'Service desk',
+    address: '120 Whitechapel Road, E1',
+    category: 'automotive',
+    description: null,
+    lat: 51.5175,
+    lng: -0.0616,
+    waiting: ['Kasia', 'Liam', 'Milo', 'Nour'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 720,
+  },
+  {
+    shop: 'Angel Nails & Spa',
+    queue: 'Walk-ins',
+    address: '48 Upper Street, N1',
+    category: 'personal-care',
+    description: 'Walk-ins taken between bookings.',
+    lat: 51.5362,
+    lng: -0.1033,
+    waiting: ['Otis', 'Pearl', 'Quill', 'Rosa', 'Sven'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 1800,
   },
 ];
 
 /**
- * A geohash good enough for the demo's radius search.
+ * A geohash good enough for this store's radius search.
  *
  * The real build derives this with `geofire-common` at save time; here the
  * distance filter runs over a handful of seeded queues in memory, so an
  * ordered encoding of the coordinates is all the sort needs.
  */
-function demoGeohash(lat: number, lng: number): string {
+function mockGeohash(lat: number, lng: number): string {
   const encode = (value: number, span: number) =>
     Math.round(((value + span) / (span * 2)) * 1e5)
       .toString(36)
@@ -109,29 +183,35 @@ function demoGeohash(lat: number, lng: number): string {
 
 let seeded = false;
 
-/** Fills the store with a handful of shops so the demo has something to show. */
-export function seedDemo(): void {
-  if (seeded) return;
+/**
+ * Puts ten shops in the store the first time the app runs.
+ *
+ * Skipped once anything is stored, so a returning visitor keeps the queue
+ * they joined and the shop they were serving rather than having it replaced
+ * by a fresh copy on every load.
+ */
+export function seedMockBackend(): void {
+  if (seeded || mockStore.restored) return;
   seeded = true;
 
   for (const entry of SHOPS) {
-    const shopId = demoId('shop');
-    const queueId = demoId('queue');
+    const shopId = mockId('shop');
+    const queueId = mockId('queue');
 
     const shop: Shop = {
       name: entry.shop,
-      ownerUid: entry.yours ? 'demo-owner' : `other-${shopId}`,
+      ownerUid: entry.yours ? 'local-owner' : `other-${shopId}`,
       plan: entry.plan,
       exclusiveQueues: false,
     };
-    demoStore.set(`shops/${shopId}`, shop as unknown as Record<string, unknown>);
+    mockStore.set(`shops/${shopId}`, shop as unknown as Record<string, unknown>);
 
     let lastPosition = 0;
     entry.waiting.forEach((displayName, index) => {
       const position =
         index === 0 ? firstPosition() : nextPosition(lastPosition);
       lastPosition = position;
-      const ticketId = demoId('ticket');
+      const ticketId = mockId('ticket');
 
       const ticket: Ticket = {
         displayName,
@@ -144,7 +224,7 @@ export function seedDemo(): void {
         calledAt: null,
         holderKey: null,
       };
-      demoStore.set(
+      mockStore.set(
         `shops/${shopId}/queues/${queueId}/tickets/${ticketId}`,
         ticket as unknown as Record<string, unknown>,
       );
@@ -158,7 +238,7 @@ export function seedDemo(): void {
         fcmTokens: [],
         dispatchedMilestones: [],
       };
-      demoStore.set(
+      mockStore.set(
         `shops/${shopId}/queues/${queueId}/tickets/${ticketId}/private/contact`,
         contact as unknown as Record<string, unknown>,
       );
@@ -173,8 +253,8 @@ export function seedDemo(): void {
       address: entry.address,
       lat: entry.lat,
       lng: entry.lng,
-      geohash: demoGeohash(entry.lat, entry.lng),
-      avgServiceTimeSeconds: 240,
+      geohash: mockGeohash(entry.lat, entry.lng),
+      avgServiceTimeSeconds: entry.serviceSeconds,
       noShowPenalty: 'back3',
       status: entry.status,
       schedule: null,
@@ -186,18 +266,18 @@ export function seedDemo(): void {
       servedSampleCount: 0,
       waitingCount: entry.waiting.length,
     };
-    demoStore.set(
+    mockStore.set(
       `shops/${shopId}/queues/${queueId}`,
       queue as unknown as Record<string, unknown>,
     );
 
     const station: Station = {
       label: 'Till 1',
-      activeStaffUid: entry.yours ? 'demo-owner' : `other-${shopId}`,
+      activeStaffUid: entry.yours ? 'local-owner' : `other-${shopId}`,
       currentTicketId: null,
     };
-    demoStore.set(
-      `shops/${shopId}/queues/${queueId}/stations/${demoId('station')}`,
+    mockStore.set(
+      `shops/${shopId}/queues/${queueId}/stations/${mockId('station')}`,
       station as unknown as Record<string, unknown>,
     );
   }

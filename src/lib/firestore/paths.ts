@@ -5,8 +5,8 @@ import {
   type DocumentReference,
 } from 'firebase/firestore';
 import { db } from '../firebase.js';
-import { isDemo } from '../demo/mode.js';
-import { demoRef } from '../hooks/useFirestore.js';
+import { isMock } from '../mock/mode.js';
+import { mockRef } from '../hooks/useFirestore.js';
 import {
   customerConverter,
   queueConverter,
@@ -32,13 +32,13 @@ import type {
 
 
 /**
- * In demo mode these return a path descriptor rather than a Firestore
+ * Against the mock backend these return a path descriptor rather than a Firestore
  * reference. Both are accepted by `useDoc`/`useCollection`, so no component
  * has to know which build it is running in — the cast is the price of keeping
  * every call site identical, and it is confined to this file.
  */
 function ref<T>(path: string, real: () => T): T {
-  return isDemo ? (demoRef(path) as unknown as T) : real();
+  return isMock ? (mockRef(path) as unknown as T) : real();
 }
 
 export const shops = (): CollectionReference<Shop> =>

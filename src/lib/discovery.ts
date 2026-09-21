@@ -9,8 +9,8 @@ import {
 import { distanceBetween, geohashQueryBounds } from 'geofire-common';
 import { db } from './firebase.js';
 import { queueConverter } from './firestore/converters.js';
-import { isDemo } from './demo/mode.js';
-import { demoStore } from './demo/store.js';
+import { isMock } from './mock/mode.js';
+import { mockStore } from './mock/store.js';
 import type { Queue, QueueCategory, QueueStatus } from '../types/index.js';
 
 export interface DiscoveredQueue extends Queue {
@@ -52,10 +52,10 @@ export async function findQueuesNear(
   center: Coordinates,
   radiusKm: number,
 ): Promise<DiscoveredQueue[]> {
-  if (isDemo) {
+  if (isMock) {
     // A handful of seeded queues, so the geohash ranges buy nothing — the true
     // distance filter below is the whole of it.
-    return demoStore
+    return mockStore
       .listGroup<Queue>('queues')
       .flatMap((queue) => {
         if (queue.lat === null || queue.lng === null) return [];
