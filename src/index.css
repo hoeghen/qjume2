@@ -124,12 +124,15 @@ body {
   flex-direction: column;
   padding:
     calc(env(safe-area-inset-top) + clamp(16px, 3vw, 28px))
-    calc(env(safe-area-inset-right) + clamp(16px, 4vw, 32px))
+    calc(env(safe-area-inset-right) + clamp(16px, 4vw, 56px))
     calc(env(safe-area-inset-bottom) + clamp(24px, 4vw, 40px))
-    calc(env(safe-area-inset-left) + clamp(16px, 4vw, 32px));
-  /* Reading width on a monitor; the ink behind it still runs edge to edge. */
-  max-width: 960px;
-  margin: 0 auto;
+    calc(env(safe-area-inset-left) + clamp(16px, 4vw, 56px));
+  /*
+   * No reading-width cap: the app uses the whole window and the gutter is the
+   * only inset. Prose still caps itself — a headline set across 1900px is not
+   * "filling the viewport", it is unreadable — so the limits live on the text
+   * blocks that need them, not on the page.
+   */
   width: 100%;
 }
 
@@ -453,7 +456,7 @@ button.link.danger { color: var(--danger); }
   color: var(--ink);
 }
 
-.queue-card-main { flex: 1; min-width: 0; }
+.queue-card-main { flex: 1 1 0; min-width: 0; }
 .queue-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .queue-card-title strong { font-size: 14.5px; font-weight: 700; }
 .queue-card-title .badge { margin-left: 0; }
@@ -467,8 +470,6 @@ button.link.danger { color: var(--danger); }
   gap: 2px;
   flex: none;
   text-align: right;
-  /* Without this the figures column grows and wraps the shop name beside it. */
-  max-width: 42%;
 }
 /* The number someone is choosing on — the one hot colour in the row. */
 .wait {
@@ -486,23 +487,35 @@ button.link.danger { color: var(--danger); }
 }
 
 /*
- * The design's row was drawn wide enough for name and figures side by side.
- * On a phone that fight wraps both, so below this the figures drop to their
- * own line under the name — aligned to the text, not the icon.
+ * The design drew this row wide enough for the name and the figures side by
+ * side. What decides whether that fits is the width of the *card*, not of the
+ * window: a card in a three-column grid on a laptop is narrower than the same
+ * card in a single-column list on a tablet.
+ *
+ * So stacked is the default — figures on their own line under the name,
+ * aligned to the text rather than the icon — and side by side is the
+ * exception, for the one range where the list is a single wide column.
  */
-@media (max-width: 460px) {
-  .queue-card a { flex-wrap: wrap; }
-  /* Icon and name stay on the first line together — only the figures drop.
-     A full-width basis here would push the name below its own icon. */
-  .queue-card-main { flex: 1 1 0; min-width: 0; }
+.queue-card a { flex-wrap: wrap; }
+.queue-card-meta {
+  flex: 1 1 100%;
+  max-width: none;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-left: 52px;
+  margin-top: 6px;
+}
+
+@media (min-width: 461px) and (max-width: 759px) {
+  .queue-card a { flex-wrap: nowrap; }
   .queue-card-meta {
-    flex: 1 1 100%;
-    max-width: none;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-left: 52px;
-    margin-top: 6px;
+    flex: none;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0;
+    /* Without a cap the figures column grows and wraps the name beside it. */
+    max-width: 42%;
   }
 }
 .distance { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; }
@@ -770,18 +783,20 @@ button.link.danger { color: var(--danger); }
 @media (min-width: 760px) {
   .queue-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    /* Stretch, not start: cards in the same row share an edge. One card
+       whose name wraps should not leave its neighbours short. */
+    align-items: stretch;
   }
+  .queue-card { display: flex; }
+  .queue-card a { flex: 1; align-content: center; }
 }
 
 /*
  * The monitor is read from across a room, so it ignores the reading width
  * and scales with the display instead.
  */
-.monitor.screen { max-width: none; }
 @media (min-width: 1100px) {
-  .app:has(.monitor) { max-width: none; }
   .monitor h1 { font-size: clamp(40px, 5vw, 76px); }
   .monitor .monitor-pairings li { padding: 24px 28px; }
   .monitor .monitor-upcoming li { font-size: clamp(16px, 1.6vw, 24px); }

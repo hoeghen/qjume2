@@ -83,12 +83,16 @@ survives only as `--cream-tint`, the icon-tile and badge fill inside white
 rows. Every component that was a light panel on cream is now an inset
 (`rgba(255,255,255,0.08)`) on ink.
 
-**The list pairs up past 760px.** The canvas draws one column. On a laptop that
-leaves half the window empty, so rows go to a `minmax(330px, 1fr)` grid.
+**The list fills the window.** The canvas draws one column. The app uses the
+whole width — a `minmax(320px, 1fr)` grid past 760px, which is two columns on a
+tablet and five on a 1920px display. Prose still caps itself; the page does not.
 
-**Rows stack below 460px.** The canvas's row assumes width the phone does not
-have; below this the figures drop to their own line under the name, with the
-icon staying beside it.
+**A row's shape follows its container, not the viewport.** The canvas's row
+assumes width a narrow card does not have, and a card in a three-column grid is
+narrower than one in a single-column list. So the figures sit on their own line
+under the name by default, aligned to the text rather than the icon, and go
+beside it only between 461px and 759px — the range where the list is a single
+wide column.
 
 ## Not implemented
 
