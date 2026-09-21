@@ -107,6 +107,9 @@ spec is in `docs/design-system.md`. Things that are easy to undo by accident:
   three-column grid on a laptop is narrower than the same card in a
   single-column list on a tablet, so the figures sit under the name by default
   and only go beside it in the 461–759px window where the column is wide.
+- **The app header is rendered by the shell**, not by each screen, so every
+  route has a way back to the landing page without anyone remembering to add
+  one. It hides itself on `/`. Do not reintroduce per-screen logos.
 - **Fonts are self-hosted**, not linked from Google. A linked font costs a
   round-trip before first paint and renders nothing offline — wrong for a PWA
   built to survive a dropped network. Sora ships as one variable file covering

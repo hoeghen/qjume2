@@ -8,7 +8,6 @@ import {
 import { useGeolocation } from '../../lib/hooks/useGeolocation.js';
 import { messageOf } from '../../lib/functions.js';
 import { Filters } from './components/Filters.js';
-import { Logo } from '../../components/Logo.js';
 import { QueueCard } from './components/QueueCard.js';
 
 const DEFAULTS: FilterState = {
@@ -72,14 +71,12 @@ export function CustomerHome() {
 
   return (
     <main className="screen">
-      <header className="screen-head">
-        <Logo size={30} />
+      <div className="eyebrow-row">
+        <p className="eyebrow">[ CUSTOMER MODE ]</p>
         <span className="screen-count">
           {queues ? `${queues.length} nearby` : '—'}
         </span>
-      </header>
-
-      <p className="eyebrow">[ CUSTOMER MODE ]</p>
+      </div>
 
       <div className="screen-intro">
         <h1>
