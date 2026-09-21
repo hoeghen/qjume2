@@ -23,6 +23,15 @@ export default defineConfig({
     react(),
     ...(isPortable ? [] : [VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Without these a new build waits for every tab to close before it
+        // takes over, so a returning visitor keeps being served the old one
+        // and has to clear site data to see a fix. Activate at once and claim
+        // the pages that are already open.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'Qjume',
         short_name: 'Qjume',
