@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { DiscoveredQueue } from '../../../lib/discovery.js';
-import { formatDistance } from '../../../lib/format.js';
+import { estimatedWaitSeconds } from '../../../lib/discovery.js';
+import { formatDistance, formatWaitCompact } from '../../../lib/format.js';
+import { CategoryIcon } from '../../../components/CategoryIcon.js';
 import type { QueueStatus } from '../../../types/index.js';
 
 const STATUS_LABELS: Partial<Record<QueueStatus, string>> = {
@@ -11,8 +13,12 @@ const STATUS_LABELS: Partial<Record<QueueStatus, string>> = {
 };
 
 /**
- * Deliberately light: shop name and address only, per PRD 4.1. Waiting counts
- * and estimates live behind the tap-through, so the list stays scannable.
+ * A row in the discovery list.
+ *
+ * The wait and waiting count are on the row, per the design canvas. PRD 4.1
+ * put them behind the tap-through to keep the list light — but the list can
+ * already be *sorted* by wait, and a sort key you cannot see is a poor trade.
+ * See CLAUDE.md.
  */
 export function QueueCard({
   queue,
@@ -22,19 +28,29 @@ export function QueueCard({
   showDistance: boolean;
 }) {
   const status = STATUS_LABELS[queue.status];
+  const wait = estimatedWaitSeconds(queue);
 
   return (
     <li className="queue-card">
       <Link to={`/q/${queue.shopId}/${queue.id}`}>
+        <CategoryIcon category={queue.category} />
+
         <div className="queue-card-main">
-          <strong>{queue.shopName}</strong>
+          <div className="queue-card-title">
+            <strong>{queue.shopName}</strong>
+            {status && (
+              <span className={`badge status-${queue.status}`}>{status}</span>
+            )}
+          </div>
           <p className="muted">{queue.address}</p>
         </div>
+
         <div className="queue-card-meta">
-          {showDistance && (
-            <span className="distance">{formatDistance(queue.distanceKm)}</span>
-          )}
-          {status && <span className={`badge status-${queue.status}`}>{status}</span>}
+          <span className="wait">{formatWaitCompact(wait)}</span>
+          <span className="queue-card-stats">
+            {showDistance && <>{formatDistance(queue.distanceKm)} · </>}
+            {queue.waitingCount} waiting
+          </span>
         </div>
       </Link>
     </li>

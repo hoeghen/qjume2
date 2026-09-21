@@ -1,39 +1,89 @@
-:root {
-  --bg: #ffffff;
-  --fg: #16181d;
-  --muted: #5c6370;
-  --line: #d9dce3;
-  --accent: #1b4dd8;
-  --accent-fg: #ffffff;
-  --danger: #b3261e;
-  --warn-bg: #ffe8b8;
-  --warn-fg: #4a3200;
-  --stop-bg: #fbdad7;
-  --stop-fg: #5c1512;
-  --surface: #f5f6f8;
-
-  color-scheme: light dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  line-height: 1.5;
-  color: var(--fg);
-  background: var(--bg);
+/*
+ * QjuMe design system.
+ *
+ * Values come from the design canvas and are quoted as written there — the
+ * oklch() colours are not conversions. This is a single committed look, cream
+ * page with dark panels, not a light/dark pair: the design defines one world
+ * and inverting it would produce a scheme nobody drew.
+ *
+ * Fonts are self-hosted rather than linked from Google: a linked font costs a
+ * round-trip before first paint and renders nothing at all offline, which for
+ * a PWA built to work without a network is the wrong trade. Vite fingerprints
+ * these and the service worker precaches them.
+ */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  /* One variable file covers every weight the design uses. */
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('./assets/fonts/Sora-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/DMMono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  /* DM Mono ships no weight above 500; the design's 600/700 mono labels map
+     here rather than letting the browser synthesise a fake bold. */
+  font-weight: 500 700;
+  font-display: swap;
+  src: url('./assets/fonts/DMMono-500.woff2') format('woff2');
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14161a;
-    --fg: #eceef2;
-    --muted: #a0a7b4;
-    --line: #333842;
-    --accent: #7ea2ff;
-    --accent-fg: #0b1020;
-    --danger: #ff8a80;
-    --warn-bg: #4a3a12;
-    --warn-fg: #ffe0a3;
-    --stop-bg: #4d1f1c;
-    --stop-fg: #ffd5d1;
-    --surface: #1c1f26;
-  }
+:root {
+  --ink: #3d3b47;
+  --cream: oklch(0.94 0.03 55);
+  --cream-line: oklch(0.88 0.02 55);
+  --cream-tint: oklch(0.94 0.015 55);
+
+  /* Two oranges, and they are not interchangeable. The bright one fails
+     contrast below 24px; the darker one is the 4.5:1-safe text and CTA
+     colour. Never swap them to "match". */
+  --orange: oklch(0.62 0.19 38);
+  --orange-cta: oklch(0.5 0.17 42);
+  --orange-on-dark: oklch(0.68 0.19 38);
+
+  --surface: #ffffff;
+  --on-dark: #ffffff;
+  --on-dark-muted: oklch(0.72 0.01 255);
+  --on-dark-faint: oklch(0.6 0.02 255);
+  --dark-inset: rgb(255 255 255 / 0.08);
+
+  --muted: oklch(0.5 0.02 255 / 0.65);
+  --muted-strong: oklch(0.45 0.02 255 / 0.75);
+
+  --r-card: 32px;
+  --r-row: 18px;
+  --r-tile: 14px;
+  --r-panel: 12px;
+  --r-pill: 100px;
+
+  --font-display: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Names the rest of the app already uses, pointed at the new palette. */
+  --bg: var(--cream);
+  --fg: var(--ink);
+  --line: var(--cream-line);
+  --accent: var(--orange-cta);
+  --accent-fg: #ffffff;
+  --danger: #b3261e;
+  --warn-bg: oklch(0.94 0.06 75);
+  --warn-fg: oklch(0.42 0.09 60);
+  --stop-bg: oklch(0.93 0.05 25);
+  --stop-fg: oklch(0.42 0.13 28);
+
+  color-scheme: light;
+  font-family: var(--font-display);
+  line-height: 1.6;
+  color: var(--fg);
+  background: var(--bg);
 }
 
 * { box-sizing: border-box; }
@@ -48,10 +98,31 @@ body {
 
 .app { padding: 16px; max-width: 900px; margin: 0 auto; }
 
-h1 { font-size: 1.5rem; margin: 0 0 4px; }
-h2 { font-size: 1.05rem; margin: 24px 0 8px; }
+h1 {
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+h2 {
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  margin: 24px 0 8px;
+}
 .muted { color: var(--muted); }
 .hint { color: var(--muted); font-size: 0.85rem; margin: -4px 0 8px; }
+
+/* Mono, spaced and small: the design's section marker. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--orange-cta);
+  margin: 0;
+}
 
 /* ---------- forms ---------- */
 .panel { display: block; }
@@ -63,10 +134,10 @@ label { font-weight: 600; font-size: 0.9rem; }
 input, select, textarea {
   font: inherit;
   color: inherit;
-  background: var(--bg);
-  padding: 12px;
+  background: var(--surface);
+  padding: 13px 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--r-panel);
   width: 100%;
 }
 .checkbox { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
@@ -74,24 +145,35 @@ input, select, textarea {
 
 button, .button {
   font: inherit;
-  font-weight: 600;
-  padding: 12px 18px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: var(--accent);
+  font-weight: 700;
+  font-size: 14.5px;
+  padding: 14px 28px;
+  border-radius: var(--r-pill);
+  border: none;
+  background: var(--orange-cta);
   color: var(--accent-fg);
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   /* Comfortable for a thumb on a counter tablet. */
   min-height: 48px;
 }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 button.secondary, .button.secondary {
-  background: var(--bg);
+  background: none;
   color: var(--fg);
-  border-color: var(--line);
+  border: 1.5px solid var(--fg);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 12.5px 24px;
+}
+/* On a dark panel the outline is the border, so it flips to white. */
+.on-dark button.secondary, .on-dark .button.secondary {
+  color: var(--on-dark);
+  border-color: var(--on-dark);
 }
 button.danger { background: var(--danger); color: #fff; }
 button.link, .link {
@@ -153,16 +235,17 @@ button.link.danger { color: var(--danger); }
 .status-banner.status-unavailable { background: var(--stop-bg); color: var(--stop-fg); }
 
 .badge {
-  font-size: 0.75rem;
+  font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
   margin-left: 8px;
-  background: var(--surface);
-  color: var(--muted);
+  background: var(--cream-tint);
+  color: var(--ink);
 }
-.badge.status-open { background: #d7f0dc; color: #14532d; }
-.badge.status-paused, .badge.status-drainMode { background: var(--warn-bg); color: var(--warn-fg); }
+.badge.status-open { background: var(--cream-tint); color: var(--ink); }
+.badge.status-drainMode { background: var(--orange-cta); color: #fff; }
+.badge.status-paused { background: var(--warn-bg); color: var(--warn-fg); }
 .badge.status-closed, .badge.status-unavailable { background: var(--stop-bg); color: var(--stop-fg); }
 
 /* ---------- serving ---------- */
@@ -298,32 +381,88 @@ button.link.danger { color: var(--danger); }
 }
 .filter-row select { font-size: 0.95rem; padding: 10px; }
 
-.queue-cards { list-style: none; padding: 0; margin: 16px 0 0; }
-.queue-card + .queue-card { border-top: 1px solid var(--line); }
+.queue-cards {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .queue-card a {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 16px 4px;
+  gap: 14px;
+  padding: 15px 18px;
+  background: var(--surface);
+  border-radius: var(--r-row);
   text-decoration: none;
-  color: inherit;
+  color: var(--ink);
 }
-.queue-card a:hover { background: var(--surface); }
-.queue-card-main strong { display: block; font-size: 1.05rem; }
-.queue-card-main p { margin: 2px 0 0; font-size: 0.9rem; }
+.queue-card a:hover { background: var(--cream-tint); }
+
+.category-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-panel);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream-tint);
+  color: var(--ink);
+}
+
+.queue-card-main { flex: 1; min-width: 0; }
+.queue-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.queue-card-title strong { font-size: 14.5px; font-weight: 700; }
+.queue-card-title .badge { margin-left: 0; }
+.queue-card-main p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; }
+
 .queue-card-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 2px;
+  flex: none;
+  text-align: right;
+  /* Without this the figures column grows and wraps the shop name beside it. */
+  max-width: 42%;
 }
-.distance {
+/* The number someone is choosing on — the one hot colour in the row. */
+.wait {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--orange-cta);
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  font-size: 0.9rem;
 }
+.queue-card-stats {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * The design's row was drawn wide enough for name and figures side by side.
+ * On a phone that fight wraps both, so below this the figures drop to their
+ * own line under the name — aligned to the text, not the icon.
+ */
+@media (max-width: 460px) {
+  .queue-card a { flex-wrap: wrap; }
+  .queue-card-main { flex: 1 1 100%; }
+  .queue-card-meta {
+    flex: 1 1 100%;
+    max-width: none;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-left: 52px;
+    margin-top: 6px;
+  }
+}
+.distance { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; }
 
 .stats {
   display: flex;
@@ -436,141 +575,159 @@ button.link.danger { color: var(--danger); }
   line-height: 1.4;
 }
 
+/* ---------- logo ---------- */
+
+.logo { position: relative; display: inline-block; flex: none; }
+.logo-dot { position: absolute; border-radius: 50%; }
+/* Outline = still waiting, filled = called. */
+.logo-dot-waiting { border: 2px solid var(--orange); }
+.logo-dot-called { background: var(--orange); }
+/* Inside a screen header the mark reads in white at reduced weight; the
+   splash keeps it orange, which is where the colour is introduced. */
+.screen-head .logo-dot-waiting { border-color: var(--on-dark); opacity: 0.7; }
+.screen-head .logo-dot-called { background: var(--on-dark); opacity: 0.7; }
+
 /* ---------- splash ---------- */
 
 /*
- * The front door. Sized to what it holds rather than to the viewport: a 100vh
- * opener would push the actions off a short phone screen in landscape.
+ * Full-bleed ink panel. `.app` centres and pads every other screen, so the
+ * splash cancels that padding rather than sitting in a cream frame.
  */
 .splash {
+  margin: -16px;
+  padding: clamp(48px, 10vw, 96px) 20px clamp(56px, 10vw, 110px);
+  background: var(--ink);
+  color: var(--on-dark);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 20px;
-  padding: 40px 0 32px;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.splash-brand { display: flex; flex-direction: column; gap: 6px; }
-
-.splash-eyebrow {
-  margin: 0;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
+  gap: 28px;
 }
 
 .splash-wordmark {
   margin: 0;
-  font-size: clamp(2.75rem, 14vw, 3.75rem);
-  font-weight: 700;
-  /* Tight tracking is where the wordmark gets its character — there is no web
-     font here on purpose: a splash that waits on a font download shows nothing
-     on first paint, and nothing at all offline. */
-  letter-spacing: -0.04em;
-  line-height: 1;
+  font-size: clamp(34px, 6vw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
 }
-
-/*
- * The strip and its caption are one thing: the caption names what the strip is
- * showing, so it sits closer to the strip than the strip does to anything else.
- */
-.splash-queue {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-/* The queue itself, advancing. */
-.splash-strip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  min-height: 52px;
-}
-
-.tile {
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 240ms ease, transform 240ms ease;
-}
-
-.tile-label {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0 10px;
-}
-
-.tile-serving {
-  height: 44px;
-  background: var(--accent);
-  color: var(--accent-fg);
-}
-
-/* The people between you and the counter — countable, not identified. */
-.tile-waiting {
-  height: 44px;
-  width: 14px;
-  background: var(--line);
-}
-
-.tile-you {
-  height: 44px;
-  border: 2px solid var(--accent);
-  color: var(--accent);
-}
-
-.tile-you-up {
-  background: var(--accent);
-  color: var(--accent-fg);
-}
-
-.splash-status { margin: 0; font-size: 0.95rem; }
 
 .splash-lede {
   margin: 0;
-  color: var(--muted);
-  font-size: 1.05rem;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--on-dark-muted);
+  max-width: 380px;
   text-wrap: balance;
-  max-width: 32ch;
 }
+
+.splash-queue { max-width: 100%; height: auto; margin: 8px 0; }
 
 .splash-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  width: 100%;
-  margin-top: 4px;
 }
 
-.splash-primary {
-  width: 100%;
-  font-size: 1.05rem;
-  padding: 16px 18px;
-}
+.splash-primary { padding: 15px 40px; font-size: 15.5px; }
 
 /* Deliberately quiet: a shop owner needs to find this once, a customer never. */
 .splash-secondary {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--on-dark-faint);
+  text-decoration: none;
+}
+.splash-secondary:hover { color: var(--on-dark); }
+
+/* ---------- dark screen panels ---------- */
+
+/*
+ * Discovery and the monitor sit on an ink panel with white rows inside it —
+ * one scheme for both, since the monitor is customer-facing too.
+ */
+.screen {
+  background: var(--ink);
+  color: var(--on-dark);
+  border-radius: var(--r-card);
+  padding: clamp(24px, 4vw, 44px);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.screen-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.screen-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-dark-muted);
+}
+
+.eyebrow-on-dark { color: var(--orange-on-dark); }
+
+.screen-intro { display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
+.screen h1 {
   margin: 0;
-  font-size: 0.9rem;
-  color: var(--muted);
+  font-size: clamp(30px, 4.4vw, 46px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
-.splash-secondary a { color: inherit; }
+/* The design sets the first line light and lands the point in bold. */
+.screen h1 .light { font-weight: 400; }
 
-@media (prefers-reduced-motion: reduce) {
-  .tile { transition: none; }
+.screen-lede {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--on-dark-muted);
+  max-width: 440px;
 }
 
-.monitor-link { margin-top: 16px; }
+/* Form controls on ink: the label and the select have to flip too. */
+.on-dark .filter-row label { color: var(--on-dark-muted); }
+.on-dark .notice { background: var(--dark-inset); color: var(--on-dark); }
+.on-dark .muted { color: var(--on-dark-muted); }
+
+/* ---------- monitor on ink ---------- */
+
+.monitor.screen { gap: 26px; }
+.monitor h1 { font-size: clamp(28px, 4vw, 40px); }
+.monitor h2 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-dark);
+  opacity: 0.7;
+  margin: 0 0 12px;
+}
+/* Inset panels rather than rules: on a dark ground a hairline disappears at
+   the distance this screen is read from. */
+.monitor .monitor-pairings li,
+.monitor .monitor-upcoming li {
+  background: var(--dark-inset);
+  border-radius: var(--r-tile);
+  padding: 14px 18px;
+  border: none;
+}
+.monitor .monitor-pairings { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.monitor .monitor-pairings li { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.monitor .monitor-pairings li span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--orange-on-dark);
+}
+.monitor .monitor-upcoming { display: flex; flex-direction: column; gap: 6px; list-style: none; padding: 0; }
+.monitor .monitor-upcoming li { font-size: 14.5px; font-weight: 600; }

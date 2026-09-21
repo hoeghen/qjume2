@@ -51,6 +51,30 @@ kept unedited.
    alone. Keep that asymmetry: it is the point of the decision, not an
    oversight.
 
+4. **Discovery rows show the wait and the waiting count.** PRD 4.1 keeps the
+   list to shop name and address, with numbers behind the tap-through. The
+   design canvas puts them on the row, and the list can already be *sorted* by
+   wait — a sort key you cannot see is a poor trade. `DiscoveredQueue` already
+   carries both, so this costs no extra read.
+
+## Design system
+
+`src/index.css` is the implementation of the QjuMe design canvas; the extracted
+spec is in `docs/design-system.md`. Things that are easy to undo by accident:
+
+- **Two oranges, not one.** `--orange` (bright) fails contrast below 24px and is
+  for large or decorative use only. `--orange-cta` is the 4.5:1-safe text and
+  button colour. Never swap one for the other to "match" something.
+- **One committed look, not a light/dark pair.** Cream page, ink panels. There is
+  no dark-mode variant because the design does not define one, and inverting it
+  would invent a scheme nobody drew. `color-scheme: light` is deliberate.
+- **Fonts are self-hosted**, not linked from Google. A linked font costs a
+  round-trip before first paint and renders nothing offline — wrong for a PWA
+  built to survive a dropped network. Sora ships as one variable file covering
+  every weight. DM Mono has nothing above 500, so the design's 600/700 mono
+  labels map to 500 rather than being synthesised into a fake bold.
+- Ink panels carry `.on-dark` so buttons, labels and muted text flip with them.
+
 ## iOS push — read before touching notifications
 
 Web push does not work in a Safari tab. The PWA must be added to the Home Screen first
