@@ -14,10 +14,10 @@ const DEFAULTS: FilterState = {
   // No distance limit unless someone opens the panel and sets one.
   radiusKm: null,
   category: 'all',
-  // Everything nearby, closed shops included. They carry a status badge and
-  // cannot be joined, and knowing a shop exists but is shut is worth more
-  // than a list that silently omits it.
-  status: 'all',
+  // Open queues only. Someone on this screen is looking for somewhere to join
+  // now; a shut counter is not an answer to that. The status control in the
+  // panel brings the rest back.
+  status: 'active',
   search: '',
   // The list is always ordered by distance; this only falls back to name when
   // the browser cannot give us a position at all.
