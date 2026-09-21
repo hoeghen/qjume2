@@ -18,6 +18,9 @@ export const CATEGORY_LABELS: Record<QueueCategory, string> = {
 const RADII = [1, 2, 5, 10, 25, 50];
 
 interface Props {
+  /** Ties the panel to the button that discloses it. */
+  id: string;
+  hidden: boolean;
   value: FilterState;
   onChange: (next: FilterState) => void;
   /**
@@ -27,12 +30,21 @@ interface Props {
   canUseDistance: boolean;
 }
 
-export function Filters({ value, onChange, canUseDistance }: Props) {
+export function Filters({
+  id,
+  hidden,
+  value,
+  onChange,
+  canUseDistance,
+}: Props) {
   const set = <K extends keyof FilterState>(key: K, v: FilterState[K]) =>
     onChange({ ...value, [key]: v });
 
+  // Rendered even when closed, and hidden with the attribute rather than
+  // unmounted: the button's aria-controls has to point at something that
+  // exists, and `hidden` takes the fields out of the tab order for us.
   return (
-    <div className="filters">
+    <div className="filters" id={id} hidden={hidden}>
       <label className="sr-only" htmlFor="search">
         Search
       </label>

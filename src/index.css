@@ -836,3 +836,43 @@ button.link.danger { color: var(--danger); }
   outline: 2px solid var(--orange-on-dark);
   outline-offset: 3px;
 }
+
+/* ---------- filter disclosure ---------- */
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* How many filters are narrowing the list. The panel is closed by default,
+   so without this a short list would have no visible explanation. */
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--orange-cta);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.filters[hidden] { display: none; }
+
+.list-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--on-dark-muted);
+}
