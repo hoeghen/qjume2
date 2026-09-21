@@ -8,6 +8,7 @@ import {
 import { useGeolocation } from '../../lib/hooks/useGeolocation.js';
 import { messageOf } from '../../lib/functions.js';
 import { Filters } from './components/Filters.js';
+import { Logo } from '../../components/Logo.js';
 import { QueueCard } from './components/QueueCard.js';
 
 const DEFAULTS: FilterState = {
@@ -70,8 +71,27 @@ export function CustomerHome() {
   );
 
   return (
-    <main>
-      <h1>Find a queue</h1>
+    <main className="screen on-dark">
+      <header className="screen-head">
+        <Logo size={30} />
+        <span className="screen-count">
+          {queues ? `${queues.length} nearby` : '—'}
+        </span>
+      </header>
+
+      <p className="eyebrow eyebrow-on-dark">[ CUSTOMER MODE ]</p>
+
+      <div className="screen-intro">
+        <h1>
+          <span className="light">Find a queue.</span>
+          <br />
+          Skip the wait.
+        </h1>
+        <p className="screen-lede">
+          See how long the line is before you go. Join from anywhere — no
+          login, no standing around.
+        </p>
+      </div>
 
       <Filters
         value={filters}
