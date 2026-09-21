@@ -94,6 +94,21 @@ boundary, and with the whole database on one device there is nobody to defend
 it from. Enforcement lives in the rules and functions, which is why they still
 carry the tests.
 
+**A shop runs several queues, and a queue has one or more tills.** The seed
+exercises both: the pharmacy has three lines and two counters, the town hall
+five counters across three lines. A discovery row names the queue as well as
+the shop, or a shop with three lines is three identical rows. Station labels
+("Till 1") are hidden wherever the queue has a single station — a name only
+tells you something when there is another one to tell it apart from — and
+`ticket.station` is an **id**, so anything showing it to a person must look up
+the label.
+
+**The mock's guest and owner are different identities.** `signInAsGuest` gives
+an anonymous `local-guest`; only the email link makes you `local-owner`. The
+session persists, so sharing one identity would hand any customer who joined a
+queue the shop's admin screens. `ShopHome` also refuses an anonymous user,
+which is right for both backends.
+
 **The seeded shops follow the viewer.** They are defined in `src/lib/mock/seed.ts`
 as offsets in kilometres, and `placeMockShopsNear` resolves them against the
 position discovery is querying from. Hardcoded coordinates meant an empty list

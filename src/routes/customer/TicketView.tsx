@@ -14,6 +14,8 @@ interface Props {
   ticketId: string;
   queue: Queue;
   activeStations: number;
+  /** Named counters, so a called ticket can say which one to walk to. */
+  stations: { id: string; label: string }[];
   onLeft: () => void;
 }
 
@@ -31,6 +33,7 @@ export function TicketView({
   ticketId,
   queue,
   activeStations,
+  stations,
   onLeft,
 }: Props) {
   const ticket = useDoc(ticketDoc(shopId, queueId, ticketId));
@@ -56,13 +59,20 @@ export function TicketView({
   }
 
   const t = ticket.data;
+  const tillName =
+    activeStations > 1 && t.station
+      ? (stations.find((s) => s.id === t.station)?.label ?? null)
+      : null;
 
   if (t.state === 'serving') {
     return (
       <section className="now-serving">
         <p className="label">It&rsquo;s your turn</p>
         <p className="called-name">{t.displayName}</p>
-        {t.station && <p className="called-station">Go to {t.station}</p>}
+        {/* `ticket.station` is an id, not a label — printing it raw showed
+            the customer something like "Go to station3-muay189". And with one
+            counter there is nowhere else to go, so it says nothing. */}
+        {tillName && <p className="called-station">Go to {tillName}</p>}
       </section>
     );
   }

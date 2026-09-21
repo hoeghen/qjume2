@@ -17,20 +17,31 @@ import type {
  */
 export const MOCK_CENTRE = { lat: 51.5072, lng: -0.1276 };
 
-interface SeedShop {
-  shop: string;
+/** One line at a shop. A shop can run several. */
+interface SeedQueue {
   queue: string;
+  description: string | null;
+  waiting: string[];
+  status: Queue['status'];
+  /** Average seconds per customer — what turns a count into a wait. */
+  serviceSeconds: number;
+  /** Counters serving this line. One unless stated. */
+  tills?: number;
+}
+
+interface SeedShop extends SeedQueue {
+  shop: string;
   address: string;
   category: Queue['category'];
-  description: string | null;
   /** Kilometres north (+) and east (+) of whoever is looking. */
   north: number;
   east: number;
-  waiting: string[];
-  status: Queue['status'];
   plan: Shop['plan'];
-  /** Average seconds per customer — what turns a count into a wait. */
-  serviceSeconds: number;
+  /**
+   * Further lines at the same shop. A pharmacy with one queue makes it look
+   * as though a shop can only have one, which is not what the product does.
+   */
+  moreQueues?: SeedQueue[];
   /** True for the one shop signing in puts you in charge of. */
   yours?: boolean;
 }
@@ -48,6 +59,23 @@ const SHOPS: SeedShop[] = [
     status: 'open',
     plan: 'paid',
     serviceSeconds: 240,
+    tills: 2,
+    moreQueues: [
+      {
+        queue: 'Vaccinations',
+        description: 'Flu and travel jabs.',
+        waiting: ['Dana', 'Esa'],
+        status: 'open',
+        serviceSeconds: 420,
+      },
+      {
+        queue: 'Collections',
+        description: null,
+        waiting: [],
+        status: 'open',
+        serviceSeconds: 90,
+      },
+    ],
     // Signing in lands on this one, mid-service, so the shop side has
     // something to do from the first tap.
     yours: true,
@@ -77,6 +105,24 @@ const SHOPS: SeedShop[] = [
     status: 'open',
     plan: 'paid',
     serviceSeconds: 600,
+    tills: 3,
+    moreQueues: [
+      {
+        queue: 'Housing',
+        description: 'Tenancy and council tax.',
+        waiting: ['Rui', 'Saga', 'Tan', 'Ulla'],
+        status: 'open',
+        serviceSeconds: 780,
+        tills: 2,
+      },
+      {
+        queue: 'Parking permits',
+        description: null,
+        waiting: ['Vito'],
+        status: 'drainMode',
+        serviceSeconds: 240,
+      },
+    ],
   },
   {
     shop: 'Northside Barbers',
@@ -116,6 +162,16 @@ const SHOPS: SeedShop[] = [
     status: 'open',
     plan: 'paid',
     serviceSeconds: 480,
+    tills: 2,
+    moreQueues: [
+      {
+        queue: 'Blood tests',
+        description: 'Fasting appointments before 10am.',
+        waiting: ['Bo', 'Cai', 'Dee'],
+        status: 'open',
+        serviceSeconds: 300,
+      },
+    ],
   },
   {
     shop: 'Camden Phone Repair',
@@ -324,6 +380,15 @@ const SHOPS: SeedShop[] = [
     status: 'open',
     plan: 'paid',
     serviceSeconds: 400,
+    moreQueues: [
+      {
+        queue: 'Mortgage advice',
+        description: 'By appointment, walk-ins if a slot frees up.',
+        waiting: ['Kai'],
+        status: 'open',
+        serviceSeconds: 2700,
+      },
+    ],
   },
   {
     shop: 'Parkside Butcher',
@@ -459,7 +524,6 @@ export function seedMockBackend(): void {
 
   for (const entry of SHOPS) {
     const shopId = mockId('shop');
-    const queueId = mockId('queue');
     const { lat, lng } = coordsFor(MOCK_CENTRE, entry.north, entry.east);
 
     const shop: Shop = {
@@ -470,84 +534,88 @@ export function seedMockBackend(): void {
     };
     mockStore.set(`shops/${shopId}`, shop as unknown as Record<string, unknown>);
 
-    let lastPosition = 0;
-    entry.waiting.forEach((displayName, index) => {
-      const position =
-        index === 0 ? firstPosition() : nextPosition(lastPosition);
-      lastPosition = position;
-      const ticketId = mockId('ticket');
+    // The shop's own fields describe its first line; `moreQueues` adds the
+    // rest. They share the shop's name, address and position because they are
+    // the same building.
+    for (const line of [entry, ...(entry.moreQueues ?? [])]) {
+      const queueId = mockId('queue');
+      const queuePath = `shops/${shopId}/queues/${queueId}`;
 
-      const ticket: Ticket = {
-        displayName,
-        number: index + 1,
-        position,
-        state: 'waiting',
-        noShowCount: 0,
-        station: null,
-        joinedAt: Date.now() - (entry.waiting.length - index) * 60_000,
-        calledAt: null,
-        holderKey: null,
+      let lastPosition = 0;
+      line.waiting.forEach((displayName, index) => {
+        const position =
+          index === 0 ? firstPosition() : nextPosition(lastPosition);
+        lastPosition = position;
+        const ticketId = mockId('ticket');
+
+        const ticket: Ticket = {
+          displayName,
+          number: index + 1,
+          position,
+          state: 'waiting',
+          noShowCount: 0,
+          station: null,
+          joinedAt: Date.now() - (line.waiting.length - index) * 60_000,
+          calledAt: null,
+          holderKey: null,
+        };
+        mockStore.set(
+          `${queuePath}/tickets/${ticketId}`,
+          ticket as unknown as Record<string, unknown>,
+        );
+
+        const contact: TicketContact = {
+          customerUid: null,
+          anonymousId: null,
+          resumeCodeHash: '',
+          email: null,
+          phone: null,
+          fcmTokens: [],
+          dispatchedMilestones: [],
+        };
+        mockStore.set(
+          `${queuePath}/tickets/${ticketId}/private/contact`,
+          contact as unknown as Record<string, unknown>,
+        );
+      });
+
+      const queue: Queue = {
+        name: line.queue,
+        shopName: entry.shop,
+        description: line.description,
+        category: entry.category,
+        maxSize: 50,
+        address: entry.address,
+        lat,
+        lng,
+        geohash: mockGeohash(lat, lng),
+        avgServiceTimeSeconds: line.serviceSeconds,
+        noShowPenalty: 'back3',
+        status: line.status,
+        schedule: null,
+        currentNumber: 0,
+        lastIssuedNumber: line.waiting.length,
+        lastPosition,
+        lastServedAt: null,
+        observedServiceTimeSeconds: null,
+        servedSampleCount: 0,
+        waitingCount: line.waiting.length,
       };
-      mockStore.set(
-        `shops/${shopId}/queues/${queueId}/tickets/${ticketId}`,
-        ticket as unknown as Record<string, unknown>,
-      );
+      mockStore.set(queuePath, queue as unknown as Record<string, unknown>);
+      offsets[queuePath] = { north: entry.north, east: entry.east };
 
-      const contact: TicketContact = {
-        customerUid: null,
-        anonymousId: null,
-        resumeCodeHash: '',
-        email: null,
-        phone: null,
-        fcmTokens: [],
-        dispatchedMilestones: [],
-      };
-      mockStore.set(
-        `shops/${shopId}/queues/${queueId}/tickets/${ticketId}/private/contact`,
-        contact as unknown as Record<string, unknown>,
-      );
-    });
-
-    const queue: Queue = {
-      name: entry.queue,
-      shopName: entry.shop,
-      description: entry.description,
-      category: entry.category,
-      maxSize: 50,
-      address: entry.address,
-      lat,
-      lng,
-      geohash: mockGeohash(lat, lng),
-      avgServiceTimeSeconds: entry.serviceSeconds,
-      noShowPenalty: 'back3',
-      status: entry.status,
-      schedule: null,
-      currentNumber: 0,
-      lastIssuedNumber: entry.waiting.length,
-      lastPosition,
-      lastServedAt: null,
-      observedServiceTimeSeconds: null,
-      servedSampleCount: 0,
-      waitingCount: entry.waiting.length,
-    };
-    mockStore.set(
-      `shops/${shopId}/queues/${queueId}`,
-      queue as unknown as Record<string, unknown>,
-    );
-    offsets[`shops/${shopId}/queues/${queueId}`] = {
-      north: entry.north,
-      east: entry.east,
-    };
-
-    const station: Station = {
-      label: 'Till 1',
-      activeStaffUid: entry.yours ? 'local-owner' : `other-${shopId}`,
-      currentTicketId: null,
-    };
-    mockStore.set(
-      `shops/${shopId}/queues/${queueId}/stations/${mockId('station')}`,
-      station as unknown as Record<string, unknown>,
-    );
+      for (let till = 1; till <= (line.tills ?? 1); till += 1) {
+        const station: Station = {
+          label: `Till ${till}`,
+          activeStaffUid: entry.yours ? 'local-owner' : `other-${shopId}`,
+          currentTicketId: null,
+        };
+        mockStore.set(
+          `${queuePath}/stations/${mockId('station')}`,
+          station as unknown as Record<string, unknown>,
+        );
+      }
+    }
   }
 
   mockStore.set(PLACEMENT_PATH, {
