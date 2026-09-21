@@ -10,19 +10,26 @@ import { messageOf } from '../../lib/functions.js';
 import { Filters } from './components/Filters.js';
 import { QueueCard } from './components/QueueCard.js';
 
+/**
+ * How far the query reaches — a bound on the search, not a filter someone
+ * sets. Firestore's geohash lookup needs *some* range, and the list is cut by
+ * count rather than by distance, so this only has to be wide enough that the
+ * twenty nearest are all inside it.
+ */
+const SEARCH_RADIUS_KM = 50;
+
 const DEFAULTS: FilterState = {
-  // Wide enough that the default view really is the nearest ten rather than
-  // whatever happens to fall inside a small circle. Narrowing is what the
-  // radius control is for.
-  radiusKm: 25,
+  radiusKm: SEARCH_RADIUS_KM,
   category: 'all',
   status: 'active',
   search: '',
+  // The list is always ordered by distance; this only falls back to name when
+  // the browser cannot give us a position at all.
   sort: 'distance',
 };
 
 /** How many the list shows before it asks to be opened up. */
-const NEAREST = 10;
+const NEAREST = 20;
 
 /**
  * How many filters are narrowing the results.
@@ -36,7 +43,6 @@ function activeFilterCount(f: FilterState): number {
   if (f.search.trim() !== '') n += 1;
   if (f.category !== DEFAULTS.category) n += 1;
   if (f.status !== DEFAULTS.status) n += 1;
-  if (f.radiusKm !== DEFAULTS.radiusKm) n += 1;
   return n;
 }
 
@@ -64,7 +70,7 @@ export function CustomerHome() {
 
     setLoading(true);
     setError(null);
-    findQueuesNear(coords, filters.radiusKm)
+    findQueuesNear(coords, SEARCH_RADIUS_KM)
       .then((found) => {
         if (!cancelled) setQueues(found);
       })
@@ -78,10 +84,13 @@ export function CustomerHome() {
     return () => {
       cancelled = true;
     };
-  }, [coords, filters.radiusKm]);
+  }, [coords]);
 
   // Distance sorting is meaningless without a location; fall back to name so
   // the list still has a sensible order.
+  // The list is always in distance order. Name is the fallback for when the
+  // browser has actually refused or cannot answer — without a position there
+  // is no distance to order by, and an arbitrary order would be worse.
   useEffect(() => {
     if (noLocationPossible && filters.sort === 'distance') {
       setFilters((f) => ({ ...f, sort: 'name' }));
@@ -93,24 +102,11 @@ export function CustomerHome() {
     [queues, filters],
   );
 
-  /**
-   * The nearest ten, still in the order the sort asked for.
-   *
-   * Cutting by distance rather than by the current sort keeps "the ten
-   * nearest" true whichever way the list is ordered: sorting by wait then
-   * answers "shortest wait near me", not "shortest wait in London".
-   */
-  const shown = useMemo(() => {
-    if (showAll || visible.length <= NEAREST) return visible;
-    if (!hasLocation) return visible.slice(0, NEAREST);
-    const nearest = new Set(
-      [...visible]
-        .sort((a, b) => a.distanceKm - b.distanceKm)
-        .slice(0, NEAREST)
-        .map((q) => `${q.shopId}/${q.id}`),
-    );
-    return visible.filter((q) => nearest.has(`${q.shopId}/${q.id}`));
-  }, [visible, showAll, hasLocation]);
+  /** The closest twenty. `visible` is already in distance order. */
+  const shown = useMemo(
+    () => (showAll ? visible : visible.slice(0, NEAREST)),
+    [visible, showAll],
+  );
 
   const beyond = visible.length - shown.length;
   const activeFilters = activeFilterCount(filters);
@@ -167,7 +163,6 @@ export function CustomerHome() {
         hidden={!showFilters}
         value={filters}
         onChange={setFilters}
-        canUseDistance={!noLocationPossible}
       />
 
       {locationStatus === 'denied' && (
@@ -196,7 +191,7 @@ export function CustomerHome() {
       {queues && visible.length === 0 && !loading && (
         <p className="muted">
           {queues.length === 0
-            ? 'No queues within this distance. Try a wider search.'
+            ? 'No queues near you yet.'
             : 'No queues match these filters.'}
         </p>
       )}
@@ -211,7 +206,7 @@ export function CustomerHome() {
           away rather than being unreachable. */}
       {beyond > 0 && (
         <p className="list-note">
-          Showing the {NEAREST} nearest.{' '}
+          Showing the {NEAREST} closest.{' '}
           <button type="button" className="link" onClick={() => setShowAll(true)}>
             Show all {visible.length}
           </button>
@@ -221,7 +216,7 @@ export function CustomerHome() {
         <p className="list-note">
           Showing all {visible.length}.{' '}
           <button type="button" className="link" onClick={() => setShowAll(false)}>
-            Show the {NEAREST} nearest
+            Show the {NEAREST} closest
           </button>
         </p>
       )}

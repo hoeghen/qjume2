@@ -1,5 +1,5 @@
 import { QUEUE_CATEGORIES, type QueueCategory } from '../../../types/index.js';
-import type { Filters as FilterState, SortKey } from '../../../lib/discovery.js';
+import type { Filters as FilterState } from '../../../lib/discovery.js';
 
 export const CATEGORY_LABELS: Record<QueueCategory, string> = {
   'food-and-drink': 'Food and drink',
@@ -15,28 +15,15 @@ export const CATEGORY_LABELS: Record<QueueCategory, string> = {
   other: 'Other',
 };
 
-const RADII = [1, 2, 5, 10, 25, 50];
-
 interface Props {
   /** Ties the panel to the button that discloses it. */
   id: string;
   hidden: boolean;
   value: FilterState;
   onChange: (next: FilterState) => void;
-  /**
-   * False only once the browser has actually refused or cannot answer — not
-   * while a position is still being fetched.
-   */
-  canUseDistance: boolean;
 }
 
-export function Filters({
-  id,
-  hidden,
-  value,
-  onChange,
-  canUseDistance,
-}: Props) {
+export function Filters({ id, hidden, value, onChange }: Props) {
   const set = <K extends keyof FilterState>(key: K, v: FilterState[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -57,21 +44,6 @@ export function Filters({
       />
 
       <div className="filter-row">
-        <label>
-          <span>Within</span>
-          <select
-            value={value.radiusKm}
-            disabled={!canUseDistance}
-            onChange={(e) => set('radiusKm', Number(e.target.value))}
-          >
-            {RADII.map((r) => (
-              <option key={r} value={r}>
-                {r} km
-              </option>
-            ))}
-          </select>
-        </label>
-
         <label>
           <span>Category</span>
           <select
@@ -100,18 +72,6 @@ export function Filters({
             <option value="active">Open now</option>
             <option value="inactive">Closed</option>
             <option value="all">Any</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Sort by</span>
-          <select
-            value={value.sort}
-            onChange={(e) => set('sort', e.target.value as SortKey)}
-          >
-            {canUseDistance && <option value="distance">Distance</option>}
-            <option value="name">Name</option>
-            <option value="wait">Wait time</option>
           </select>
         </label>
       </div>
