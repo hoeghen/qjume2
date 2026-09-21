@@ -299,6 +299,72 @@ const SHOPS: SeedShop[] = [
     plan: 'free',
     serviceSeconds: 240,
   },
+  {
+    shop: 'Seaside Pharmacy',
+    queue: 'Prescriptions',
+    address: '8 Marine Parade',
+    category: 'health-and-medical',
+    description: null,
+    north: -1.8,
+    east: 2.7,
+    waiting: ['Eira', 'Finn'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 210,
+  },
+  {
+    shop: 'Union Street Bank',
+    queue: 'Cashiers',
+    address: '15 Union Street',
+    category: 'banking-and-finance',
+    description: 'Paying in and foreign currency.',
+    north: 0.9,
+    east: -2.6,
+    waiting: ['Gwen', 'Hari', 'Ines', 'Jarl'],
+    status: 'open',
+    plan: 'paid',
+    serviceSeconds: 400,
+  },
+  {
+    shop: 'Parkside Butcher',
+    queue: 'Service counter',
+    address: '3 Park Row',
+    category: 'food-and-drink',
+    description: null,
+    north: 2.4,
+    east: 1.4,
+    waiting: ['Kris', 'Lotta', 'Mads'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 120,
+  },
+  {
+    shop: 'City Driving Test Centre',
+    queue: 'Practical tests',
+    address: '50 Airport Way',
+    category: 'transport-and-travel',
+    description: 'Arrive fifteen minutes before your slot.',
+    north: 5.2,
+    east: -3.3,
+    waiting: ['Nils', 'Oda'],
+    status: 'drainMode',
+    plan: 'paid',
+    serviceSeconds: 2400,
+  },
+  {
+    shop: 'Hillside Physio',
+    queue: 'Walk-in clinic',
+    address: '22 Hillside Road',
+    category: 'health-and-medical',
+    description: null,
+    north: 3.9,
+    east: 3.8,
+    waiting: ['Pelle', 'Rikke', 'Sofie'],
+    // Heartbeat dropped: still open, taking no new joiners. See CLAUDE.md 4.
+    status: 'unavailable',
+    plan: 'free',
+    serviceSeconds: 900,
+  },
 ];
 
 /**
@@ -374,7 +440,12 @@ export function placeMockShopsNear(centre: { lat: number; lng: number }): void {
 let seeded = false;
 
 /**
- * Puts twenty shops in the store the first time the app runs.
+ * Puts twenty-five shops in the store the first time the app runs.
+ *
+ * Twenty-two are open or closing, so the default list — which hides shut
+ * queues — has a full twenty to show. The other three are closed, paused and
+ * offline, and exist so the status filter and its badges have something real
+ * to reveal.
  *
  * Skipped once anything is stored, so a returning visitor keeps the queue
  * they joined and the shop they were serving rather than having it replaced

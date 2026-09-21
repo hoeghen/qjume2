@@ -62,7 +62,10 @@ kept unedited.
    There is no sort control; `applyFilters` still supports the other sort keys
    and is still tested, the screen just never asks for them. Name order is the
    fallback for when the browser refuses a position, because then there is no
-   distance to order by.
+   distance to order by. **Closed, paused and offline queues are out by
+   default** — someone on this screen wants somewhere to join now — and the
+   status control brings them back. `drainMode` stays in: it is still open,
+   just not to remote joiners.
 
 4. **Discovery rows show the wait and the waiting count.** PRD 4.1 keeps the
    list to shop name and address, with numbers behind the tap-through. The
