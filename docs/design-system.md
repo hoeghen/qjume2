@@ -15,7 +15,7 @@ design said; the stylesheet is the source of truth for what the app does.
 | Orange accent | `oklch(0.62 0.19 38)` | **Large or decorative only (≥24px)** — fails contrast below that |
 | Orange text/CTA | `oklch(0.5 0.17 42)` | Buttons, wait numbers, links — 4.5:1 safe |
 | Orange on dark | `oklch(0.68 0.19 38)` | Eyebrows and labels on ink |
-| Cream | `oklch(0.94 0.03 55)` | Page background |
+| Cream | `oklch(0.94 0.03 55)` | *Canvas only — see "Adapted" below* |
 | Cream line | `oklch(0.88 0.02 55)` | Borders on cream |
 | Cream tint | `oklch(0.94 0.015 55)` | Icon tiles, badges |
 | Muted | `oklch(0.5 0.02 255 / 0.65)` | Secondary text on white |
@@ -73,6 +73,22 @@ outlined figures and one orange "next" figure on a dashed line.
 the monitor is customer-facing too. Eyebrow `[ LIVE ]`, two-weight headline,
 a progress line of circles, stat pair, "Now serving" tiles, "Up next" rows,
 `Call next →` primary and a secondary.
+
+## Adapted
+
+**Ink fills the viewport; the cream page is gone.** The canvas draws ink panels
+floating on a cream page with a 32px radius. In the app the panels are the
+page: edge to edge, full height, no radius, one gutter set on `.app`. Cream
+survives only as `--cream-tint`, the icon-tile and badge fill inside white
+rows. Every component that was a light panel on cream is now an inset
+(`rgba(255,255,255,0.08)`) on ink.
+
+**The list pairs up past 760px.** The canvas draws one column. On a laptop that
+leaves half the window empty, so rows go to a `minmax(330px, 1fr)` grid.
+
+**Rows stack below 460px.** The canvas's row assumes width the phone does not
+have; below this the figures drop to their own line under the name, with the
+icon staying beside it.
 
 ## Not implemented
 

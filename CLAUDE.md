@@ -90,9 +90,17 @@ spec is in `docs/design-system.md`. Things that are easy to undo by accident:
 - **Two oranges, not one.** `--orange` (bright) fails contrast below 24px and is
   for large or decorative use only. `--orange-cta` is the 4.5:1-safe text and
   button colour. Never swap one for the other to "match" something.
-- **One committed look, not a light/dark pair.** Cream page, ink panels. There is
-  no dark-mode variant because the design does not define one, and inverting it
-  would invent a scheme nobody drew. `color-scheme: light` is deliberate.
+- **One committed look, not a light/dark pair.** Ink fills the viewport; there
+  is no dark-mode variant because the design defines one world and inverting it
+  would invent a scheme nobody drew.
+- **Two surfaces, each with its own text colour.** The page is ink with white
+  text; a card is white with ink text (`--card` / `--card-fg`). Anything setting
+  a background must set the matching foreground, or it inherits white onto
+  white. The canvas's cream page is gone — cream survives only as
+  `--cream-tint`, the icon and badge fill *inside* white cards.
+- **The gutter is set once**, on `.app`, with the safe-area insets folded in.
+  Screens lay out inside it and never add side padding of their own. Heights
+  use `dvh`, not `vh`, or the ink stops short of the bottom on a phone.
 - **Fonts are self-hosted**, not linked from Google. A linked font costs a
   round-trip before first paint and renders nothing offline — wrong for a PWA
   built to survive a dropped network. Sora ships as one variable file covering

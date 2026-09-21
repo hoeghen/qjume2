@@ -71,7 +71,7 @@ export function CustomerHome() {
   );
 
   return (
-    <main className="screen on-dark">
+    <main className="screen">
       <header className="screen-head">
         <Logo size={30} />
         <span className="screen-count">
@@ -79,7 +79,7 @@ export function CustomerHome() {
         </span>
       </header>
 
-      <p className="eyebrow eyebrow-on-dark">[ CUSTOMER MODE ]</p>
+      <p className="eyebrow">[ CUSTOMER MODE ]</p>
 
       <div className="screen-intro">
         <h1>
