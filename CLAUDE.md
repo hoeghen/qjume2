@@ -51,6 +51,14 @@ kept unedited.
    alone. Keep that asymmetry: it is the point of the decision, not an
    oversight.
 
+5. **Discovery is always ordered by distance, closest twenty.** No radius
+   control and no sort control: the search bound in `CustomerHome` is a query
+   bound (Firestore's geohash lookup needs a range), not a filter anyone sets,
+   and the list is cut by count instead. `applyFilters` still supports the
+   other sort keys and is still tested — the screen just never asks for them.
+   Name order is the fallback for when the browser refuses a position, because
+   then there is no distance to order by.
+
 4. **Discovery rows show the wait and the waiting count.** PRD 4.1 keeps the
    list to shop name and address, with numbers behind the tap-through. The
    design canvas puts them on the row, and the list can already be *sorted* by
