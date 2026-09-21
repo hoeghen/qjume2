@@ -100,13 +100,18 @@ spec is in `docs/design-system.md`. Things that are easy to undo by accident:
   `--cream-tint`, the icon and badge fill *inside* white cards.
 - **The gutter is set once**, on `.app`, with the safe-area insets folded in.
   Screens lay out inside it and never add side padding of their own. Heights
-  use `dvh`, not `vh`, or the ink stops short of the bottom on a phone.
+  use `dvh`, not `vh`, or the ink stops short of the bottom on a phone. There
+  is no page-width cap: the app uses the whole window, and the limits that
+  keep prose readable live on the text blocks instead.
+- **A list row's shape follows its container, not the viewport.** A card in a
+  three-column grid on a laptop is narrower than the same card in a
+  single-column list on a tablet, so the figures sit under the name by default
+  and only go beside it in the 461–759px window where the column is wide.
 - **Fonts are self-hosted**, not linked from Google. A linked font costs a
   round-trip before first paint and renders nothing offline — wrong for a PWA
   built to survive a dropped network. Sora ships as one variable file covering
   every weight. DM Mono has nothing above 500, so the design's 600/700 mono
   labels map to 500 rather than being synthesised into a fake bold.
-- Ink panels carry `.on-dark` so buttons, labels and muted text flip with them.
 
 ## iOS push — read before touching notifications
 
