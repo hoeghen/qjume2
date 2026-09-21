@@ -11,15 +11,17 @@ import { Filters } from './components/Filters.js';
 import { QueueCard } from './components/QueueCard.js';
 
 /**
- * How far the query reaches — a bound on the search, not a filter someone
- * sets. Firestore's geohash lookup needs *some* range, and the list is cut by
- * count rather than by distance, so this only has to be wide enough that the
- * twenty nearest are all inside it.
+ * How far the query reaches — a bound on the search, not the filter.
+ * Firestore's geohash lookup needs *some* range, and by default the list is
+ * cut by count rather than by distance, so this only has to be wide enough
+ * that the twenty closest are all inside it. The distance filter in the panel
+ * narrows what comes back; it never reaches past this.
  */
 const SEARCH_RADIUS_KM = 50;
 
 const DEFAULTS: FilterState = {
-  radiusKm: SEARCH_RADIUS_KM,
+  // No distance limit unless someone opens the panel and sets one.
+  radiusKm: null,
   category: 'all',
   status: 'active',
   search: '',
@@ -40,6 +42,7 @@ const NEAREST = 20;
  */
 function activeFilterCount(f: FilterState): number {
   let n = 0;
+  if (f.radiusKm !== null) n += 1;
   if (f.search.trim() !== '') n += 1;
   if (f.category !== DEFAULTS.category) n += 1;
   if (f.status !== DEFAULTS.status) n += 1;
@@ -163,6 +166,7 @@ export function CustomerHome() {
         hidden={!showFilters}
         value={filters}
         onChange={setFilters}
+        canUseDistance={!noLocationPossible}
       />
 
       {locationStatus === 'denied' && (

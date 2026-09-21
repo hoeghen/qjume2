@@ -35,12 +35,38 @@ function queue(over: Partial<DiscoveredQueue> = {}): DiscoveredQueue {
 }
 
 const base: Filters = {
-  radiusKm: 5,
+  // No distance limit unless a test sets one — matching the screen's default.
+  radiusKm: null,
   category: 'all',
   status: 'all',
   search: '',
   sort: 'distance',
 };
+
+describe('the distance filter', () => {
+  const near = queue({ id: 'near', distanceKm: 0.4 });
+  const mid = queue({ id: 'mid', distanceKm: 4 });
+  const far = queue({ id: 'far', distanceKm: 9 });
+
+  it('keeps everything when no limit is set', () => {
+    const result = applyFilters([near, mid, far], { ...base, radiusKm: null });
+    expect(result.map((q) => q.id)).toEqual(['near', 'mid', 'far']);
+  });
+
+  it('drops what is beyond the limit', () => {
+    const result = applyFilters([near, mid, far], { ...base, radiusKm: 5 });
+    expect(result.map((q) => q.id)).toEqual(['near', 'mid']);
+  });
+
+  it('keeps a queue sitting exactly on the limit', () => {
+    const result = applyFilters([near, mid, far], { ...base, radiusKm: 4 });
+    expect(result.map((q) => q.id)).toEqual(['near', 'mid']);
+  });
+
+  it('can exclude everything', () => {
+    expect(applyFilters([near, mid, far], { ...base, radiusKm: 0.1 })).toEqual([]);
+  });
+});
 
 describe('filtering', () => {
   it('sorts by distance, nearest first', () => {
