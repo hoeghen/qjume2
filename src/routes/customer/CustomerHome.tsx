@@ -23,7 +23,10 @@ const DEFAULTS: FilterState = {
   // No distance limit unless someone opens the panel and sets one.
   radiusKm: null,
   category: 'all',
-  status: 'active',
+  // Everything nearby, closed shops included. They carry a status badge and
+  // cannot be joined, and knowing a shop exists but is shut is worth more
+  // than a list that silently omits it.
+  status: 'all',
   search: '',
   // The list is always ordered by distance; this only falls back to name when
   // the browser cannot give us a position at all.

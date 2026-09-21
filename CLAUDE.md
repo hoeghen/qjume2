@@ -88,6 +88,13 @@ boundary, and with the whole database on one device there is nobody to defend
 it from. Enforcement lives in the rules and functions, which is why they still
 carry the tests.
 
+**The seeded shops follow the viewer.** They are defined in `src/lib/mock/seed.ts`
+as offsets in kilometres, and `placeMockShopsNear` resolves them against the
+position discovery is querying from. Hardcoded coordinates meant an empty list
+for everyone outside one city, and every browser check pinned to that city so
+nothing caught it. Any test that exercises discovery should use a location that
+is *not* the seed's fallback centre.
+
 Do not reintroduce "demo" framing. The mock build is the product running on a
 local backend, not a preview of it — no banners, and no copy telling people
 their data is fake.

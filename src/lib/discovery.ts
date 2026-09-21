@@ -10,6 +10,7 @@ import { distanceBetween, geohashQueryBounds } from 'geofire-common';
 import { db } from './firebase.js';
 import { queueConverter } from './firestore/converters.js';
 import { isMock } from './mock/mode.js';
+import { placeMockShopsNear } from './mock/seed.js';
 import { mockStore } from './mock/store.js';
 import type { Queue, QueueCategory, QueueStatus } from '../types/index.js';
 
@@ -61,6 +62,10 @@ export async function findQueuesNear(
   radiusKm: number,
 ): Promise<DiscoveredQueue[]> {
   if (isMock) {
+    // The seeded shops are invented, so they belong around whoever is asking
+    // rather than at fixed coordinates in one city.
+    placeMockShopsNear(center);
+
     // A handful of seeded queues, so the geohash ranges buy nothing — the true
     // distance filter below is the whole of it.
     return mockStore

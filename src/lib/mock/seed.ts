@@ -8,7 +8,13 @@ import type {
   TicketContact,
 } from '../../types/index.js';
 
-/** Roughly central London, so the shops sit a believable distance apart. */
+/**
+ * Where the shops sit until someone's real position is known.
+ *
+ * Only a starting point. The shops are defined as offsets and moved to
+ * whoever opens the app — hardcoded coordinates would mean an empty list for
+ * everyone outside one city, which is exactly what happened.
+ */
 export const MOCK_CENTRE = { lat: 51.5072, lng: -0.1276 };
 
 interface SeedShop {
@@ -17,8 +23,9 @@ interface SeedShop {
   address: string;
   category: Queue['category'];
   description: string | null;
-  lat: number;
-  lng: number;
+  /** Kilometres north (+) and east (+) of whoever is looking. */
+  north: number;
+  east: number;
   waiting: string[];
   status: Queue['status'];
   plan: Shop['plan'];
@@ -32,11 +39,11 @@ const SHOPS: SeedShop[] = [
   {
     shop: 'Riverside Pharmacy',
     queue: 'Prescriptions',
-    address: '1 River Lane, SE1',
+    address: '1 River Lane',
     category: 'health-and-medical',
     description: 'Walk-in flu jab clinic, no appointment needed.',
-    lat: 51.5045,
-    lng: -0.1215,
+    north: -0.3,
+    east: 0.4,
     waiting: ['Ana', 'Bilal', 'Chen'],
     status: 'open',
     plan: 'paid',
@@ -46,41 +53,39 @@ const SHOPS: SeedShop[] = [
     yours: true,
   },
   {
-    shop: 'Mill Road Bakery',
+    shop: 'Corner Deli',
     queue: 'Counter',
-    address: '14 Mill Road, N1',
+    address: '14 Mill Road',
     category: 'food-and-drink',
     description: null,
-    lat: 51.5331,
-    lng: -0.1059,
+    north: 0.5,
+    east: -0.2,
     waiting: ['Dara', 'Eve', 'Femi', 'Gus', 'Hana', 'Ivo'],
     status: 'open',
     plan: 'free',
-    // A bakery counter moves fast, so six people is a short wait.
     serviceSeconds: 70,
   },
   {
     shop: 'Town Hall',
     queue: 'Registrations',
-    address: '2 Civic Square, WC1',
+    address: '2 Civic Square',
     category: 'government-and-public-services',
     description: 'Birth, death and marriage certificates.',
-    lat: 51.5219,
-    lng: -0.1275,
+    north: 1.1,
+    east: 0.3,
     waiting: ['Jo', 'Kit', 'Lena', 'Mo', 'Nia', 'Omar', 'Pia', 'Quinn'],
     status: 'open',
     plan: 'paid',
-    // The slowest counter here: appointments run long.
     serviceSeconds: 600,
   },
   {
     shop: 'Northside Barbers',
     queue: 'Cuts',
-    address: '77 High Street, NW1',
+    address: '77 High Street',
     category: 'personal-care',
     description: null,
-    lat: 51.5402,
-    lng: -0.1433,
+    north: 1.6,
+    east: -0.9,
     waiting: ['Rae'],
     status: 'drainMode',
     plan: 'free',
@@ -89,11 +94,11 @@ const SHOPS: SeedShop[] = [
   {
     shop: 'Quay Parade Bank',
     queue: 'Enquiries',
-    address: '5 Quay Parade, E1',
+    address: '5 Quay Parade',
     category: 'banking-and-finance',
     description: null,
-    lat: 51.5118,
-    lng: -0.0713,
+    north: 0.8,
+    east: 2.4,
     waiting: [],
     status: 'closed',
     plan: 'free',
@@ -102,11 +107,11 @@ const SHOPS: SeedShop[] = [
   {
     shop: 'Bridge Street Clinic',
     queue: 'Walk-in',
-    address: '2 Bridge Street, SW1',
+    address: '2 Bridge Street',
     category: 'health-and-medical',
     description: 'Minor injuries and same-day appointments.',
-    lat: 51.5008,
-    lng: -0.1246,
+    north: -0.7,
+    east: 0.2,
     waiting: ['Sana', 'Theo', 'Uma', 'Viktor', 'Wren', 'Xan', 'Yara', 'Zeke', 'Aria'],
     status: 'open',
     plan: 'paid',
@@ -115,24 +120,24 @@ const SHOPS: SeedShop[] = [
   {
     shop: 'Camden Phone Repair',
     queue: 'Repairs',
-    address: '31 Camden High Street, NW1',
+    address: '31 Camden High Street',
     category: 'retail-and-shopping',
     description: 'Screen swaps while you wait.',
-    lat: 51.5390,
-    lng: -0.1426,
+    north: 2.2,
+    east: -1.1,
     waiting: ['Brett', 'Cleo'],
     status: 'open',
     plan: 'free',
     serviceSeconds: 900,
   },
   {
-    shop: 'Southbank Passport Office',
+    shop: 'Passport Office',
     queue: 'Applications',
-    address: '9 Belvedere Road, SE1',
+    address: '9 Belvedere Road',
     category: 'government-and-public-services',
     description: 'Bring both forms of ID.',
-    lat: 51.5055,
-    lng: -0.1160,
+    north: -0.2,
+    east: 0.9,
     waiting: ['Dita', 'Emre', 'Fleur', 'Gio', 'Hugo', 'Inga', 'Jonas'],
     status: 'paused',
     plan: 'paid',
@@ -141,11 +146,11 @@ const SHOPS: SeedShop[] = [
   {
     shop: 'Whitechapel Tyre & MOT',
     queue: 'Service desk',
-    address: '120 Whitechapel Road, E1',
+    address: '120 Church Road',
     category: 'automotive',
     description: null,
-    lat: 51.5175,
-    lng: -0.0616,
+    north: 1.0,
+    east: 3.1,
     waiting: ['Kasia', 'Liam', 'Milo', 'Nour'],
     status: 'open',
     plan: 'free',
@@ -154,15 +159,145 @@ const SHOPS: SeedShop[] = [
   {
     shop: 'Angel Nails & Spa',
     queue: 'Walk-ins',
-    address: '48 Upper Street, N1',
+    address: '48 Upper Street',
     category: 'personal-care',
     description: 'Walk-ins taken between bookings.',
-    lat: 51.5362,
-    lng: -0.1033,
+    north: 1.9,
+    east: 0.6,
     waiting: ['Otis', 'Pearl', 'Quill', 'Rosa', 'Sven'],
     status: 'open',
     plan: 'free',
     serviceSeconds: 1800,
+  },
+  {
+    shop: 'Harbour Post Office',
+    queue: 'Parcels',
+    address: '3 Harbour Way',
+    category: 'government-and-public-services',
+    description: null,
+    north: -1.4,
+    east: 1.2,
+    waiting: ['Tess', 'Umar', 'Vera'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 300,
+  },
+  {
+    shop: 'Greenfield Vets',
+    queue: 'Consultations',
+    address: '61 Greenfield Lane',
+    category: 'health-and-medical',
+    description: 'Emergencies seen same day.',
+    north: 2.8,
+    east: -2.0,
+    waiting: ['Wade', 'Xenia'],
+    status: 'open',
+    plan: 'paid',
+    serviceSeconds: 900,
+  },
+  {
+    shop: 'Station Coffee',
+    queue: 'Takeaway',
+    address: '1 Station Approach',
+    category: 'food-and-drink',
+    description: null,
+    north: -0.9,
+    east: -0.5,
+    waiting: ['Yusuf', 'Zara', 'Abe', 'Bea', 'Cai', 'Dot', 'Eli'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 55,
+  },
+  {
+    shop: 'Central Library',
+    queue: 'Help desk',
+    address: '12 Library Square',
+    category: 'education',
+    description: 'Printing, scanning and card renewals.',
+    north: 0.6,
+    east: -1.7,
+    waiting: ['Fern'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 360,
+  },
+  {
+    shop: 'Lakeside Opticians',
+    queue: 'Eye tests',
+    address: '24 Lakeside Parade',
+    category: 'health-and-medical',
+    description: null,
+    north: -2.3,
+    east: 0.8,
+    waiting: ['Gil', 'Hope', 'Ida', 'Jem'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 1200,
+  },
+  {
+    shop: 'Metro Tyres',
+    queue: 'Fitting bay',
+    address: '88 Trade Park',
+    category: 'automotive',
+    description: 'Four-wheel alignment while you wait.',
+    north: 3.4,
+    east: 2.2,
+    waiting: ['Kian', 'Lux'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 1500,
+  },
+  {
+    shop: 'Old Mill Bakery',
+    queue: 'Bread counter',
+    address: '7 Old Mill Yard',
+    category: 'food-and-drink',
+    description: null,
+    north: 4.1,
+    east: -0.7,
+    waiting: ['Mina', 'Noor', 'Ozzy'],
+    status: 'drainMode',
+    plan: 'free',
+    serviceSeconds: 80,
+  },
+  {
+    shop: 'Riverbank Dentist',
+    queue: 'Check-ups',
+    address: '40 Riverbank Road',
+    category: 'health-and-medical',
+    description: null,
+    north: -3.2,
+    east: -1.4,
+    waiting: ['Pim', 'Quinn', 'Ravi', 'Suki', 'Tom'],
+    status: 'open',
+    plan: 'paid',
+    serviceSeconds: 1080,
+  },
+  {
+    shop: 'Grand Theatre',
+    queue: 'Box office',
+    address: '2 Theatre Row',
+    category: 'events-and-attractions',
+    description: 'Same-day returns from one hour before curtain.',
+    north: 1.3,
+    east: 1.9,
+    waiting: ['Uma', 'Vik', 'Wil', 'Xia', 'Yan', 'Zoe', 'Ash', 'Bo'],
+    status: 'open',
+    plan: 'paid',
+    serviceSeconds: 180,
+  },
+  {
+    shop: 'Airport Transfers',
+    queue: 'Bookings',
+    address: 'Terminal 1, Arrivals',
+    category: 'transport-and-travel',
+    description: null,
+    north: 6.8,
+    east: 5.4,
+    waiting: ['Cass', 'Dov'],
+    status: 'open',
+    plan: 'free',
+    serviceSeconds: 240,
   },
 ];
 
@@ -181,10 +316,65 @@ function mockGeohash(lat: number, lng: number): string {
   return `${encode(lat, 90)}${encode(lng, 180)}`;
 }
 
+/** Where the offsets are currently resolved against, and by which queue. */
+interface Placement {
+  origin: { lat: number; lng: number };
+  /** Queue document path -> its offset, so only seeded shops ever move. */
+  offsets: Record<string, { north: number; east: number }>;
+}
+
+const PLACEMENT_PATH = 'mock/placement';
+const KM_PER_DEGREE = 111.32;
+
+function coordsFor(
+  origin: { lat: number; lng: number },
+  north: number,
+  east: number,
+): { lat: number; lng: number } {
+  const lat = origin.lat + north / KM_PER_DEGREE;
+  // Degrees of longitude shrink towards the poles, so the east offset is
+  // scaled by the latitude or the shops bunch up in Oslo and spread in Lagos.
+  const lngScale = Math.max(0.1, Math.cos((origin.lat * Math.PI) / 180));
+  return { lat, lng: origin.lng + east / (KM_PER_DEGREE * lngScale) };
+}
+
+/**
+ * Moves the seeded shops to whoever is looking.
+ *
+ * The shops are invented, so the only sensible place for them is around the
+ * person opening the app. Fixed coordinates meant an empty list for everyone
+ * outside one city — which is what "I see no shops" was.
+ *
+ * Only queues listed in the placement move: a queue someone created stays
+ * where they put it.
+ */
+export function placeMockShopsNear(centre: { lat: number; lng: number }): void {
+  const placement = mockStore.get<Placement>(PLACEMENT_PATH);
+  if (!placement) return;
+
+  // A few hundred metres is not worth rewriting every queue for.
+  const moved =
+    Math.abs(placement.origin.lat - centre.lat) > 0.005 ||
+    Math.abs(placement.origin.lng - centre.lng) > 0.005;
+  if (!moved) return;
+
+  for (const [path, offset] of Object.entries(placement.offsets)) {
+    const queue = mockStore.get<Queue>(path);
+    if (!queue) continue;
+    const { lat, lng } = coordsFor(centre, offset.north, offset.east);
+    mockStore.update(path, { lat, lng, geohash: mockGeohash(lat, lng) });
+  }
+
+  mockStore.set(PLACEMENT_PATH, {
+    ...placement,
+    origin: { lat: centre.lat, lng: centre.lng },
+  } as unknown as Record<string, unknown>);
+}
+
 let seeded = false;
 
 /**
- * Puts ten shops in the store the first time the app runs.
+ * Puts twenty shops in the store the first time the app runs.
  *
  * Skipped once anything is stored, so a returning visitor keeps the queue
  * they joined and the shop they were serving rather than having it replaced
@@ -194,9 +384,12 @@ export function seedMockBackend(): void {
   if (seeded || mockStore.restored) return;
   seeded = true;
 
+  const offsets: Placement['offsets'] = {};
+
   for (const entry of SHOPS) {
     const shopId = mockId('shop');
     const queueId = mockId('queue');
+    const { lat, lng } = coordsFor(MOCK_CENTRE, entry.north, entry.east);
 
     const shop: Shop = {
       name: entry.shop,
@@ -251,9 +444,9 @@ export function seedMockBackend(): void {
       category: entry.category,
       maxSize: 50,
       address: entry.address,
-      lat: entry.lat,
-      lng: entry.lng,
-      geohash: mockGeohash(entry.lat, entry.lng),
+      lat,
+      lng,
+      geohash: mockGeohash(lat, lng),
       avgServiceTimeSeconds: entry.serviceSeconds,
       noShowPenalty: 'back3',
       status: entry.status,
@@ -270,6 +463,10 @@ export function seedMockBackend(): void {
       `shops/${shopId}/queues/${queueId}`,
       queue as unknown as Record<string, unknown>,
     );
+    offsets[`shops/${shopId}/queues/${queueId}`] = {
+      north: entry.north,
+      east: entry.east,
+    };
 
     const station: Station = {
       label: 'Till 1',
@@ -281,4 +478,9 @@ export function seedMockBackend(): void {
       station as unknown as Record<string, unknown>,
     );
   }
+
+  mockStore.set(PLACEMENT_PATH, {
+    origin: MOCK_CENTRE,
+    offsets,
+  } as unknown as Record<string, unknown>);
 }
