@@ -1,6 +1,9 @@
 import { QUEUE_CATEGORIES, type QueueCategory } from '../../../types/index.js';
 import type { Filters as FilterState } from '../../../lib/discovery.js';
 
+/** Capped at the search bound: a wider limit would filter nothing. */
+const RADII = [1, 2, 5, 10, 25, 50];
+
 export const CATEGORY_LABELS: Record<QueueCategory, string> = {
   'food-and-drink': 'Food and drink',
   'health-and-medical': 'Health and medical',
@@ -21,9 +24,21 @@ interface Props {
   hidden: boolean;
   value: FilterState;
   onChange: (next: FilterState) => void;
+  /**
+   * False only once the browser has actually refused or cannot answer — not
+   * while a position is still being fetched. Without one there is no distance
+   * to measure against, so the limit has nothing to do.
+   */
+  canUseDistance: boolean;
 }
 
-export function Filters({ id, hidden, value, onChange }: Props) {
+export function Filters({
+  id,
+  hidden,
+  value,
+  onChange,
+  canUseDistance,
+}: Props) {
   const set = <K extends keyof FilterState>(key: K, v: FilterState[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -44,6 +59,25 @@ export function Filters({ id, hidden, value, onChange }: Props) {
       />
 
       <div className="filter-row">
+        <label>
+          <span>Within</span>
+          <select
+            value={value.radiusKm ?? ''}
+            disabled={!canUseDistance}
+            onChange={(e) =>
+              set('radiusKm', e.target.value === '' ? null : Number(e.target.value))
+            }
+          >
+            {/* The default. Not a distance, so it carries no number. */}
+            <option value="">Any distance</option>
+            {RADII.map((r) => (
+              <option key={r} value={r}>
+                {r} km
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label>
           <span>Category</span>
           <select

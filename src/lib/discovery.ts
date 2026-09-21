@@ -28,7 +28,15 @@ export interface Coordinates {
 export type SortKey = 'distance' | 'name' | 'wait';
 
 export interface Filters {
-  radiusKm: number;
+  /**
+   * Distance limit in kilometres, or null for no limit.
+   *
+   * Null by default: the list is the closest twenty, and a radius nobody
+   * chose should not be quietly deciding what counts as nearby. Setting one
+   * narrows that list; it does not widen it past the search bound the fetch
+   * already applied.
+   */
+  radiusKm: number | null;
   category: QueueCategory | 'all';
   status: 'all' | 'active' | 'inactive';
   search: string;
@@ -130,6 +138,9 @@ export function applyFilters(
   filters: Filters,
 ): DiscoveredQueue[] {
   const filtered = queues.filter((q) => {
+    if (filters.radiusKm !== null && q.distanceKm > filters.radiusKm) {
+      return false;
+    }
     if (filters.category !== 'all' && q.category !== filters.category) {
       return false;
     }
