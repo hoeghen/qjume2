@@ -26,7 +26,9 @@ export function ShopHome() {
   );
 
   if (authLoading) return <p className="panel">Loading…</p>;
-  if (!user) return <SignIn />;
+  // An anonymous customer is not a shop. Without this, someone who joined a
+  // queue would land in the admin screens of whatever shop that uid owns.
+  if (!user || user.isAnonymous) return <SignIn />;
   if (shopsLoading) return <p className="panel">Loading…</p>;
 
   const shop = shops?.[0];

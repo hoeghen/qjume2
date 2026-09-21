@@ -19,18 +19,60 @@ const EMAIL_KEY = 'qjume:pending-email';
  * The mock backend has no Firebase Auth, so it keeps its own session.
  * Signing in is instant and accepts anything — there is nothing to protect.
  */
-const localUser = {
-  uid: 'local-owner',
-  email: 'you@example.com',
-  isAnonymous: false,
-} as unknown as User;
+/**
+ * A shop owner and a customer are not the same person.
+ *
+ * Customers sign in anonymously just to get a uid, and that session persists
+ * like any other — so if both used one identity, joining a queue would hand
+ * the customer the shop's admin screens.
+ */
+type Session = 'owner' | 'guest';
 
-let localSignedIn = false;
+const LOCAL_USERS: Record<Session, User> = {
+  owner: {
+    uid: 'local-owner',
+    email: 'you@example.com',
+    isAnonymous: false,
+  } as unknown as User,
+  guest: {
+    uid: 'local-guest',
+    email: null,
+    isAnonymous: true,
+  } as unknown as User,
+};
+
+/**
+ * The session outlives a reload, like a real one.
+ *
+ * The store already persists, so without this a shop owner refreshing the
+ * serving screen kept their queue but lost their sign-in — half-remembered
+ * state, which is worse than either.
+ */
+const SESSION_KEY = 'qjume:session';
+
+function readSession(): Session | null {
+  try {
+    const stored = window.localStorage.getItem(SESSION_KEY);
+    return stored === 'owner' || stored === 'guest' ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+let localSession = readSession();
 const localWatchers = new Set<(user: User | null) => void>();
 
-function setLocalUser(signedIn: boolean) {
-  localSignedIn = signedIn;
-  for (const watcher of localWatchers) watcher(signedIn ? localUser : null);
+function setLocalUser(session: Session | null) {
+  localSession = session;
+  try {
+    if (session) window.localStorage.setItem(SESSION_KEY, session);
+    else window.localStorage.removeItem(SESSION_KEY);
+  } catch {
+    // Private mode or blocked storage: the session lasts the tab, which is
+    // the old behaviour rather than a failure.
+  }
+  const user = session ? LOCAL_USERS[session] : null;
+  for (const watcher of localWatchers) watcher(user);
 }
 
 /**
@@ -40,7 +82,7 @@ function setLocalUser(signedIn: boolean) {
  */
 export async function sendEmailLink(email: string): Promise<void> {
   if (isMock) {
-    setLocalUser(true);
+    setLocalUser('owner');
     return;
   }
   await sendSignInLinkToEmail(auth, email, {
@@ -98,7 +140,7 @@ export async function signInWithGoogle(): Promise<void> {
  */
 export async function signInWithApple(): Promise<void> {
   if (isMock) {
-    setLocalUser(true);
+    setLocalUser('owner');
     return;
   }
   await signInWithPopup(auth, new OAuthProvider('apple.com'));
@@ -107,7 +149,9 @@ export async function signInWithApple(): Promise<void> {
 /** Customers join without an account; anonymous auth still gives them a uid. */
 export async function signInAsGuest(): Promise<void> {
   if (isMock) {
-    setLocalUser(true);
+    // A guest, not the owner — joining a queue must not hand someone a shop.
+    // Never downgrade an owner who is already signed in.
+    setLocalUser(localSession ?? 'guest');
     return;
   }
   await signInAnonymously(auth);
@@ -115,7 +159,7 @@ export async function signInAsGuest(): Promise<void> {
 
 export function signOut(): Promise<void> {
   if (isMock) {
-    setLocalUser(false);
+    setLocalUser(null);
     return Promise.resolve();
   }
   return fbSignOut(auth);
@@ -124,7 +168,7 @@ export function signOut(): Promise<void> {
 export function watchAuth(fn: (user: User | null) => void): () => void {
   if (isMock) {
     localWatchers.add(fn);
-    fn(localSignedIn ? localUser : null);
+    fn(localSession ? LOCAL_USERS[localSession] : null);
     return () => localWatchers.delete(fn);
   }
   return onAuthStateChanged(auth, fn);

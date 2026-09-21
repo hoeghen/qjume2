@@ -3,7 +3,11 @@ import { Link, useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { setQueueStatus } from '../../lib/firestore/writes.js';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
-import { servingTickets, waitingTickets } from '../../lib/firestore/queries.js';
+import {
+  servingTickets,
+  stationsOf,
+  waitingTickets,
+} from '../../lib/firestore/queries.js';
 import { callNext, messageOf } from '../../lib/functions.js';
 import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { PauseBanner } from './components/PauseBanner.js';
@@ -60,6 +64,15 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     queueId ? servingTickets(shopId, queueId) : null,
     `${shopId}/${queueId}/serving`,
   );
+
+  const { data: stations } = useCollection(
+    stationsOf(shopId, queueId),
+    `${shopId}/${queueId}/serving-stations`,
+  );
+  // With one counter there is nothing to distinguish, so naming it is noise.
+  const manyTills = (stations?.length ?? 1) > 1;
+  const tillName = (id: string | null) =>
+    stations?.find((s) => s.id === id)?.label ?? '';
 
   const onPick = useCallback(
     (id: string, label: string) => {
@@ -158,7 +171,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <div>
           <h1>{q.name}</h1>
           <p className="muted">
-            {station.label || 'Serving'} · {waitingNow} waiting
+            {(manyTills && station.label) || 'Serving'} · {waitingNow} waiting
           </p>
         </div>
         <Link to="/shop" className="link">
@@ -171,7 +184,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           <>
             <p className="label">Now serving</p>
             <p className="called-name">{currentName}</p>
-            <p className="called-station">{station.label}</p>
+            {manyTills && <p className="called-station">{station.label}</p>}
           </>
         ) : (
           <p className="called-name muted">
@@ -211,7 +224,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           <ul className="pairings">
             {others.map((t) => (
               <li key={t.id}>
-                <strong>{t.displayName}</strong> — {t.station}
+                <strong>{t.displayName}</strong> — {tillName(t.station)}
               </li>
             ))}
           </ul>

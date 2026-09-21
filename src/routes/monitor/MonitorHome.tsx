@@ -50,6 +50,9 @@ export function MonitorHome() {
 
   const labelOf = (stationId: string | null) =>
     stations?.find((s) => s.id === stationId)?.label ?? '';
+  // One counter needs no name — "Till 1" only tells you something when there
+  // is a Till 2 to tell it apart from.
+  const manyTills = (stations?.length ?? 1) > 1;
 
   return (
     <main className="monitor screen">
@@ -62,7 +65,7 @@ export function MonitorHome() {
             {serving.map((t) => (
               <li key={t.id}>
                 <strong>{t.displayName}</strong>
-                <span>{labelOf(t.station)}</span>
+                {manyTills && <span>{labelOf(t.station)}</span>}
               </li>
             ))}
           </ul>

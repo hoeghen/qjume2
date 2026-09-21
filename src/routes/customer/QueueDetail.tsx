@@ -114,6 +114,7 @@ export function QueueDetail() {
           ticketId={ticketId}
           queue={q}
           activeStations={activeStations}
+          stations={stations ?? []}
           onLeft={() => setTicketId(null)}
         />
       ) : joining ? (

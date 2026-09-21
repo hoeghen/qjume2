@@ -42,7 +42,12 @@ export function QueueCard({
               <span className={`badge status-${queue.status}`}>{status}</span>
             )}
           </div>
-          <p className="muted">{queue.address}</p>
+          {/* The queue's own name, not just the shop's: a pharmacy running
+              prescriptions, vaccinations and collections would otherwise be
+              three rows of identical text. */}
+          <p className="muted">
+            {queue.name} · {queue.address}
+          </p>
         </div>
 
         <div className="queue-card-meta">
