@@ -52,7 +52,7 @@ export function MonitorHome() {
     stations?.find((s) => s.id === stationId)?.label ?? '';
 
   return (
-    <main className="monitor screen on-dark">
+    <main className="monitor screen">
       <h1>{queue.data.name}</h1>
 
       <section>

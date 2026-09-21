@@ -11,7 +11,7 @@ import { Logo } from '../components/Logo.js';
  */
 export function Splash() {
   return (
-    <section className="splash on-dark">
+    <section className="splash">
       <Logo size={44} />
 
       <h1 className="splash-wordmark">QjuMe</h1>

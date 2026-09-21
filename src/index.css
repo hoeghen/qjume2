@@ -55,8 +55,8 @@
   --on-dark-faint: oklch(0.6 0.02 255);
   --dark-inset: rgb(255 255 255 / 0.08);
 
-  --muted: oklch(0.5 0.02 255 / 0.65);
-  --muted-strong: oklch(0.45 0.02 255 / 0.75);
+  --muted: var(--on-dark-muted);
+  --muted-strong: var(--on-dark-muted);
 
   --r-card: 32px;
   --r-row: 18px;
@@ -67,10 +67,22 @@
   --font-display: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Names the rest of the app already uses, pointed at the new palette. */
-  --bg: var(--cream);
-  --fg: var(--ink);
-  --line: var(--cream-line);
+  /*
+   * Ink is the page, not a panel on it. Everything is "on dark" by default,
+   * so there are two kinds of surface and each carries its own text colour:
+   * the page (ink, white text) and a card (white, ink text). Anything that
+   * sets a background must set the matching foreground, or it inherits white
+   * text onto white.
+   */
+  --card: var(--surface);
+  --card-fg: var(--ink);
+  --card-muted: oklch(0.5 0.02 255 / 0.65);
+  --card-line: var(--cream-line);
+
+  --bg: var(--ink);
+  --fg: var(--on-dark);
+  /* A hairline on ink, not the cream one — that reads as a bright scratch. */
+  --line: rgb(255 255 255 / 0.14);
   --accent: var(--orange-cta);
   --accent-fg: #ffffff;
   --danger: #b3261e;
@@ -88,15 +100,38 @@
 
 * { box-sizing: border-box; }
 
+html { background: var(--bg); }
+
 body {
   margin: 0;
   background: var(--bg);
-  /* Respect the notch when installed to the Home Screen. */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  /*
+   * dvh, not vh: on a phone vh measures the viewport with the browser chrome
+   * hidden, so a vh-tall page is always slightly too long and the ink stops
+   * short of the bottom as you scroll.
+   */
+  min-height: 100dvh;
 }
 
-.app { padding: 16px; max-width: 900px; margin: 0 auto; }
+/*
+ * One gutter for the whole app, set once here, with the notch and the home
+ * indicator added to it. Screens lay out inside this and never set their own
+ * side padding.
+ */
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding:
+    calc(env(safe-area-inset-top) + clamp(16px, 3vw, 28px))
+    calc(env(safe-area-inset-right) + clamp(16px, 4vw, 32px))
+    calc(env(safe-area-inset-bottom) + clamp(24px, 4vw, 40px))
+    calc(env(safe-area-inset-left) + clamp(16px, 4vw, 32px));
+  /* Reading width on a monitor; the ink behind it still runs edge to edge. */
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
 
 h1 {
   font-size: clamp(28px, 4vw, 40px);
@@ -120,7 +155,7 @@ h2 {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--orange-cta);
+  color: var(--orange-on-dark);
   margin: 0;
 }
 
@@ -133,13 +168,14 @@ h2 {
 label { font-weight: 600; font-size: 0.9rem; }
 input, select, textarea {
   font: inherit;
-  color: inherit;
-  background: var(--surface);
+  background: var(--card);
+  color: var(--card-fg);
   padding: 13px 16px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--card-line);
   border-radius: var(--r-panel);
   width: 100%;
 }
+input::placeholder, textarea::placeholder { color: var(--card-muted); }
 .checkbox { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
 .checkbox input { width: auto; margin-top: 4px; }
 
@@ -170,10 +206,10 @@ button.secondary, .button.secondary {
   font-size: 13.5px;
   padding: 12.5px 24px;
 }
-/* On a dark panel the outline is the border, so it flips to white. */
-.on-dark button.secondary, .on-dark .button.secondary {
-  color: var(--on-dark);
-  border-color: var(--on-dark);
+/* Inside a white card the outline has to flip back, or it disappears. */
+.dialog-body button.secondary, .dialog-body .button.secondary {
+  color: var(--card-fg);
+  border-color: var(--card-fg);
 }
 button.danger { background: var(--danger); color: #fff; }
 button.link, .link {
@@ -195,16 +231,18 @@ button.link.danger { color: var(--danger); }
   font-size: 0.85rem;
 }
 .notice {
-  background: var(--surface);
-  padding: 12px;
-  border-radius: 8px;
+  background: var(--dark-inset);
+  color: var(--fg);
+  padding: 12px 14px;
+  border-radius: var(--r-panel);
 }
 .error { color: var(--danger); font-weight: 600; }
 
 .code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: 0.12em;
-  background: var(--surface);
+  background: var(--dark-inset);
+  color: var(--fg);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -258,8 +296,9 @@ button.link.danger { color: var(--danger); }
 }
 
 .now-serving {
-  background: var(--surface);
-  border-radius: 12px;
+  background: var(--dark-inset);
+  color: var(--fg);
+  border-radius: var(--r-tile);
   padding: 24px 16px;
   text-align: center;
   margin-bottom: 16px;
@@ -336,8 +375,9 @@ button.link.danger { color: var(--danger); }
   z-index: 10;
 }
 .dialog-body {
-  background: var(--bg);
-  border-radius: 12px;
+  background: var(--card);
+  color: var(--card-fg);
+  border-radius: var(--r-row);
   padding: 20px;
   width: min(480px, 100%);
   max-height: 90vh;
@@ -418,6 +458,7 @@ button.link.danger { color: var(--danger); }
 .queue-card-title strong { font-size: 14.5px; font-weight: 700; }
 .queue-card-title .badge { margin-left: 0; }
 .queue-card-main p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; }
+.queue-card .muted, .dialog-body .muted { color: var(--card-muted); }
 
 .queue-card-meta {
   display: flex;
@@ -451,7 +492,9 @@ button.link.danger { color: var(--danger); }
  */
 @media (max-width: 460px) {
   .queue-card a { flex-wrap: wrap; }
-  .queue-card-main { flex: 1 1 100%; }
+  /* Icon and name stay on the first line together — only the figures drop.
+     A full-width basis here would push the name below its own icon. */
+  .queue-card-main { flex: 1 1 0; min-width: 0; }
   .queue-card-meta {
     flex: 1 1 100%;
     max-width: none;
@@ -471,8 +514,9 @@ button.link.danger { color: var(--danger); }
 }
 .stats > div {
   flex: 1;
-  background: var(--surface);
-  border-radius: 12px;
+  background: var(--dark-inset);
+  color: var(--fg);
+  border-radius: var(--r-tile);
   padding: 16px;
   text-align: center;
 }
@@ -491,8 +535,9 @@ button.link.danger { color: var(--danger); }
 
 /* ---------- customer ticket ---------- */
 .ticket {
-  background: var(--surface);
-  border-radius: 12px;
+  background: var(--dark-inset);
+  color: var(--fg);
+  border-radius: var(--r-tile);
   padding: 24px 16px;
   text-align: center;
   margin: 16px 0;
@@ -581,19 +626,19 @@ button.link.danger { color: var(--danger); }
 /* ---------- splash ---------- */
 
 /*
- * Full-bleed ink panel. `.app` centres and pads every other screen, so the
- * splash cancels that padding rather than sitting in a cream frame.
+ * The splash is the whole screen. It grows to fill whatever height is left
+ * and centres itself in it, so it looks composed on a phone and on a desktop
+ * window without a fixed height anywhere.
  */
 .splash {
-  margin: -16px;
-  padding: clamp(48px, 10vw, 96px) 20px clamp(56px, 10vw, 110px);
-  background: var(--ink);
-  color: var(--on-dark);
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  gap: 28px;
+  gap: clamp(20px, 4vh, 32px);
+  padding-block: clamp(24px, 6vh, 64px);
 }
 
 .splash-wordmark {
@@ -636,17 +681,14 @@ button.link.danger { color: var(--danger); }
 /* ---------- dark screen panels ---------- */
 
 /*
- * Discovery and the monitor sit on an ink panel with white rows inside it —
- * one scheme for both, since the monitor is customer-facing too.
+ * A screen is layout only. The ink is the page now, so there is no panel to
+ * paint and no radius — the gutter comes from `.app`.
  */
 .screen {
-  background: var(--ink);
-  color: var(--on-dark);
-  border-radius: var(--r-card);
-  padding: clamp(24px, 4vw, 44px);
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: clamp(18px, 3vw, 26px);
 }
 
 .screen-head {
@@ -662,8 +704,6 @@ button.link.danger { color: var(--danger); }
   text-transform: uppercase;
   color: var(--on-dark-muted);
 }
-
-.eyebrow-on-dark { color: var(--orange-on-dark); }
 
 .screen-intro { display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
 .screen h1 {
@@ -684,10 +724,6 @@ button.link.danger { color: var(--danger); }
   max-width: 440px;
 }
 
-/* Form controls on ink: the label and the select have to flip too. */
-.on-dark .filter-row label { color: var(--on-dark-muted); }
-.on-dark .notice { background: var(--dark-inset); color: var(--on-dark); }
-.on-dark .muted { color: var(--on-dark-muted); }
 
 /* ---------- monitor on ink ---------- */
 
@@ -722,3 +758,31 @@ button.link.danger { color: var(--danger); }
 }
 .monitor .monitor-upcoming { display: flex; flex-direction: column; gap: 6px; list-style: none; padding: 0; }
 .monitor .monitor-upcoming li { font-size: 14.5px; font-weight: 600; }
+
+/* ---------- wider screens ---------- */
+
+/*
+ * The list is one column on a phone because a row needs the width. Past this
+ * a single column leaves half the window empty, so rows pair up — and the
+ * narrow-row stacking from above no longer applies, since each column is
+ * wide enough for the name and the figures side by side.
+ */
+@media (min-width: 760px) {
+  .queue-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    align-items: start;
+  }
+}
+
+/*
+ * The monitor is read from across a room, so it ignores the reading width
+ * and scales with the display instead.
+ */
+.monitor.screen { max-width: none; }
+@media (min-width: 1100px) {
+  .app:has(.monitor) { max-width: none; }
+  .monitor h1 { font-size: clamp(40px, 5vw, 76px); }
+  .monitor .monitor-pairings li { padding: 24px 28px; }
+  .monitor .monitor-upcoming li { font-size: clamp(16px, 1.6vw, 24px); }
+}
