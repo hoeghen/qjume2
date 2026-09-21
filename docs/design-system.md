@@ -68,6 +68,8 @@ outlined figures and one orange "next" figure on a dashed line.
 
 **Customer discovery** — ink panel, radius 32px. Header with logo and a mono
 "N nearby". Eyebrow `[ CUSTOMER MODE ]`. Two-weight headline. White rows.
+*In the app the logo moved out of this header into the shell's (see
+"Adapted"), so the count sits on the eyebrow row instead.*
 
 **Shop / in-shop monitor** — same ink panel and palette as discovery, because
 the monitor is customer-facing too. Eyebrow `[ LIVE ]`, two-weight headline,
@@ -93,6 +95,12 @@ narrower than one in a single-column list. So the figures sit on their own line
 under the name by default, aligned to the text rather than the icon, and go
 beside it only between 461px and 759px — the range where the list is a single
 wide column.
+
+**The mark is an app header, on every screen but the splash.** The canvas puts
+the logo inside each screen's own header. In the app the shell renders it once,
+as a link home beside the wordmark, so a route added later gets a way back
+without anyone remembering to add one. The splash skips it: it is the landing
+page, and it carries the mark at full size already.
 
 ## Not implemented
 

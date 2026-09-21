@@ -631,10 +631,10 @@ button.link.danger { color: var(--danger); }
 /* Outline = still waiting, filled = called. */
 .logo-dot-waiting { border: 2px solid var(--orange); }
 .logo-dot-called { background: var(--orange); }
-/* Inside a screen header the mark reads in white at reduced weight; the
-   splash keeps it orange, which is where the colour is introduced. */
-.screen-head .logo-dot-waiting { border-color: var(--on-dark); opacity: 0.7; }
-.screen-head .logo-dot-called { background: var(--on-dark); opacity: 0.7; }
+/* In the app header the mark reads in white at reduced weight; the splash
+   keeps it orange, which is where the colour is introduced. */
+.home-link .logo-dot-waiting { border-color: var(--on-dark); opacity: 0.7; }
+.home-link .logo-dot-called { background: var(--on-dark); opacity: 0.7; }
 
 /* ---------- splash ---------- */
 
@@ -704,10 +704,11 @@ button.link.danger { color: var(--danger); }
   gap: clamp(18px, 3vw, 26px);
 }
 
-.screen-head {
+.eyebrow-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  gap: 16px;
 }
 .screen-count {
   font-family: var(--font-mono);
@@ -800,4 +801,38 @@ button.link.danger { color: var(--danger); }
   .monitor h1 { font-size: clamp(40px, 5vw, 76px); }
   .monitor .monitor-pairings li { padding: 24px 28px; }
   .monitor .monitor-upcoming li { font-size: clamp(16px, 1.6vw, 24px); }
+}
+
+/* ---------- app header ---------- */
+
+/*
+ * Quiet by design: it is a way back, not a destination. It sits above the
+ * screen's own content rather than floating over it, so nothing is covered
+ * and there is no scroll behaviour to get wrong.
+ */
+.app-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: clamp(12px, 2vw, 20px);
+}
+
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--on-dark-muted);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  /* A comfortable target without pushing the layout around. */
+  padding: 6px 10px 6px 0;
+  border-radius: var(--r-pill);
+}
+.home-link:hover { color: var(--on-dark); }
+.home-link:hover .logo-dot-waiting,
+.home-link:hover .logo-dot-called { opacity: 1; }
+.home-link:focus-visible {
+  outline: 2px solid var(--orange-on-dark);
+  outline-offset: 3px;
 }
