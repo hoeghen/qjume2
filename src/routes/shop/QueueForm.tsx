@@ -8,20 +8,7 @@ import {
   type NoShowPenalty,
   type QueueCategory,
 } from '../../types/index.js';
-
-const CATEGORY_LABELS: Record<QueueCategory, string> = {
-  'food-and-drink': 'Food and drink',
-  'health-and-medical': 'Health and medical',
-  'government-and-public-services': 'Government and public services',
-  'banking-and-finance': 'Banking and finance',
-  'retail-and-shopping': 'Retail and shopping',
-  'personal-care': 'Personal care',
-  automotive: 'Automotive',
-  education: 'Education',
-  'transport-and-travel': 'Transport and travel',
-  'events-and-attractions': 'Events and attractions',
-  other: 'Other',
-};
+import { CATEGORY_LABELS } from '../../lib/categories.js';
 
 const PENALTY_LABELS: Record<NoShowPenalty, string> = {
   back: 'Move to the back of the queue',

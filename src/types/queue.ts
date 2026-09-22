@@ -1,15 +1,15 @@
-/** Fixed list of eleven. See PRD 4.2. */
+/**
+ * Six, not the PRD's eleven — see CLAUDE.md decision 7. Institutional and
+ * money errands share one bucket, and everything you'd call "an errand" or
+ * "a trip out" shares the other two: a filter list is worth less the more of
+ * it you have to read before picking one.
+ */
 export const QUEUE_CATEGORIES = [
   'food-and-drink',
   'health-and-medical',
-  'government-and-public-services',
-  'banking-and-finance',
-  'retail-and-shopping',
-  'personal-care',
-  'automotive',
-  'education',
-  'transport-and-travel',
-  'events-and-attractions',
+  'government-and-finance',
+  'shopping-and-services',
+  'travel-and-leisure',
   'other',
 ] as const;
 

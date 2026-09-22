@@ -1,22 +1,24 @@
-import { QUEUE_CATEGORIES, type QueueCategory } from '../../../types/index.js';
+import { QUEUE_CATEGORIES } from '../../../types/index.js';
 import type { Filters as FilterState } from '../../../lib/discovery.js';
+import { CATEGORY_LABELS } from '../../../lib/categories.js';
 
-/** Capped at the search bound: a wider limit would filter nothing. */
-const RADII = [1, 2, 5, 10, 25, 50];
-
-export const CATEGORY_LABELS: Record<QueueCategory, string> = {
-  'food-and-drink': 'Food and drink',
-  'health-and-medical': 'Health and medical',
-  'government-and-public-services': 'Government and public services',
-  'banking-and-finance': 'Banking and finance',
-  'retail-and-shopping': 'Retail and shopping',
-  'personal-care': 'Personal care',
-  automotive: 'Automotive',
-  education: 'Education',
-  'transport-and-travel': 'Transport and travel',
-  'events-and-attractions': 'Events and attractions',
-  other: 'Other',
-};
+/**
+ * On foot, not across town: someone opening this is standing outside
+ * somewhere and wants to know what's within a short walk, so the range runs
+ * from a single building (50 m) to a fifteen-minute walk (5 km) rather than
+ * up toward the 20-closest fetch's own reach. Round numbers, so the label is
+ * hand-written rather than run through `formatDistance` — that rounds to
+ * "1.0 km" where a fixed option list should just say "1 km".
+ */
+const RADII: [km: number, label: string][] = [
+  [0.05, '50 m'],
+  [0.1, '100 m'],
+  [0.25, '250 m'],
+  [0.5, '500 m'],
+  [1, '1 km'],
+  [2, '2 km'],
+  [5, '5 km'],
+];
 
 interface Props {
   /** Ties the panel to the button that discloses it. */
@@ -70,9 +72,9 @@ export function Filters({
           >
             {/* The default. Not a distance, so it carries no number. */}
             <option value="">Any distance</option>
-            {RADII.map((r) => (
+            {RADII.map(([r, label]) => (
               <option key={r} value={r}>
-                {r} km
+                {label}
               </option>
             ))}
           </select>

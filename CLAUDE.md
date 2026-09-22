@@ -88,6 +88,26 @@ kept unedited.
    accepted — the cost of jumping the gun is standing in a queue you are not
    at the front of, and a rotating code would break the printed one.
 
+7. **Six categories, not the PRD's eleven.** PRD 4.2 fixes a list of eleven.
+   In practice a filter select is worth less the more of it someone has to
+   read before picking one, so `government-and-public-services` and
+   `banking-and-finance` merged into `government-and-finance`;
+   `retail-and-shopping`, `personal-care` and `automotive` into
+   `shopping-and-services` (the errand category); and `transport-and-travel`,
+   `events-and-attractions` and `education` into `travel-and-leisure`
+   (something you go out for). `food-and-drink`, `health-and-medical` and
+   `other` are unchanged. `CATEGORY_LABELS` lives once, in
+   `src/lib/categories.ts` — it used to be copied into both the discovery
+   filter and the shop's queue form, and the two had already drifted once.
+
+8. **The distance filter runs 50 m–5 km, not 1–50 km.** Someone opening the
+   panel is standing outside somewhere sizing up a short walk, not planning a
+   drive across town — the search itself already reaches out to whatever
+   ring the closest twenty need (decision 5), so the filter's job is to
+   narrow, not to reach. The steps (50/100/250/500 m, 1/2/5 km) are
+   hand-labelled in `Filters.tsx` rather than run through `formatDistance`,
+   which would round a fixed "1 km" option to "1.0 km".
+
 ## Two backends, one app
 
 The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and
