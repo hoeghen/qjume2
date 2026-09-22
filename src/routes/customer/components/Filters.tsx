@@ -3,12 +3,12 @@ import type { Filters as FilterState } from '../../../lib/discovery.js';
 import { CATEGORY_LABELS } from '../../../lib/categories.js';
 
 /**
- * On foot, not across town: someone opening this is standing outside
- * somewhere and wants to know what's within a short walk, so the range runs
- * from a single building (50 m) to a fifteen-minute walk (5 km) rather than
- * up toward the 20-closest fetch's own reach. Round numbers, so the label is
- * hand-written rather than run through `formatDistance` — that rounds to
- * "1.0 km" where a fixed option list should just say "1 km".
+ * A single building (50 m) to a short drive (50 km), ten steps on the 1-2-5
+ * scale a ruler or a map uses — each step roughly doubles to two-and-a-half
+ * times the last, so the same ten numbers read fine whether someone is
+ * narrowing to their street or to their whole town. Round numbers, so the
+ * label is hand-written rather than run through `formatDistance` — that
+ * rounds to "1.0 km" where a fixed option list should just say "1 km".
  */
 const RADII: [km: number, label: string][] = [
   [0.05, '50 m'],
@@ -18,6 +18,9 @@ const RADII: [km: number, label: string][] = [
   [1, '1 km'],
   [2, '2 km'],
   [5, '5 km'],
+  [10, '10 km'],
+  [25, '25 km'],
+  [50, '50 km'],
 ];
 
 interface Props {
