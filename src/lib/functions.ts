@@ -35,7 +35,15 @@ function callable<Req, Res>(name: string) {
 }
 
 export const joinQueue = callable<
-  { shopId: string; queueId: string; displayName: string; email?: string; phone?: string },
+  {
+    shopId: string;
+    queueId: string;
+    displayName: string;
+    email?: string;
+    phone?: string;
+    /** Scanned the monitor's QR code, so they are in the shop. */
+    atCounter?: boolean;
+  },
   { ticketId: string; number: number; resumeCode: string }
 >('joinQueue');
 

@@ -73,6 +73,21 @@ kept unedited.
    wait — a sort key you cannot see is a poor trade. `DiscoveredQueue` already
    carries both, so this costs no extra read.
 
+6. **The monitor carries a join code, and a scan counts as being in the shop.**
+   The screen on the wall is where someone learns the wait, so it is where they
+   should be able to join — a large panel beside the live list, stacked under it
+   below 860px. The code is the same URL the counter's printed one carries,
+   built once by `counterJoinUrl`: `/q/:shop/:queue?join=1&at=counter`. The
+   `at=counter` flag is a claim about *place*, not a permission — it says the
+   join came from someone standing in the shop, which is the one thing
+   `drainMode` still accepts (decision 2 above). `joinQueue` reads it
+   server-side; it does not bypass paused, closed, offline, the plan cap or the
+   queue's max size, and the panel shows a reason instead of a code whenever
+   the queue takes nobody, so a scan never leads to a refusal. The code is
+   **static**: anyone can photograph it and join from the car park. That is
+   accepted — the cost of jumping the gun is standing in a queue you are not
+   at the front of, and a rotating code would break the printed one.
+
 ## Two backends, one app
 
 The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and
@@ -112,6 +127,20 @@ an anonymous `local-guest`; only the email link makes you `local-owner`. The
 session persists, so sharing one identity would hand any customer who joined a
 queue the shop's admin screens. `ShopHome` also refuses an anonymous user,
 which is right for both backends.
+
+**Seeded ids are slugs, and must stay stable.** `mockId` ends in a timestamp,
+which is right for anything minted while the app runs and wrong for the seed:
+a join code is scanned by a phone that has never run this build, and
+`shop3-mubxsbkw` means nothing there. So the seed ids come from the names —
+`/q/riverside-pharmacy/prescriptions` — and the same document has the same id
+on every device. Change the seed's shape and the stored copy cannot be read
+back: bump `STORAGE_KEY` in `src/lib/mock/store.ts` rather than leaving one
+device on ids another does not have.
+
+What a scan cannot do in the mock is cross devices: the whole database is one
+browser's `localStorage`, so a scanning phone joins its own copy of the queue.
+The URL, the routing and the server rule are the real thing; the shared
+database is what only Firestore provides.
 
 **The seeded shops follow the viewer.** They are defined in `src/lib/mock/seed.ts`
 as offsets in kilometres, and `placeMockShopsNear` resolves them against the

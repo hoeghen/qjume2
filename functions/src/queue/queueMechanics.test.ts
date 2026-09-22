@@ -91,6 +91,37 @@ describe('joinQueue', () => {
     },
   );
 
+  // Scanning the code on the wall or the counter says the person is standing
+  // in the shop, which is the one thing drain mode still takes: it stopped
+  // remote joiners, not the customer staff could add by hand.
+  it('takes a scanned joiner while draining', async () => {
+    const fx = await seedQueue({}, { status: 'drainMode' });
+    const { ticketId } = await performJoinQueue(testDb, customer(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      displayName: 'Customer 1',
+      atCounter: true,
+    });
+    expect(await ticket(fx, ticketId)).toMatchObject({ state: 'waiting' });
+  });
+
+  it.each(['paused', 'unavailable', 'closed'] as const)(
+    'refuses a scanned joiner while %s',
+    async (status) => {
+      // A code left hanging on the wall is not a way past a shut queue: only
+      // drainMode makes the in-shop distinction.
+      const fx = await seedQueue({}, { status });
+      await expect(
+        performJoinQueue(testDb, customer(1), {
+          shopId: fx.shopId,
+          queueId: fx.queueId,
+          displayName: 'Customer 1',
+          atCounter: true,
+        }),
+      ).rejects.toThrow(/not accepting|unavailable/i);
+    },
+  );
+
   it('enforces the free-tier waiting limit server-side', async () => {
     // The cap is enforced in the function, not merely hidden in the UI, so a
     // client calling directly still cannot exceed it. Invariant 5.

@@ -76,6 +76,14 @@ the monitor is customer-facing too. Eyebrow `[ LIVE ]`, two-weight headline,
 a progress line of circles, stat pair, "Now serving" tiles, "Up next" rows,
 `Call next →` primary and a secondary.
 
+*The monitor also carries a join panel the canvas did not draw: an inset beside
+the live list holding a white card with the QR code, under a "Scan to join"
+eyebrow. White behind the code is not decoration — a QR read off ink is a coin
+flip across a room. It takes a fixed column (300px, growing to `26vw` past
+1100px) rather than a fraction: past the size a camera needs, more pixels buy
+nothing, while the names beside it can always use the room. Below 860px the two
+stack, the list first.*
+
 ## Adapted
 
 **Ink fills the viewport; the cream page is gone.** The canvas draws ink panels

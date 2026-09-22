@@ -63,9 +63,14 @@ function issueTicket(
   displayName: string,
   holderKey: string | null,
   email: string | null,
+  /**
+   * The person is in the shop — staff added them, or they scanned the QR code
+   * on the monitor. Drain mode stops remote joiners, not those already there.
+   */
+  atCounter: boolean,
 ): { ticketId: string; number: number; resumeCode: string } {
   const queue = readQueue(shopId, queueId);
-  if (queue.status !== 'open' && !(holderKey === null && queue.status === 'drainMode')) {
+  if (queue.status !== 'open' && !(atCounter && queue.status === 'drainMode')) {
     throw new MockError(
       queue.status === 'unavailable'
         ? 'This queue is temporarily unavailable.'
@@ -149,11 +154,12 @@ function release(
 }
 
 export const mockApi = {
-  joinQueue({ shopId, queueId, displayName, email }: {
+  joinQueue({ shopId, queueId, displayName, email, atCounter }: {
     shopId: string;
     queueId: string;
     displayName: string;
     email?: string;
+    atCounter?: boolean;
   }) {
     const holder = 'local-visitor';
     const existing = mockStore
@@ -164,7 +170,14 @@ export const mockApi = {
           (t.state === 'waiting' || t.state === 'serving'),
       );
     if (existing) throw new MockError('You are already in this queue.');
-    return issueTicket(shopId, queueId, displayName, holder, email ?? null);
+    return issueTicket(
+      shopId,
+      queueId,
+      displayName,
+      holder,
+      email ?? null,
+      atCounter === true,
+    );
   },
 
   addWalkIn({ shopId, queueId, displayName }: {
@@ -172,7 +185,7 @@ export const mockApi = {
     queueId: string;
     displayName: string;
   }) {
-    return issueTicket(shopId, queueId, displayName, null, null);
+    return issueTicket(shopId, queueId, displayName, null, null, true);
   },
 
   /** The same resolve-then-assign step the real `callNext` performs. */
