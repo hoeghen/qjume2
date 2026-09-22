@@ -3,6 +3,7 @@ import { App } from './App.js';
 import { Splash } from './routes/Splash.js';
 import { CustomerHome } from './routes/customer/CustomerHome.js';
 import { QueueDetail } from './routes/customer/QueueDetail.js';
+import { ShopQueues } from './routes/customer/ShopQueues.js';
 import { ShopHome } from './routes/shop/ShopHome.js';
 import { ShopIndex } from './routes/shop/ShopIndex.js';
 import { QueueFormRoute } from './routes/shop/QueueFormRoute.js';
@@ -24,6 +25,8 @@ export const router = (isPortable ? createHashRouter : createBrowserRouter)(
         { index: true, element: <Splash /> },
         { path: 'find', element: <CustomerHome /> },
         { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
+        // Public, and deliberately not under /shop — that is the owner's area.
+        { path: 's/:shopId', element: <ShopQueues /> },
         {
           path: 'shop',
           element: <ShopHome />,

@@ -61,8 +61,14 @@ export function QueueDetail() {
         </Link>
       </p>
 
-      <h1>{q.shopName}</h1>
-      <p className="muted">{q.name}</p>
+      {/* The shop is a place with possibly several lines; its name leads to
+          all of them. The queue's own name is what this page is about. */}
+      <h1>
+        <Link to={`/s/${shopId}`} className="shop-link">
+          {q.shopName}
+        </Link>
+      </h1>
+      <p className="queue-name">{q.name}</p>
 
       {note && (
         <p className={`status-banner status-${q.status}`} role="status">
@@ -101,7 +107,9 @@ export function QueueDetail() {
           <>
             <dt>Also at this shop</dt>
             <dd>
-              {otherQueues} other {otherQueues === 1 ? 'queue' : 'queues'}
+              <Link to={`/s/${shopId}`} className="link">
+                {otherQueues} other {otherQueues === 1 ? 'queue' : 'queues'}
+              </Link>
             </dd>
           </>
         )}
