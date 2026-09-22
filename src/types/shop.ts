@@ -20,4 +20,11 @@ export interface Shop {
    */
   exclusiveQueues: boolean;
   profile?: ShopProfile;
+  /**
+   * Set by a platform admin, not the owner — moderation, not the shop's own
+   * open/closed toggle. A suspended shop drops out of discovery and refuses
+   * new joiners everywhere, and the owner cannot lift it themselves; only an
+   * admin's `reinstateShop` can. See CLAUDE.md decision 9.
+   */
+  suspended: boolean;
 }

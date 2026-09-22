@@ -47,6 +47,15 @@ export interface Queue {
    * every queue beneath it, or the two will drift.
    */
   shopName: string;
+  /**
+   * The owning shop's `suspended` flag, denormalised for the same reason as
+   * `shopName`: discovery is one collection-group query over queues, and a
+   * per-queue read of the parent shop to check this would defeat that.
+   * `joinQueue` does not trust this copy — it reads the real shop doc inside
+   * its own transaction — so a moment of staleness here can only ever hide a
+   * queue a beat too long, never let a join through it shouldn't.
+   */
+  shopSuspended: boolean;
   description: string | null;
   category: QueueCategory;
   maxSize: number;

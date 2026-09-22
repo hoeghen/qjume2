@@ -54,7 +54,12 @@ export function QueueDetail() {
   const wait = estimatedWaitSeconds(q, activeStations);
   const otherQueues = Math.max(0, (siblings?.length ?? 1) - 1);
   const note = STATUS_NOTES[q.status];
-  const joinable = q.status === 'open' || (atCounter && q.status === 'drainMode');
+  // A platform suspension refuses a join regardless of the queue's own
+  // status — checked here too so the button doesn't invite a tap that the
+  // server would only then refuse. See CLAUDE.md decision 9.
+  const joinable =
+    !q.shopSuspended &&
+    (q.status === 'open' || (atCounter && q.status === 'drainMode'));
 
   return (
     <main>

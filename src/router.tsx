@@ -10,6 +10,11 @@ import { QueueFormRoute } from './routes/shop/QueueFormRoute.js';
 import { ServingRoute } from './routes/shop/ServingRoute.js';
 import { Billing } from './routes/shop/Billing.js';
 import { MonitorHome } from './routes/monitor/MonitorHome.js';
+import { AdminHome } from './routes/admin/AdminHome.js';
+import { AdminShopList } from './routes/admin/AdminShopList.js';
+import { AdminShopDetail } from './routes/admin/AdminShopDetail.js';
+import { AdminQueueEditRoute } from './routes/admin/AdminQueueEditRoute.js';
+import { AdminAuditLog } from './routes/admin/AdminAuditLog.js';
 
 // A portable build has to run from a path it cannot know at build time, on a
 // host with no rewrite rule to send deep links back to index.html. Putting the
@@ -39,6 +44,22 @@ export const router = (isPortable ? createHashRouter : createBrowserRouter)(
           ],
         },
         { path: 'monitor', element: <MonitorHome /> },
+        {
+          // Not linked from anywhere in the app, the same as /monitor — the
+          // one person who needs this reaches it by URL. See CLAUDE.md
+          // decision 9.
+          path: 'admin',
+          element: <AdminHome />,
+          children: [
+            { index: true, element: <AdminShopList /> },
+            { path: 'log', element: <AdminAuditLog /> },
+            { path: 'shops/:shopId', element: <AdminShopDetail /> },
+            {
+              path: 'shops/:shopId/q/:queueId',
+              element: <AdminQueueEditRoute />,
+            },
+          ],
+        },
         ],
       },
     ],

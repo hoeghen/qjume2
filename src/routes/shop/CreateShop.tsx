@@ -23,6 +23,7 @@ export function CreateShop({ ownerUid }: { ownerUid: string }) {
           ownerUid,
           plan: 'free',
           exclusiveQueues: exclusive,
+          suspended: false,
         };
         await createShop(ownerUid, shop);
       } catch (e) {

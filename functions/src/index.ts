@@ -37,3 +37,14 @@ export { startCheckout, completeCheckout } from './billing/checkout.js';
  * cannot tell a closed tab from a dead network, and RTDB's onDisconnect can.
  */
 export { mirrorPresence } from './presence/mirror.js';
+
+/**
+ * Platform admin. Every one of these requires the `platformAdmin` custom
+ * claim (`requirePlatformAdmin`), bypasses the shop-owner checks the
+ * equivalent owner actions carry, and writes to `adminAuditLog`. CLAUDE.md
+ * decision 9.
+ */
+export { suspendShop, reinstateShop } from './admin/suspendShop.js';
+export { adminUpdateShop } from './admin/updateShop.js';
+export { adminUpdateQueue } from './admin/updateQueue.js';
+export { adminDeleteShop } from './admin/deleteShop.js';

@@ -13,6 +13,14 @@ service cloud.firestore {
            == request.auth.uid;
     }
 
+    // The platform admin claim is set once, by hand, against the Admin SDK —
+    // there is no client path that grants it. See CLAUDE.md decision 9 and
+    // `requirePlatformAdmin` in functions/src/lib/auth.ts, which this must
+    // keep agreeing with.
+    function isPlatformAdmin() {
+      return signedIn() && request.auth.token.platformAdmin == true;
+    }
+
     // Anyone who may work the counter. Staff are a paid feature, so a staff
     // record on a free shop grants nothing — otherwise a downgrade would leave
     // staff quietly still able to serve.
@@ -53,10 +61,17 @@ service cloud.firestore {
     //
     // `profile` is a paid feature, so it is gated on the plan rather than on
     // the UI merely hiding the form.
+    //
+    // `suspended` is a platform admin's call, not the owner's: it is what
+    // makes a suspension the owner cannot undo themselves. Only the admin
+    // Cloud Functions change it, using the Admin SDK, which bypasses this
+    // rule entirely — so this exists purely to block the owner's own client
+    // writes, the same shape as `plan`.
     // ----------------------------------------------------------------------
     function keepsServerOwnedShopFields() {
       return request.resource.data.ownerUid == resource.data.ownerUid
-        && request.resource.data.plan == resource.data.plan;
+        && request.resource.data.plan == resource.data.plan
+        && request.resource.data.suspended == resource.data.suspended;
     }
 
     function profileAllowed() {
@@ -67,10 +82,11 @@ service cloud.firestore {
 
     match /shops/{shopId} {
       allow read: if true;
-      // Nobody starts paid, whatever they put in the request.
+      // Nobody starts paid, or suspended, whatever they put in the request.
       allow create: if signedIn()
         && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.plan == 'free';
+        && request.resource.data.plan == 'free'
+        && request.resource.data.suspended == false;
       allow update: if isShopOwner(shopId)
         && keepsServerOwnedShopFields()
         && profileAllowed();
@@ -150,6 +166,16 @@ service cloud.firestore {
 
     match /customers/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Written only by the admin Cloud Functions, in the same call as the
+    // change it describes — never by a client, and never editable once
+    // written. Readable by the platform admin alone; this is a record of
+    // what was done to other people's shops, not something a shop owner or
+    // customer has any reason to see.
+    match /adminAuditLog/{entryId} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
     }
 
     // Anything not matched above stays closed.

@@ -84,6 +84,8 @@ export interface WithId {
 export interface MockQuery extends MockRef {
   readonly where?: (row: Record<string, unknown>) => boolean;
   readonly sortBy?: string;
+  /** Newest/highest first. Default is ascending, matching `orderBy` alone. */
+  readonly sortDesc?: boolean;
   readonly max?: number;
 }
 
@@ -124,11 +126,18 @@ export function useCollection<T>(
         }
         if (q.sortBy) {
           const key = q.sortBy;
-          rows = [...rows].sort(
-            (a, b) =>
-              Number((a as Record<string, unknown>)[key]) -
-              Number((b as Record<string, unknown>)[key]),
-          );
+          const direction = q.sortDesc ? -1 : 1;
+          rows = [...rows].sort((a, b) => {
+            const av = (a as Record<string, unknown>)[key];
+            const bv = (b as Record<string, unknown>)[key];
+            // Firestore's orderBy compares like-typed values; a shop's `name`
+            // is the one field sorted here that isn't already a number.
+            const cmp =
+              typeof av === 'string' && typeof bv === 'string'
+                ? av.localeCompare(bv)
+                : Number(av) - Number(bv);
+            return direction * cmp;
+          });
         }
         if (q.max !== undefined) rows = rows.slice(0, q.max);
         setState({ data: rows, loading: false, error: null });

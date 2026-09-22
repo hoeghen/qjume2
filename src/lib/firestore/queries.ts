@@ -6,10 +6,10 @@ import {
   where,
   type Query,
 } from 'firebase/firestore';
-import { shops, staff, stations, tickets } from './paths.js';
+import { auditLog, shops, staff, stations, tickets } from './paths.js';
 import { isMock } from '../mock/mode.js';
 import { mockQuery } from '../hooks/useFirestore.js';
-import type { Queue, Shop, Ticket } from '../../types/index.js';
+import type { AdminAuditEntry, Queue, Shop, Ticket } from '../../types/index.js';
 import { queues } from './paths.js';
 
 /** The signed-in owner's shop. */
@@ -21,6 +21,26 @@ export function shopsOwnedBy(uid: string): Query<Shop> {
     }) as unknown as Query<Shop>;
   }
   return query(shops(), where('ownerUid', '==', uid), limit(1));
+}
+
+/** Platform admin's browse list. Every shop, alphabetical. */
+export function allShops(): Query<Shop> {
+  if (isMock) {
+    return mockQuery('shops', { sortBy: 'name' }) as unknown as Query<Shop>;
+  }
+  return query(shops(), orderBy('name'));
+}
+
+/** Platform admin's audit trail, most recent first. */
+export function auditLogEntries(max = 200): Query<AdminAuditEntry> {
+  if (isMock) {
+    return mockQuery('adminAuditLog', {
+      sortBy: 'at',
+      sortDesc: true,
+      max,
+    }) as unknown as Query<AdminAuditEntry>;
+  }
+  return query(auditLog(), orderBy('at', 'desc'), limit(max));
 }
 
 export function queuesOf(shopId: string): Query<Queue> {

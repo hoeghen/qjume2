@@ -54,10 +54,12 @@ beforeEach(async () => {
       ownerUid: OWNER,
       plan: 'free',
       exclusiveQueues: false,
+      suspended: false,
     });
     await setDoc(doc(db, QUEUE), {
       name: 'Queue',
       status: 'open',
+      shopSuspended: false,
       waitingCount: 3,
       currentNumber: 1,
       lastIssuedNumber: 3,
@@ -339,6 +341,20 @@ describe('the plan is not the owner’s to set', () => {
         ownerUid: OTHER,
         plan: 'free',
         exclusiveQueues: false,
+        suspended: false,
+      }),
+    );
+  });
+
+  it('refuses a shop created already suspended', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop9'), {
+        name: 'Born Suspended',
+        ownerUid: OTHER,
+        plan: 'free',
+        exclusiveQueues: false,
+        suspended: true,
       }),
     );
   });
@@ -367,6 +383,92 @@ describe('the plan is not the owner’s to set', () => {
     await assertSucceeds(
       updateDoc(doc(db, SHOP), {
         profile: { logo: null, hours: '9-5', phone: null, description: null },
+      }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// `suspended` is a platform admin's moderation flag, not the owner's toggle —
+// the whole point is that the owner cannot lift it themselves. Only the admin
+// Cloud Functions change it, via the Admin SDK, which bypasses these rules.
+// ---------------------------------------------------------------------------
+describe('suspension is not the owner’s to lift', () => {
+  it('refuses an owner un-suspending their own shop', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore(), SHOP), { suspended: true });
+    });
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, SHOP), { suspended: false }));
+  });
+
+  it('refuses an owner suspending someone else, or themselves', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, SHOP), { suspended: true }));
+  });
+
+  it('refuses a suspension flip smuggled alongside a legitimate edit', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      updateDoc(doc(db, SHOP), { name: 'Renamed', suspended: true }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Written only by the admin Cloud Functions (see functions/src/admin/), never
+// by a client of any kind — there is no write path here at all, not even a
+// narrow one for the admin, the same shape as tickets. See CLAUDE.md
+// invariant 1 and decision 9.
+// ---------------------------------------------------------------------------
+describe('the admin audit log', () => {
+  const ENTRY = 'adminAuditLog/entry1';
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), ENTRY), {
+        action: 'shop.suspend',
+        adminUid: 'admin-uid',
+        adminEmail: 'admin@qjume.app',
+        shopId: 'shop1',
+        queueId: null,
+        summary: 'Suspended Shop',
+        changes: null,
+        at: 1,
+      });
+    });
+  });
+
+  it('lets a platform admin read it', async () => {
+    const db = env
+      .authenticatedContext('admin-uid', { platformAdmin: true })
+      .firestore();
+    await assertSucceeds(getDoc(doc(db, ENTRY)));
+  });
+
+  it('refuses everyone else, owner included', async () => {
+    await assertFails(
+      getDoc(doc(env.authenticatedContext(OWNER).firestore(), ENTRY)),
+    );
+    await assertFails(
+      getDoc(doc(env.unauthenticatedContext().firestore(), ENTRY)),
+    );
+  });
+
+  it('refuses a client write, even from a platform admin', async () => {
+    const db = env
+      .authenticatedContext('admin-uid', { platformAdmin: true })
+      .firestore();
+    await assertFails(
+      setDoc(doc(db, 'adminAuditLog/forged'), {
+        action: 'shop.delete',
+        adminUid: 'admin-uid',
+        adminEmail: null,
+        shopId: 'shop1',
+        queueId: null,
+        summary: 'Forged from the client',
+        changes: null,
+        at: 1,
       }),
     );
   });

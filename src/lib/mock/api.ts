@@ -4,6 +4,7 @@ import { nextPosition, positionAtBack, positionBetween } from '../queue/position
 import { foldSample, isUsableSample } from '../queue/serviceTime.js';
 import {
   NO_SHOW_REMOVAL_THRESHOLD,
+  type AdminAction,
   type Queue,
   type Shop,
   type StaffMember,
@@ -11,6 +12,47 @@ import {
   type Ticket,
   type TicketContact,
 } from '../../types/index.js';
+
+/**
+ * The mock's one platform admin, matching `LOCAL_USERS.admin` in lib/auth.ts.
+ *
+ * The mock doesn't enforce who is calling any of its functions — see
+ * CLAUDE.md's "Two backends, one app" — so this is not a trust boundary,
+ * just what makes an audit entry attributable to somebody instead of no one.
+ */
+const MOCK_ADMIN = { uid: 'local-admin', email: 'admin@qjume.local' };
+
+function logAdminAction(input: {
+  action: AdminAction;
+  shopId: string;
+  queueId?: string | null;
+  summary: string;
+  changes?: Record<string, { before: unknown; after: unknown }> | null;
+}): void {
+  mockStore.set(`adminAuditLog/${mockId('log')}`, {
+    action: input.action,
+    adminUid: MOCK_ADMIN.uid,
+    adminEmail: MOCK_ADMIN.email,
+    shopId: input.shopId,
+    queueId: input.queueId ?? null,
+    summary: input.summary,
+    changes: input.changes ?? null,
+    at: Date.now(),
+  } as unknown as Record<string, unknown>);
+}
+
+function diffFields(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): Record<string, { before: unknown; after: unknown }> {
+  const changes: Record<string, { before: unknown; after: unknown }> = {};
+  for (const key of Object.keys(after)) {
+    if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
+      changes[key] = { before: before[key] ?? null, after: after[key] };
+    }
+  }
+  return changes;
+}
 
 /**
  * The browser-side implementation of the Cloud Functions.
@@ -69,6 +111,13 @@ function issueTicket(
    */
   atCounter: boolean,
 ): { ticketId: string; number: number; resumeCode: string } {
+  const shop = mockStore.get<Shop>(`shops/${shopId}`);
+  if (shop?.suspended) {
+    // Checked on the live shop, like the Cloud Function — the denormalised
+    // `shopSuspended` on the queue is for discovery's filter only.
+    throw new MockError('This queue is not accepting new joiners.');
+  }
+
   const queue = readQueue(shopId, queueId);
   if (queue.status !== 'open' && !(atCounter && queue.status === 'drainMode')) {
     throw new MockError(
@@ -384,6 +433,7 @@ export const mockApi = {
     const queue: Queue = {
       name: input.name,
       shopName: shop.name,
+      shopSuspended: shop.suspended === true,
       description: input.description ?? null,
       category: input.category,
       maxSize: input.maxSize,
@@ -510,4 +560,142 @@ export const mockApi = {
     // forgets, so the button behaves rather than erroring.
     return { ok: true } as const;
   },
+
+  suspendShop({ shopId }: { shopId: string }) {
+    return setShopSuspension(shopId, true);
+  },
+
+  reinstateShop({ shopId }: { shopId: string }) {
+    return setShopSuspension(shopId, false);
+  },
+
+  adminUpdateShop({
+    shopId,
+    name,
+    exclusiveQueues,
+    profile,
+  }: {
+    shopId: string;
+    name: string;
+    exclusiveQueues: boolean;
+    profile?: Shop['profile'];
+  }) {
+    const shop = mockStore.get<Shop>(`shops/${shopId}`);
+    if (!shop) throw new MockError('Shop not found.');
+
+    const before = {
+      name: shop.name,
+      exclusiveQueues: shop.exclusiveQueues,
+      profile: shop.profile ?? null,
+    };
+    const after = {
+      name,
+      exclusiveQueues,
+      profile: profile ?? null,
+    };
+    mockStore.update(`shops/${shopId}`, after);
+
+    const changes = diffFields(before, after);
+    if (Object.keys(changes).length > 0) {
+      logAdminAction({
+        action: 'shop.update',
+        shopId,
+        summary: `Edited ${shop.name}`,
+        changes,
+      });
+    }
+  },
+
+  adminUpdateQueue({
+    shopId,
+    queueId,
+    name,
+    address,
+    category,
+    maxSize,
+    avgServiceTimeSeconds,
+    noShowPenalty,
+    description,
+  }: {
+    shopId: string;
+    queueId: string;
+    name: string;
+    address: string;
+    category: Queue['category'];
+    maxSize: number;
+    avgServiceTimeSeconds: number;
+    noShowPenalty: Queue['noShowPenalty'];
+    description?: string | null;
+  }) {
+    const existing = readQueue(shopId, queueId);
+
+    const before = {
+      name: existing.name,
+      address: existing.address,
+      category: existing.category,
+      maxSize: existing.maxSize,
+      avgServiceTimeSeconds: existing.avgServiceTimeSeconds,
+      noShowPenalty: existing.noShowPenalty,
+      description: existing.description,
+    };
+    const after = {
+      name,
+      address,
+      category,
+      maxSize,
+      avgServiceTimeSeconds,
+      noShowPenalty,
+      description: description ?? null,
+    };
+    // The real function re-geocodes on an address change; the mock has no
+    // geocoder to call and already places every queue near the others (see
+    // `createQueue` above), so the coordinates are simply left alone.
+    mockStore.update(qPath(shopId, queueId), after);
+
+    const changes = diffFields(before, after);
+    if (Object.keys(changes).length > 0) {
+      logAdminAction({
+        action: 'queue.update',
+        shopId,
+        queueId,
+        summary: `Edited ${existing.name} at ${existing.shopName}`,
+        changes,
+      });
+    }
+    return { geocoded: null };
+  },
+
+  adminDeleteShop({ shopId }: { shopId: string }) {
+    const shop = mockStore.get<Shop>(`shops/${shopId}`);
+    if (!shop) throw new MockError('Shop not found.');
+
+    mockStore.deletePrefix(`shops/${shopId}`);
+
+    logAdminAction({
+      action: 'shop.delete',
+      shopId,
+      summary: `Deleted ${shop.name}`,
+    });
+  },
 };
+
+/**
+ * Shared by `suspendShop` and `reinstateShop`: flips the shop's own flag and
+ * every queue's denormalised copy together, the same as the Cloud Function.
+ */
+function setShopSuspension(shopId: string, suspended: boolean) {
+  const shop = mockStore.get<Shop>(`shops/${shopId}`);
+  if (!shop) throw new MockError('Shop not found.');
+
+  mockStore.update(`shops/${shopId}`, { suspended });
+  for (const queue of mockStore.list<Queue>(`shops/${shopId}/queues`)) {
+    mockStore.update(`shops/${shopId}/queues/${queue.id}`, { shopSuspended: suspended });
+  }
+
+  logAdminAction({
+    action: suspended ? 'shop.suspend' : 'shop.reinstate',
+    shopId,
+    summary: `${suspended ? 'Suspended' : 'Reinstated'} ${shop.name}`,
+  });
+  return { suspended };
+}

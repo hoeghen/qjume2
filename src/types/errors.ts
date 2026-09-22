@@ -23,4 +23,5 @@ export type QueueErrorReason =
   | 'payment-unverified'
   | 'downgrade-blocked'
   | 'not-shop-staff'
-  | 'free-tier-staff-limit';
+  | 'free-tier-staff-limit'
+  | 'not-platform-admin';

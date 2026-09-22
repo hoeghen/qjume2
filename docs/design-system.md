@@ -119,3 +119,7 @@ page, and it carries the mark at full size already.
   status control is still a select rather than a chip row.
 - **Shop admin screens** (queue list, settings, billing, serving) were not drawn.
   They inherit the tokens and components but have no artboard to match.
+- **The platform admin console** (`/admin`) likewise has no artboard — it
+  reuses `.panel`, `.queue-list` and `.badge` as they already exist rather
+  than getting any purpose-built treatment. It is a tool for one person, not
+  a surface anyone else designed for.

@@ -4,6 +4,7 @@ import type {
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import type {
+  AdminAuditEntry,
   Customer,
   Queue,
   Shop,
@@ -30,3 +31,4 @@ export const ticketConverter = converterFor<Ticket>();
 export const stationConverter = converterFor<Station>();
 export const customerConverter = converterFor<Customer>();
 export const staffConverter = converterFor<StaffMember>();
+export const auditEntryConverter = converterFor<AdminAuditEntry>();
