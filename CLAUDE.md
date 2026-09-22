@@ -94,6 +94,10 @@ boundary, and with the whole database on one device there is nobody to defend
 it from. Enforcement lives in the rules and functions, which is why they still
 carry the tests.
 
+**`/s/:shopId` is the public shop page**, listing every queue at one shop. It
+is reached from the shop's name on a queue detail page and from "N other
+queues". Deliberately not under `/shop`, which is the owner's area.
+
 **A shop runs several queues, and a queue has one or more tills.** The seed
 exercises both: the pharmacy has three lines and two counters, the town hall
 five counters across three lines. A discovery row names the queue as well as
