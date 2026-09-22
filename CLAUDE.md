@@ -100,13 +100,13 @@ kept unedited.
    `src/lib/categories.ts` — it used to be copied into both the discovery
    filter and the shop's queue form, and the two had already drifted once.
 
-8. **The distance filter runs 50 m–5 km, not 1–50 km.** Someone opening the
-   panel is standing outside somewhere sizing up a short walk, not planning a
-   drive across town — the search itself already reaches out to whatever
-   ring the closest twenty need (decision 5), so the filter's job is to
-   narrow, not to reach. The steps (50/100/250/500 m, 1/2/5 km) are
-   hand-labelled in `Filters.tsx` rather than run through `formatDistance`,
-   which would round a fixed "1 km" option to "1.0 km".
+8. **The distance filter runs 50 m–50 km in ten steps, on a 1-2-5 scale.**
+   50/100/250/500 m, 1/2/5/10/25/50 km — the same progression a ruler or a
+   map uses, each step roughly two to two-and-a-half times the last, so ten
+   options cover a single building up to a short drive without an awkward
+   gap anywhere in between. Hand-labelled in `Filters.tsx` rather than run
+   through `formatDistance`, which would round a fixed "1 km" option to
+   "1.0 km".
 
 ## Two backends, one app
 
