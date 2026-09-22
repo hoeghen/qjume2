@@ -559,6 +559,7 @@ export function seedMockBackend(): void {
       ownerUid: entry.yours ? 'local-owner' : `other-${shopId}`,
       plan: entry.plan,
       exclusiveQueues: false,
+      suspended: false,
     };
     mockStore.set(`shops/${shopId}`, shop as unknown as Record<string, unknown>);
 
@@ -611,6 +612,7 @@ export function seedMockBackend(): void {
       const queue: Queue = {
         name: line.queue,
         shopName: entry.shop,
+        shopSuspended: false,
         description: line.description,
         category: entry.category,
         maxSize: 50,

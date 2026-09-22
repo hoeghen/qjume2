@@ -152,6 +152,50 @@ export const closeQueue = callable<
   { clearedCount: number }
 >('closeQueue');
 
+/**
+ * Platform admin. Every one of these requires the `platformAdmin` custom
+ * claim server-side — see CLAUDE.md decision 9 — not anything checked here.
+ */
+export const suspendShop = callable<
+  { shopId: string },
+  { suspended: boolean }
+>('suspendShop');
+
+export const reinstateShop = callable<
+  { shopId: string },
+  { suspended: boolean }
+>('reinstateShop');
+
+export const adminUpdateShop = callable<
+  {
+    shopId: string;
+    name: string;
+    exclusiveQueues: boolean;
+    profile?: { logo: string | null; hours: string | null; phone: string | null; description: string | null } | null;
+  },
+  void
+>('adminUpdateShop');
+
+export const adminUpdateQueue = callable<
+  {
+    shopId: string;
+    queueId: string;
+    name: string;
+    address: string;
+    category: QueueCategory;
+    maxSize: number;
+    avgServiceTimeSeconds: number;
+    noShowPenalty: NoShowPenalty;
+    schedule?: QueueSchedule | null;
+    description?: string | null;
+  },
+  { geocoded: Geocoded | null }
+>('adminUpdateQueue');
+
+export const adminDeleteShop = callable<{ shopId: string }, void>(
+  'adminDeleteShop',
+);
+
 /** The machine-readable reason a call was refused, when there is one. */
 export function reasonOf(error: unknown): QueueErrorReason | null {
   const details = (error as { details?: { reason?: QueueErrorReason } })?.details;

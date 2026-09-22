@@ -85,6 +85,10 @@ export async function findNearest(
     return byDistance(
       mockStore.listGroup<Queue>('queues').flatMap((queue) => {
         if (queue.lat === null || queue.lng === null) return [];
+        // A platform suspension takes a shop out of discovery entirely — not
+        // a status a customer chose to see past, the way closed or paused
+        // are. See CLAUDE.md decision 9.
+        if (queue.shopSuspended) return [];
         const shopId = queue.path.split('/')[1];
         if (!shopId) return [];
         return [
@@ -141,6 +145,8 @@ async function queryRing(
       // A queue whose address could not be placed has no coordinates and
       // cannot be offered by distance.
       if (queue.lat === null || queue.lng === null) continue;
+      // A platform suspension takes a shop out of discovery entirely.
+      if (queue.shopSuspended) continue;
 
       const distanceKm = distanceBetween(
         [queue.lat, queue.lng],

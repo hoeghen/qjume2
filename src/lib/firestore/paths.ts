@@ -8,6 +8,7 @@ import { db } from '../firebase.js';
 import { isMock } from '../mock/mode.js';
 import { mockRef } from '../hooks/useFirestore.js';
 import {
+  auditEntryConverter,
   customerConverter,
   queueConverter,
   shopConverter,
@@ -16,6 +17,7 @@ import {
   ticketConverter,
 } from './converters.js';
 import type {
+  AdminAuditEntry,
   Customer,
   Queue,
   Shop,
@@ -121,3 +123,9 @@ export const stationDoc = (
 
 export const customerDoc = (uid: string): DocumentReference<Customer> =>
   doc(db, 'customers', uid).withConverter(customerConverter);
+
+/** Platform admin only — see `firestore.rules`. */
+export const auditLog = (): CollectionReference<AdminAuditEntry> =>
+  ref('adminAuditLog', () =>
+    collection(db, 'adminAuditLog').withConverter(auditEntryConverter),
+  );

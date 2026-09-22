@@ -31,6 +31,7 @@ export function makeShop(overrides: Partial<Shop> = {}): Shop {
     ownerUid: OWNER_UID,
     plan: 'paid',
     exclusiveQueues: false,
+    suspended: false,
     ...overrides,
   };
 }
@@ -39,6 +40,7 @@ export function makeQueue(overrides: Partial<Queue> = {}): Queue {
   return {
     name: 'Test Queue',
     shopName: 'Test Shop',
+    shopSuspended: false,
     description: null,
     category: 'other',
     maxSize: 1000,

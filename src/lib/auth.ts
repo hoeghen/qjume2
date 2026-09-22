@@ -20,13 +20,16 @@ const EMAIL_KEY = 'qjume:pending-email';
  * Signing in is instant and accepts anything — there is nothing to protect.
  */
 /**
- * A shop owner and a customer are not the same person.
+ * A shop owner, a customer and the platform admin are three different people.
  *
  * Customers sign in anonymously just to get a uid, and that session persists
  * like any other — so if both used one identity, joining a queue would hand
- * the customer the shop's admin screens.
+ * the customer the shop's admin screens. `admin` is a third, separate from
+ * either: it stands in for the `platformAdmin` custom claim a real deployment
+ * sets by hand on one account, so `/admin` has something to test against
+ * without touching Firebase. See CLAUDE.md decision 9.
  */
-type Session = 'owner' | 'guest';
+type Session = 'owner' | 'guest' | 'admin';
 
 const LOCAL_USERS: Record<Session, User> = {
   owner: {
@@ -38,6 +41,11 @@ const LOCAL_USERS: Record<Session, User> = {
     uid: 'local-guest',
     email: null,
     isAnonymous: true,
+  } as unknown as User,
+  admin: {
+    uid: 'local-admin',
+    email: 'admin@qjume.local',
+    isAnonymous: false,
   } as unknown as User,
 };
 
@@ -53,7 +61,9 @@ const SESSION_KEY = 'qjume:session';
 function readSession(): Session | null {
   try {
     const stored = window.localStorage.getItem(SESSION_KEY);
-    return stored === 'owner' || stored === 'guest' ? stored : null;
+    return stored === 'owner' || stored === 'guest' || stored === 'admin'
+      ? stored
+      : null;
   } catch {
     return null;
   }
@@ -155,6 +165,37 @@ export async function signInAsGuest(): Promise<void> {
     return;
   }
   await signInAnonymously(auth);
+}
+
+/**
+ * Mock-only. There is no client sign-up for the platform admin — a real
+ * deployment sets the `platformAdmin` claim by hand, once, against the one
+ * account that needs it, and there is deliberately no code path that grants
+ * it from a request. This is the mock's stand-in for already having that
+ * claim, not a way to get it.
+ */
+export async function signInAsPlatformAdmin(): Promise<void> {
+  if (!isMock) {
+    throw new Error(
+      'The platform admin claim is set on the Firebase account directly; there is no sign-in flow for it here.',
+    );
+  }
+  setLocalUser('admin');
+}
+
+/**
+ * Whether `user` holds the platform admin claim.
+ *
+ * Mock: the `local-admin` identity is the claim's stand-in — see
+ * `signInAsPlatformAdmin`. Firebase: the claim lives on the ID token, so it
+ * costs a token fetch (cached by the SDK, refreshed roughly hourly) rather
+ * than being available synchronously off the `User` object.
+ */
+export async function isPlatformAdmin(user: User | null): Promise<boolean> {
+  if (!user) return false;
+  if (isMock) return user.uid === 'local-admin';
+  const token = await user.getIdTokenResult();
+  return token.claims['platformAdmin'] === true;
 }
 
 export function signOut(): Promise<void> {

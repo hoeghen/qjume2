@@ -87,6 +87,20 @@ export class MockStore {
     this.emit();
   }
 
+  /**
+   * A document and everything nested under it — a shop's queues, their
+   * tickets and stations, its staff. The mirror of the Admin SDK's
+   * `recursiveDelete`, which is what `adminDeleteShop` uses for real; the
+   * mock has no subcollections to walk, only path prefixes to match.
+   */
+  deletePrefix(path: string): void {
+    const nested = `${path}/`;
+    for (const key of this.docs.keys()) {
+      if (key === path || key.startsWith(nested)) this.docs.delete(key);
+    }
+    this.emit();
+  }
+
   /** Every document directly inside a collection path, with its id. */
   list<T>(collectionPath: string): (T & { id: string })[] {
     const prefix = `${collectionPath}/`;

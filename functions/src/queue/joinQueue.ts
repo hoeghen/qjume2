@@ -99,6 +99,17 @@ export async function performJoinQueue(
       const queue = queueSnap.data() as Queue | undefined;
       if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');
 
+      // Checked on the live shop doc, not the denormalised copy on the
+      // queue — a platform suspension refuses joiners the instant it is
+      // set, with nothing for staleness to delay.
+      if (shop.suspended) {
+        throw fail(
+          'failed-precondition',
+          'queue-not-accepting',
+          'This queue is not accepting new joiners.',
+        );
+      }
+
       if (!acceptsJoiners(queue, atCounter)) {
         throw fail(
           'failed-precondition',

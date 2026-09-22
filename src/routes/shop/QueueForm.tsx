@@ -2,7 +2,12 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { useDoc } from '../../lib/hooks/useFirestore.js';
-import { createQueue, messageOf, updateQueue } from '../../lib/functions.js';
+import {
+  adminUpdateQueue,
+  createQueue,
+  messageOf,
+  updateQueue,
+} from '../../lib/functions.js';
 import {
   QUEUE_CATEGORIES,
   type NoShowPenalty,
@@ -16,12 +21,28 @@ const PENALTY_LABELS: Record<NoShowPenalty, string> = {
   back5: 'Move back 5 places',
 };
 
+/**
+ * The owner's queue settings form, and (via `admin`) the platform admin's
+ * edit of any queue.
+ *
+ * The two differ only in which function they call and where "done" goes —
+ * `adminUpdateQueue` bypasses the owner check, and there is no admin path to
+ * *create* a queue at all: the free-tier count it would have to respect is
+ * counted in `createQueue`, which stays owner-only. `paid` is forced true in
+ * admin mode so the description field isn't held behind a plan an admin
+ * doing support work has no reason to care about.
+ */
 export function QueueForm({
   shopId,
   paid,
+  admin = false,
+  onDone,
 }: {
   shopId: string;
   paid: boolean;
+  admin?: boolean;
+  /** Where "Save" and "Cancel" go. Defaults to the owner's `/shop`. */
+  onDone?: () => void;
 }) {
   const { queueId } = useParams();
   const navigate = useNavigate();
@@ -33,6 +54,7 @@ export function QueueForm({
   if (queueId && existing.loading) return <p className="panel">Loading…</p>;
 
   const q = existing.data;
+  const done = onDone ?? (() => navigate('/shop'));
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,12 +73,15 @@ export function QueueForm({
     setError(null);
     void (async () => {
       try {
-        if (queueId) {
+        if (admin && queueId) {
+          await adminUpdateQueue({ shopId, queueId, ...values });
+          done();
+        } else if (queueId) {
           // Goes through a function, not a direct write: changing the address
           // has to re-geocode, or the queue would be listed where it no
           // longer is.
           await updateQueue({ shopId, queueId, ...values });
-          navigate('/shop');
+          done();
         } else {
           const { queueId: created } = await createQueue({ shopId, ...values });
           navigate(`/shop/q/${created}/serve`);
@@ -158,11 +183,7 @@ export function QueueForm({
           <button type="submit" disabled={busy}>
             {queueId ? 'Save' : 'Create queue'}
           </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => navigate('/shop')}
-          >
+          <button type="button" className="secondary" onClick={done}>
             Cancel
           </button>
         </div>

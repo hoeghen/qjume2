@@ -108,6 +108,52 @@ kept unedited.
    through `formatDistance`, which would round a fixed "1 km" option to
    "1.0 km".
 
+9. **There is a platform admin console, at `/admin`, for one person.** Not in
+   the PRD at all — added on request, scoped by an interview rather than
+   guessed at. One admin for now, recognised by a `platformAdmin` custom
+   claim set once by hand against the Admin SDK (there is no self-serve grant
+   path, on either backend). Full control, not read-only: browse every shop
+   and its queues, edit either directly (bypassing the owner check — see
+   `applyQueueUpdate` in `functions/src/shop/updateQueue.ts`, shared by the
+   owner's own `updateQueue` and the admin's `adminUpdateQueue` so the two
+   validate identically), delete a shop outright (`recursiveDelete`, with a
+   type-the-name confirm in the UI — the one truly irreversible action here),
+   and suspend or reinstate a shop platform-wide. Payments stay
+   **view-only**: `adminUpdateShop`'s request type has no `plan` field, full
+   stop — a plan still changes only through `completeCheckout`'s verified
+   payment.
+
+   **Suspension is not the shop's own open/closed toggle.** `shop.suspended`
+   is a separate field the owner cannot write (`keepsServerOwnedShopFields`
+   in `firestore.rules` blocks it, the same shape as `plan`), and a suspended
+   shop drops out of discovery and refuses joiners *regardless* of what its
+   queues' own `status` says — draining, open, mid-service, it doesn't
+   matter. What it does not do is stop staff serving whoever is already
+   waiting; that is the same shape as invariant 4's offline handling, not a
+   harsher one. Discovery needs this denormalised onto the queue as
+   `shopSuspended` (mirroring `shopName`), because a collection-group query
+   over queues cannot afford a second read per shop to check the parent —
+   `joinQueue` does not trust that copy, though, and checks the live `shop`
+   doc it already reads in its own transaction, so staleness in the
+   denormalised copy can only ever hide a queue a beat too long, never let a
+   join through it shouldn't.
+
+   **Every admin action is logged**, to `adminAuditLog` — a collection no
+   client can write to and only a platform admin can read. Written by the
+   admin Cloud Functions themselves, inside the same transaction as the
+   change where one exists, because a write that succeeds and a log entry
+   that doesn't (or the reverse) is exactly the gap an audit trail exists to
+   close. Kept top-level, not nested under the shop, so deleting a shop can
+   never delete the record that it happened.
+
+   **The mock gets a third identity, `local-admin`**, alongside
+   `local-owner`/`local-guest` — see `signInAsPlatformAdmin` in
+   `src/lib/auth.ts`. The mock has no Firebase to set a custom claim on, so
+   this stands in for already holding one; there is deliberately no
+   equivalent affordance on the real backend, where the claim is set by hand
+   against one account and nothing in the app grants it. `/admin` is reached
+   only by URL, the same as `/monitor` — nothing in the app links to it.
+
 ## Two backends, one app
 
 The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and

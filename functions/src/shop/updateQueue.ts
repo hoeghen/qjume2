@@ -34,18 +34,20 @@ export interface UpdateQueueResult {
 const PENALTIES: NoShowPenalty[] = ['back', 'back3', 'back5'];
 
 /**
- * Edit a queue's settings.
+ * The validated write, shared by the owner's `updateQueue` and the platform
+ * admin's `adminUpdateQueue`.
  *
- * Server-side because the address and its coordinates must not drift apart: a
- * client write could change the address while leaving the old `lat`/`lng`, and
- * the queue would then be discoverable at a place it no longer occupies. The
- * security rules let a client change only `status`.
+ * `authorize` is the only difference between the two callers: the owner path
+ * checks `shop.ownerUid`, the admin path has already been authorized by
+ * `requirePlatformAdmin` and does nothing here. Everything else — field
+ * validation, the conditional re-geocode, the transaction — must not answer
+ * that question twice in two places that could drift.
  */
-export async function performUpdateQueue(
+async function applyQueueUpdate(
   firestore: Firestore,
-  callerUid: string,
   input: UpdateQueueRequest,
-): Promise<UpdateQueueResult> {
+  authorize: (shop: Shop) => void,
+): Promise<{ before: Queue; result: UpdateQueueResult }> {
   const { shopId, queueId, category, maxSize, avgServiceTimeSeconds } = input;
   const name = input.name?.trim();
   const address = input.address?.trim();
@@ -87,13 +89,8 @@ export async function performUpdateQueue(
   ]);
   const shop = shopSnap.data() as Shop | undefined;
   if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-  if (shop.ownerUid !== callerUid) {
-    throw fail(
-      'permission-denied',
-      'not-shop-owner',
-      'Only the shop owner can edit this queue.',
-    );
-  }
+  authorize(shop);
+
   const existing = queueSnap.data() as Queue | undefined;
   if (!existing) {
     throw fail('not-found', 'queue-not-found', 'Queue not found.');
@@ -137,11 +134,41 @@ export async function performUpdateQueue(
   });
 
   return {
-    geocoded: located
-      ? { lat: located.lat, lng: located.lng, formatted: located.formatted }
-      : null,
+    before: existing,
+    result: {
+      geocoded: located
+        ? { lat: located.lat, lng: located.lng, formatted: located.formatted }
+        : null,
+    },
   };
 }
+
+/**
+ * Edit a queue's settings.
+ *
+ * Server-side because the address and its coordinates must not drift apart: a
+ * client write could change the address while leaving the old `lat`/`lng`, and
+ * the queue would then be discoverable at a place it no longer occupies. The
+ * security rules let a client change only `status`.
+ */
+export async function performUpdateQueue(
+  firestore: Firestore,
+  callerUid: string,
+  input: UpdateQueueRequest,
+): Promise<UpdateQueueResult> {
+  const { result } = await applyQueueUpdate(firestore, input, (shop) => {
+    if (shop.ownerUid !== callerUid) {
+      throw fail(
+        'permission-denied',
+        'not-shop-owner',
+        'Only the shop owner can edit this queue.',
+      );
+    }
+  });
+  return result;
+}
+
+export { applyQueueUpdate };
 
 export const updateQueue = onCall<UpdateQueueRequest, Promise<UpdateQueueResult>>(
   (request: CallableRequest<UpdateQueueRequest>) =>
