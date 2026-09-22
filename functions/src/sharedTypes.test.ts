@@ -15,7 +15,7 @@ describe('shared types', () => {
     expect(NO_SHOW_REMOVAL_THRESHOLD).toBe(3);
   });
 
-  it('define the eleven fixed queue categories', () => {
-    expect(QUEUE_CATEGORIES).toHaveLength(11);
+  it('define the six fixed queue categories', () => {
+    expect(QUEUE_CATEGORIES).toHaveLength(6);
   });
 });

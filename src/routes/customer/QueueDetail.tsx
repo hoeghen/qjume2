@@ -5,7 +5,7 @@ import { queueDoc } from '../../lib/firestore/paths.js';
 import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
 import { estimatedWaitSeconds } from '../../lib/discovery.js';
 import { formatWait } from '../../lib/format.js';
-import { CATEGORY_LABELS } from './components/Filters.js';
+import { CATEGORY_LABELS } from '../../lib/categories.js';
 import { JoinQueue } from './JoinQueue.js';
 import { TicketView } from './TicketView.js';
 import { ResumeCodePrompt } from './components/ResumeCodePrompt.js';
