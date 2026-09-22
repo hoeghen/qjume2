@@ -10,6 +10,8 @@ import { QueueFormRoute } from './routes/shop/QueueFormRoute.js';
 import { ServingRoute } from './routes/shop/ServingRoute.js';
 import { Billing } from './routes/shop/Billing.js';
 import { MonitorHome } from './routes/monitor/MonitorHome.js';
+import { Terms } from './routes/legal/Terms.js';
+import { Privacy } from './routes/legal/Privacy.js';
 import { AdminHome } from './routes/admin/AdminHome.js';
 import { AdminShopList } from './routes/admin/AdminShopList.js';
 import { AdminShopDetail } from './routes/admin/AdminShopDetail.js';
@@ -44,6 +46,8 @@ export const router = (isPortable ? createHashRouter : createBrowserRouter)(
           ],
         },
         { path: 'monitor', element: <MonitorHome /> },
+        { path: 'terms', element: <Terms /> },
+        { path: 'privacy', element: <Privacy /> },
         {
           // Not linked from anywhere in the app, the same as /monitor — the
           // one person who needs this reaches it by URL. See CLAUDE.md

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 import {
@@ -108,6 +108,10 @@ export function Billing() {
           <button type="button" disabled={busy} onClick={() => changePlan('paid')}>
             Upgrade
           </button>
+          <p className="hint">
+            A recurring subscription, billed until you cancel. See our{' '}
+            <Link to="/terms">Terms</Link> for billing and cancellation.
+          </p>
         </>
       )}
 
