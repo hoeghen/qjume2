@@ -502,6 +502,33 @@ export function placeMockShopsNear(centre: { lat: number; lng: number }): void {
   } as unknown as Record<string, unknown>);
 }
 
+/**
+ * A stable id for a seeded document.
+ *
+ * `mockId` ends in a timestamp, which is right for anything minted while the
+ * app runs and wrong for the seed: the ids would differ on every device, and
+ * the whole point of a join code is that it is scanned by a phone that has
+ * never run this build. A slug of the name is the same everywhere, so a URL
+ * printed for the counter or shown on the wall still resolves.
+ */
+function slug(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || 'x'
+  );
+}
+
+/** Keeps two shops that slug the same from sharing a document. */
+function uniqueSlug(name: string, taken: Set<string>): string {
+  const base = slug(name);
+  let id = base;
+  for (let n = 2; taken.has(id); n += 1) id = `${base}-${n}`;
+  taken.add(id);
+  return id;
+}
+
 let seeded = false;
 
 /**
@@ -521,9 +548,10 @@ export function seedMockBackend(): void {
   seeded = true;
 
   const offsets: Placement['offsets'] = {};
+  const shopIds = new Set<string>();
 
   for (const entry of SHOPS) {
-    const shopId = mockId('shop');
+    const shopId = uniqueSlug(entry.shop, shopIds);
     const { lat, lng } = coordsFor(MOCK_CENTRE, entry.north, entry.east);
 
     const shop: Shop = {
@@ -537,8 +565,9 @@ export function seedMockBackend(): void {
     // The shop's own fields describe its first line; `moreQueues` adds the
     // rest. They share the shop's name, address and position because they are
     // the same building.
+    const queueIds = new Set<string>();
     for (const line of [entry, ...(entry.moreQueues ?? [])]) {
-      const queueId = mockId('queue');
+      const queueId = uniqueSlug(line.queue, queueIds);
       const queuePath = `shops/${shopId}/queues/${queueId}`;
 
       let lastPosition = 0;
@@ -611,7 +640,7 @@ export function seedMockBackend(): void {
           currentTicketId: null,
         };
         mockStore.set(
-          `${queuePath}/stations/${mockId('station')}`,
+          `${queuePath}/stations/till-${till}`,
           station as unknown as Record<string, unknown>,
         );
       }

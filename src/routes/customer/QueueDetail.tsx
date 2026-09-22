@@ -26,6 +26,9 @@ export function QueueDetail() {
   const [params] = useSearchParams();
   // A QR code at the counter drops straight into the join form.
   const [joining, setJoining] = useState(params.get('join') === '1');
+  // Scanned in the shop rather than followed from a link, so a draining queue
+  // still takes them — the same rule staff get when adding a walk-in.
+  const atCounter = params.get('at') === 'counter';
   const [ticketId, setTicketId] = useState<string | null>(() =>
     heldTicket(shopId, queueId),
   );
@@ -51,7 +54,7 @@ export function QueueDetail() {
   const wait = estimatedWaitSeconds(q, activeStations);
   const otherQueues = Math.max(0, (siblings?.length ?? 1) - 1);
   const note = STATUS_NOTES[q.status];
-  const joinable = q.status === 'open';
+  const joinable = q.status === 'open' || (atCounter && q.status === 'drainMode');
 
   return (
     <main>
@@ -129,6 +132,7 @@ export function QueueDetail() {
         <JoinQueue
           shopId={shopId}
           queueId={queueId}
+          atCounter={atCounter}
           onJoined={(id, code) => {
             setTicketId(id);
             setJoining(false);

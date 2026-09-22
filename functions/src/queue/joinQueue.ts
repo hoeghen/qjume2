@@ -24,6 +24,16 @@ export interface JoinQueueRequest {
   displayName: string;
   email?: string;
   phone?: string;
+  /**
+   * Set when the join came from the QR code on the in-shop monitor, so the
+   * person is standing in front of it.
+   *
+   * The code is static and unauthenticated, so this is a claim rather than
+   * proof — someone could photograph it and join from home. That is accepted:
+   * the only thing it unlocks is joining a draining queue, which a member of
+   * staff could do for them anyway by adding them as a walk-in.
+   */
+  atCounter?: boolean;
 }
 
 export interface JoinQueueResult {
@@ -33,9 +43,16 @@ export interface JoinQueueResult {
   resumeCode: string;
 }
 
-/** Only an open queue takes new joiners. */
-function acceptsJoiners(queue: Queue): boolean {
-  return queue.status === 'open';
+/**
+ * An open queue takes anyone. A draining one takes only those already there.
+ *
+ * That is the same asymmetry as `addWalkIn`: drain mode stops *remote*
+ * joiners, not someone standing at the counter. `unavailable` refuses both —
+ * the shop's device is offline and could not be told either way.
+ */
+function acceptsJoiners(queue: Queue, atCounter: boolean): boolean {
+  if (queue.status === 'open') return true;
+  return atCounter && queue.status === 'drainMode';
 }
 
 /**
@@ -52,6 +69,7 @@ export async function performJoinQueue(
 ): Promise<JoinQueueResult> {
   {
     const { shopId, queueId, displayName, email, phone } = input;
+    const atCounter = input.atCounter === true;
 
     const trimmedName = displayName?.trim();
     if (!shopId || !queueId || !trimmedName) {
@@ -81,7 +99,7 @@ export async function performJoinQueue(
       const queue = queueSnap.data() as Queue | undefined;
       if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');
 
-      if (!acceptsJoiners(queue)) {
+      if (!acceptsJoiners(queue, atCounter)) {
         throw fail(
           'failed-precondition',
           'queue-not-accepting',

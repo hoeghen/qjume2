@@ -7,6 +7,8 @@ import { rememberTicket } from '../../lib/myTickets.js';
 interface Props {
   shopId: string;
   queueId: string;
+  /** Arrived by scanning a code in the shop, so drain mode still admits them. */
+  atCounter: boolean;
   onJoined: (ticketId: string, resumeCode: string) => void;
   onCancel: () => void;
 }
@@ -16,7 +18,13 @@ interface Props {
  * called by. Email is offered, not required: it is the fallback that carries
  * the resume code and the notifications for anyone who never grants push.
  */
-export function JoinQueue({ shopId, queueId, onJoined, onCancel }: Props) {
+export function JoinQueue({
+  shopId,
+  queueId,
+  atCounter,
+  onJoined,
+  onCancel,
+}: Props) {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -40,6 +48,7 @@ export function JoinQueue({ shopId, queueId, onJoined, onCancel }: Props) {
           queueId,
           displayName,
           ...(email.trim() ? { email: email.trim() } : {}),
+          ...(atCounter ? { atCounter: true } : {}),
         });
         rememberTicket(shopId, queueId, result.ticketId);
         onJoined(result.ticketId, result.resumeCode);

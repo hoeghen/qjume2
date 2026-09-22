@@ -13,7 +13,13 @@
  * Writes persist to localStorage. A queue you joined has to survive a refresh
  * and a phone locking itself — a ticket that evaporates is not a ticket.
  */
-const STORAGE_KEY = 'qjume.store.v1';
+/*
+ * Bumped when the seed's shape changes in a way a stored copy cannot be read
+ * back into. v2 gave the seeded shops stable ids, which a store written by v1
+ * does not have — and a join code that resolves on one device and not another
+ * is worse than starting over.
+ */
+const STORAGE_KEY = 'qjume.store.v2';
 
 /**
  * Storage can throw rather than merely be empty: Safari in private mode, a
