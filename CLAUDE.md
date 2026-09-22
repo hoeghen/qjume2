@@ -154,6 +154,29 @@ kept unedited.
    against one account and nothing in the app grants it. `/admin` is reached
    only by URL, the same as `/monitor` — nothing in the app links to it.
 
+10. **There is a real Terms of Service and Privacy Policy**, at `/terms` and
+    `/privacy` (`src/routes/legal/`) — a first draft, not lawyer-reviewed,
+    written against what the app actually collects (see the `Ticket`/
+    `TicketContact` split, `useGeolocation`) rather than generic boilerplate,
+    so it can't silently drift from the code. Operator is Bitwork.dk, under
+    Danish/EU law, contact `bitwork@gmail.com`. The paid plan is described as
+    a recurring subscription, billed until cancelled — that is the actual
+    plan (see "Billing" below), not just wording. Linked from the two moments
+    someone is actually agreeing to something — shop sign-in and the upgrade
+    button — not stapled to every screen.
+
+    **Payments will be Stripe, in subscription mode**, with Google Pay and
+    Apple Pay offered automatically as Stripe Checkout payment buttons —
+    neither is a payment processor on its own, so there is no separate
+    integration for either. `PaymentProvider`'s `createCheckout`/
+    `verifyCheckout` shape (already in `functions/src/billing/`) is
+    unchanged by this; only `stubPayments` gets a `stripeProvider` sibling.
+    A subscription's *ongoing* state — a lapsed card, a cancellation — is not
+    something checking-on-return can catch, unlike the one-time upgrade this
+    shape was built for, so a Stripe webhook function (`customer.
+    subscription.deleted`, `invoice.payment_failed` → downgrade `shop.plan`)
+    ships alongside `stripeProvider`, not as a later add-on.
+
 ## Two backends, one app
 
 The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and

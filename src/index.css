@@ -738,6 +738,23 @@ button.link.danger { color: var(--danger); }
   max-width: 440px;
 }
 
+/*
+ * Terms and Privacy are read, not skimmed — a legal page's only job is to
+ * stay legible for as long as someone needs it. Capped at a genuine reading
+ * width regardless of how wide the window is, per the "limits that keep
+ * prose readable live on the text blocks" rule.
+ */
+.legal { max-width: 680px; display: flex; flex-direction: column; gap: 4px; }
+.legal h2 {
+  margin: 28px 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-dark);
+}
+.legal p, .legal li { font-size: 14.5px; line-height: 1.65; color: var(--on-dark-muted); }
+.legal ul { margin: 4px 0; padding-left: 1.2em; }
+.legal .legal-updated { font-size: 12.5px; color: var(--on-dark-faint); margin: 0 0 8px; }
+
 
 /* ---------- monitor on ink ---------- */
 

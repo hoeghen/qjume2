@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import {
   sendEmailLink,
   signInWithApple,
@@ -87,6 +88,11 @@ export function SignIn() {
           {error}
         </p>
       )}
+
+      <p className="hint">
+        By continuing you agree to our <Link to="/terms">Terms</Link> and{' '}
+        <Link to="/privacy">Privacy Policy</Link>.
+      </p>
     </main>
   );
 }
