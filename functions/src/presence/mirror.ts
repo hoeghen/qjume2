@@ -16,9 +16,17 @@ import type { Queue } from '../../../src/types/index.js';
  * device disconnects, and back again when one returns. A queue that is paused,
  * draining or closed is left exactly as the owner set it — losing a connection
  * must never quietly reopen a queue somebody deliberately shut.
+ *
+ * `region` is pinned rather than left at the 2nd-gen default (`us-central1`):
+ * an RTDB trigger can only attach to a database instance in its own region,
+ * and this project's Realtime Database lives in `europe-west1` — the deploy
+ * otherwise fails outright ("pattern cannot match any databases in region
+ * us-central1"). The callables elsewhere in this project carry no such
+ * constraint, so this is set here alone rather than globally, which would
+ * force every already-deployed function through a needless region move.
  */
 export const mirrorPresence = onValueWritten(
-  '/status/{shopId}/{queueId}',
+  { ref: '/status/{shopId}/{queueId}', region: 'europe-west1' },
   async (event) => {
     const { shopId, queueId } = event.params;
     const online = event.data.after.exists() && event.data.after.hasChildren();
