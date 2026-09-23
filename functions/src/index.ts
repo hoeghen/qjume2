@@ -31,6 +31,7 @@ export { addStaff, removeStaff } from './shop/staff.js';
  * owner who could write it would lift all of them at once.
  */
 export { startCheckout, completeCheckout } from './billing/checkout.js';
+export { stripeWebhook } from './billing/webhook.js';
 
 /**
  * Presence. Realtime Database is used for this and nothing else — Firestore

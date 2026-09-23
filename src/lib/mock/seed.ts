@@ -560,6 +560,8 @@ export function seedMockBackend(): void {
       plan: entry.plan,
       exclusiveQueues: false,
       suspended: false,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
     };
     mockStore.set(`shops/${shopId}`, shop as unknown as Record<string, unknown>);
 

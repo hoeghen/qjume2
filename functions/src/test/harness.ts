@@ -32,6 +32,8 @@ export function makeShop(overrides: Partial<Shop> = {}): Shop {
     plan: 'paid',
     exclusiveQueues: false,
     suspended: false,
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
     ...overrides,
   };
 }

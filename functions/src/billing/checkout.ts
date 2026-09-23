@@ -4,6 +4,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { STRIPE_SECRETS } from '../lib/secrets.js';
 import { providerFromEnv, type PaymentProvider } from './index.js';
 import {
   FREE_TIER_LIMITS,
@@ -107,7 +108,18 @@ export async function performCompleteCheckout(
       }
     }
 
-    tx.update(shopRef, { plan: completed.plan });
+    const update: Partial<Shop> = { plan: completed.plan };
+    // Only Stripe hands these back, and only on an upgrade — a downgrade's
+    // completed checkout has nothing new to record. Leaving them out of the
+    // update rather than writing `undefined` keeps whatever a previous
+    // upgrade already stored.
+    if (completed.stripeCustomerId !== undefined) {
+      update.stripeCustomerId = completed.stripeCustomerId;
+    }
+    if (completed.stripeSubscriptionId !== undefined) {
+      update.stripeSubscriptionId = completed.stripeSubscriptionId;
+    }
+    tx.update(shopRef, update);
   });
 
   logger.info('Plan changed', {
@@ -120,6 +132,7 @@ export async function performCompleteCheckout(
 }
 
 export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string }>>(
+  { secrets: STRIPE_SECRETS },
   (request: CallableRequest<StartCheckoutRequest>) =>
     performStartCheckout(db, requireCaller(request).uid, request.data),
 );
@@ -127,6 +140,6 @@ export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string 
 export const completeCheckout = onCall<
   CompleteCheckoutRequest,
   Promise<{ plan: Plan }>
->((request: CallableRequest<CompleteCheckoutRequest>) =>
+>({ secrets: STRIPE_SECRETS }, (request: CallableRequest<CompleteCheckoutRequest>) =>
   performCompleteCheckout(db, requireCaller(request).uid, request.data),
 );

@@ -27,4 +27,13 @@ export interface Shop {
    * admin's `reinstateShop` can. See CLAUDE.md decision 9.
    */
   suspended: boolean;
+  /**
+   * Stripe's own ids for this shop's subscription, set once a checkout
+   * completes (`performCompleteCheckout`) and read back when the shop later
+   * moves to free — that is a cancellation, not a new checkout, and needs to
+   * know which subscription to cancel. Null for a shop that has never paid,
+   * and for every shop under the stub provider, which invents no such id.
+   */
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
 }

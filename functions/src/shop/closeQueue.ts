@@ -4,6 +4,7 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { requireServeAccess } from '../lib/access.js';
+import { EMAIL_SECRETS } from '../lib/secrets.js';
 import { channelsFromEnv } from '../notifications/dispatch.js';
 import { notifyQueueClosed } from '../notifications/events.js';
 import { baseUrl } from '../lib/config.js';
@@ -120,6 +121,7 @@ export async function performCloseQueue(
 }
 
 export const closeQueue = onCall<CloseQueueRequest, Promise<CloseQueueResult>>(
+  { secrets: EMAIL_SECRETS },
   (request: CallableRequest<CloseQueueRequest>) =>
     performCloseQueue(db, requireCaller(request).uid, request.data),
 );

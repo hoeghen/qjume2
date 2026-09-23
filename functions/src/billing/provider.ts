@@ -17,6 +17,15 @@ export interface CheckoutSession {
 export interface CompletedCheckout {
   shopId: string;
   plan: Plan;
+  /**
+   * Provider-specific handles for whatever this checkout set up, persisted
+   * onto the shop so a later "move to free" (a cancellation, not a new
+   * checkout) knows what to cancel. `undefined` for providers with nothing
+   * to hand back — the stub, and a downgrade to free, which cancels rather
+   * than creates.
+   */
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
 }
 
 export interface PaymentProvider {

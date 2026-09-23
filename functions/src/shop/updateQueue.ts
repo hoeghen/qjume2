@@ -3,6 +3,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { GEOCODING_SECRETS } from '../lib/secrets.js';
 import { geocodeAddress } from '../geocoding/index.js';
 import {
   QUEUE_CATEGORIES,
@@ -171,6 +172,7 @@ export async function performUpdateQueue(
 export { applyQueueUpdate };
 
 export const updateQueue = onCall<UpdateQueueRequest, Promise<UpdateQueueResult>>(
+  { secrets: GEOCODING_SECRETS },
   (request: CallableRequest<UpdateQueueRequest>) =>
     performUpdateQueue(db, requireCaller(request).uid, request.data),
 );

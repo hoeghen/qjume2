@@ -57,10 +57,17 @@ export function Billing() {
     void (async () => {
       try {
         const { url } = await startCheckout({ shopId, plan });
-        // Relative while no provider is configured; a real one returns its own
-        // hosted page.
-        if (url.startsWith('http')) window.location.assign(url);
-        else navigate(url.replace('/shop/billing/return', '/shop/billing'));
+        // An absolute URL is a real provider's own hosted page — the whole
+        // page is about to unload, so nothing here needs to run again. A
+        // relative one (the stub, the mock, or a Stripe cancellation, which
+        // has no checkout page to send anyone to) stays on this route, same
+        // path or not, and nothing else is left to flip `busy` back.
+        if (url.startsWith('http')) {
+          window.location.assign(url);
+        } else {
+          navigate(url.replace('/shop/billing/return', '/shop/billing'));
+          setBusy(false);
+        }
       } catch (e) {
         setError(messageOf(e));
         setBusy(false);

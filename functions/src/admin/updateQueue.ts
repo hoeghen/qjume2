@@ -2,6 +2,7 @@ import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
 import { type Firestore } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { requirePlatformAdmin, type AdminCaller } from '../lib/auth.js';
+import { GEOCODING_SECRETS } from '../lib/secrets.js';
 import { diffFields, logAdminAction } from './auditLog.js';
 import {
   applyQueueUpdate,
@@ -62,6 +63,7 @@ export async function performAdminUpdateQueue(
 }
 
 export const adminUpdateQueue = onCall<UpdateQueueRequest, Promise<UpdateQueueResult>>(
+  { secrets: GEOCODING_SECRETS },
   (request: CallableRequest<UpdateQueueRequest>) =>
     performAdminUpdateQueue(db, requirePlatformAdmin(request), request.data),
 );
