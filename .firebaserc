@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "qjume-local"
+    "default": "qjume-local",
+    "production": "qjume-d483a"
   }
 }
