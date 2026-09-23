@@ -15,7 +15,8 @@
   "dependencies": {
     "firebase-admin": "^13.0.2",
     "firebase-functions": "^6.2.0",
-    "geofire-common": "^6.0.0"
+    "geofire-common": "^6.0.0",
+    "stripe": "^17.7.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

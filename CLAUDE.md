@@ -165,24 +165,53 @@ kept unedited.
     someone is actually agreeing to something — shop sign-in and the upgrade
     button — not stapled to every screen.
 
-    **Payments will be Stripe, in subscription mode**, with Google Pay and
-    Apple Pay offered automatically as Stripe Checkout payment buttons —
-    neither is a payment processor on its own, so there is no separate
-    integration for either. `PaymentProvider`'s `createCheckout`/
-    `verifyCheckout` shape (already in `functions/src/billing/`) is
-    unchanged by this; only `stubPayments` gets a `stripeProvider` sibling.
-    A subscription's *ongoing* state — a lapsed card, a cancellation — is not
-    something checking-on-return can catch, unlike the one-time upgrade this
-    shape was built for, so a Stripe webhook function (`customer.
-    subscription.deleted`, `invoice.payment_failed` → downgrade `shop.plan`)
-    ships alongside `stripeProvider`, not as a later add-on.
+    **Payments are Stripe, in subscription mode** (`functions/src/billing/
+    stripe.ts`), with Google Pay and Apple Pay offered automatically as
+    Stripe Checkout payment buttons — neither is a payment processor on its
+    own, so neither needed separate integration. `PaymentProvider`'s
+    `createCheckout`/`verifyCheckout` shape is unchanged by this; `stubPayments`
+    gained a `stripeProvider` sibling, selected by `PAYMENTS_PROVIDER=stripe`.
+    `createCheckout(shopId, 'free')` is a cancellation, not a checkout — it
+    calls Stripe directly and hands back a session shaped like the stub's
+    and a real Checkout's own (`/shop/billing/return?session=...`), so
+    `Billing.tsx` needed no new code to follow it into `completeCheckout`.
+    `Shop` carries `stripeCustomerId`/`stripeSubscriptionId`, set by
+    `performCompleteCheckout` on an upgrade and read back by the cancel path,
+    so it knows what to cancel. A subscription's *ongoing* state — a lapsed
+    card, a cancellation made from Stripe's own portal — is not something
+    checking-on-return can catch, so `stripeWebhook`
+    (`functions/src/billing/webhook.ts`, an `onRequest`, not an `onCall` —
+    Stripe is not a signed-in Firebase user, and its signature is the only
+    authentication this endpoint has) shipped alongside the provider, not as
+    a later add-on: `customer.subscription.deleted` and
+    `invoice.payment_failed` both downgrade `shop.plan` to `free`.
+
+    **Secret Manager secrets need to be bound per function, or they are not
+    there.** Firebase Functions v2 does not put a secret set with `firebase
+    functions:secrets:set` into `process.env` just because it exists — every
+    function reading one lists it in its own `secrets` option
+    (`functions/src/lib/secrets.ts` names the lists once, reused by every
+    caller) or the value is silently absent at runtime despite being set.
+    This was already a live gap for `GEOCODING_API_KEY`/`EMAIL_API_KEY`
+    before Stripe made it obvious — every function that reads a secret is
+    bound now. Secrets must exist in the project (`firebase
+    functions:secrets:set`) *before* the first deploy that references them,
+    or that deploy fails.
+
+    **A second GitHub Actions workflow**, `.github/workflows/deploy-firebase.yml`,
+    ships the real backend to Firebase Hosting/Functions/rules — separate
+    from `deploy.yml`, which ships the mock backend to GitHub Pages and needs
+    no secrets at all. It skips itself cleanly (`if: vars.FIREBASE_PROJECT_ID
+    != ''`) until that repo variable and the `VITE_FIREBASE_*`/
+    `FIREBASE_SERVICE_ACCOUNT` secrets are set, rather than failing on every
+    push in the meantime.
 
 ## Two backends, one app
 
 The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and
 two implementations plug into it:
 
-- **Firebase** — Firestore, Auth, and the seventeen Cloud Functions.
+- **Firebase** — Firestore, Auth, and the twenty-three Cloud Functions.
 - **`src/lib/mock/`** — the same surface implemented in the browser, storing to
   `localStorage`. Not a cut-down preview: every callable is implemented, and
   ordering comes from `src/lib/queue/`, the same modules the Cloud Functions

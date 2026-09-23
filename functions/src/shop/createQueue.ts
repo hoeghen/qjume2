@@ -3,6 +3,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { GEOCODING_SECRETS } from '../lib/secrets.js';
 import { geocodeAddress } from '../geocoding/index.js';
 import {
   FREE_TIER_LIMITS,
@@ -156,6 +157,7 @@ export async function performCreateQueue(
 }
 
 export const createQueue = onCall<CreateQueueRequest, Promise<CreateQueueResult>>(
+  { secrets: GEOCODING_SECRETS },
   (request: CallableRequest<CreateQueueRequest>) =>
     performCreateQueue(db, requireCaller(request).uid, request.data),
 );

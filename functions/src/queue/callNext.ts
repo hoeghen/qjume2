@@ -9,6 +9,7 @@ import {
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
+import { EMAIL_SECRETS } from '../lib/secrets.js';
 import { assertServeAccessInTransaction } from '../lib/access.js';
 import { placesToMoveBack } from '../../../src/lib/queue/penalties.js';
 import { foldSample, isUsableSample } from '../../../src/lib/queue/serviceTime.js';
@@ -408,6 +409,7 @@ export async function performCallNext(
 }
 
 export const callNext = onCall<CallNextRequest, Promise<CallNextResult>>(
+  { secrets: EMAIL_SECRETS },
   (request: CallableRequest<CallNextRequest>) =>
     performCallNext(db, requireCaller(request).uid, request.data),
 );

@@ -24,6 +24,8 @@ export function CreateShop({ ownerUid }: { ownerUid: string }) {
           plan: 'free',
           exclusiveQueues: exclusive,
           suspended: false,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
         };
         await createShop(ownerUid, shop);
       } catch (e) {

@@ -1,5 +1,6 @@
 import type { PaymentProvider } from './provider.js';
 import { stubPayments } from './stub.js';
+import { stripeProvider } from './stripe.js';
 
 export type {
   CheckoutSession,
@@ -7,6 +8,7 @@ export type {
   PaymentProvider,
 } from './provider.js';
 export { stubPayments } from './stub.js';
+export { stripeProvider } from './stripe.js';
 
 /**
  * Selects a payment provider from configuration.
@@ -19,6 +21,7 @@ export function providerFromEnv(env = process.env): PaymentProvider {
   const name = env['PAYMENTS_PROVIDER'];
 
   if (name === 'stub') return stubPayments(env['PAYMENTS_STUB_SECRET']);
+  if (name === 'stripe') return stripeProvider(env);
   if (name) throw new Error(`Unknown PAYMENTS_PROVIDER: ${name}`);
 
   if (env['FIRESTORE_EMULATOR_HOST']) return stubPayments();
