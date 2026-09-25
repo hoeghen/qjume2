@@ -42,6 +42,12 @@ jobs:
 
       - name: Build the app against the real backend
         env:
+          # src/lib/firebase.ts defaults VITE_USE_EMULATORS to true when
+          # unset - right for local dev, wrong for anything actually
+          # deployed. Without this, the built app tries to reach the
+          # Firebase emulators at 127.0.0.1, which on a real user's device
+          # is their own device, not this build server.
+          VITE_USE_EMULATORS: 'false'
           # Setting VITE_FIREBASE_API_KEY (rather than VITE_BACKEND=firebase
           # directly) is what src/lib/mock/mode.ts infers the backend from —
           # stating the backend explicitly here would risk the two disagreeing
