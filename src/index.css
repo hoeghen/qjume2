@@ -918,6 +918,15 @@ button.link.danger { color: var(--danger); }
   font-size: 11px;
   color: var(--on-dark-faint);
 }
+.build-version a {
+  color: inherit;
+  text-decoration: none;
+}
+.build-version a:hover { color: var(--on-dark-muted); text-decoration: underline; }
+.build-version a:focus-visible {
+  outline: 2px solid var(--orange-on-dark);
+  outline-offset: 2px;
+}
 
 /* ---------- filter disclosure ---------- */
 
