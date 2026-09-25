@@ -4,7 +4,7 @@ import type { Response } from 'express';
 import { logger } from 'firebase-functions';
 import { type Firestore } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
-import { STRIPE_WEBHOOK_SECRETS } from '../lib/secrets.js';
+import { STRIPE_WEBHOOK_SECRETS_IF_ENABLED } from '../lib/secrets.js';
 import type { Shop } from '../../../src/types/index.js';
 
 /**
@@ -66,7 +66,7 @@ export async function performStripeWebhookEvent(
  * Stripe — the only authentication this endpoint has or needs.
  */
 export const stripeWebhook = onRequest(
-  { secrets: STRIPE_WEBHOOK_SECRETS },
+  { secrets: STRIPE_WEBHOOK_SECRETS_IF_ENABLED },
   async (request: Request, response: Response) => {
     const secretKey = process.env['STRIPE_SECRET_KEY'];
     const webhookSecret = process.env['STRIPE_WEBHOOK_SECRET'];
