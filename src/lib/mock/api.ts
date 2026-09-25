@@ -417,6 +417,14 @@ export const mockApi = {
     throw new MockError('That code does not match a ticket in this queue.');
   },
 
+  suggestAddresses(_input: { query: string }) {
+    // Real suggestions need a geocoding API key, which the mock has none
+    // of - same reason createQueue below drops a queue near the others
+    // rather than inventing a real location. An empty list is honest here:
+    // there is no fake "real address" that wouldn't be misleading.
+    return { suggestions: [] as { formatted: string; lat: number; lng: number }[] };
+  },
+
   createQueue(input: {
     shopId: string;
     name: string;

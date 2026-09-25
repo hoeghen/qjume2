@@ -29,4 +29,8 @@ export const stubProvider: GeocodingProvider = {
       formatted: trimmed,
     };
   },
+  async suggest(partial: string): Promise<GeocodeResult[]> {
+    const result = await stubProvider.geocode(partial);
+    return result ? [result] : [];
+  },
 };

@@ -48,3 +48,17 @@ export async function geocodeAddress(
     geohash: geohashForLocation([result.lat, result.lng]),
   };
 }
+
+/**
+ * Candidate addresses for typeahead. No geohash - these are never stored;
+ * `geocodeAddress` runs again at save time on whatever the owner ends up
+ * with, typed or picked.
+ */
+export async function suggestAddresses(
+  query: string,
+  provider: GeocodingProvider = providerFromEnv(),
+): Promise<GeocodeResult[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  return provider.suggest(trimmed);
+}

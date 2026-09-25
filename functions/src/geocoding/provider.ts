@@ -25,4 +25,12 @@ export interface GeocodeResult {
 export interface GeocodingProvider {
   readonly name: string;
   geocode(address: string): Promise<GeocodeResult | null>;
+  /**
+   * Candidate matches for a partial address, for typeahead as the owner
+   * types. Unlike `geocode`, this never gets stored — its only job is
+   * letting the owner pick a real address before the save-time `geocode`
+   * call places it for real. Ordering is the provider's best guess at
+   * relevance; callers show it as given.
+   */
+  suggest(query: string): Promise<GeocodeResult[]>;
 }
