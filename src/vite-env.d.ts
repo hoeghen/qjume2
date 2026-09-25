@@ -21,6 +21,8 @@ interface ImportMetaEnv {
    * hash routing, relative asset paths, no service worker.
    */
   readonly VITE_PORTABLE?: string;
+  /** Short commit SHA this build was made from, or "dev". See vite.config.ts. */
+  readonly VITE_BUILD_VERSION: string;
 }
 
 interface ImportMeta {

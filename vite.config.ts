@@ -1,6 +1,22 @@
+import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+
+/**
+ * The short commit SHA of whatever was checked out for this build - a
+ * per-build number small enough to read at a glance and match against a
+ * commit, without touching package.json's version (which nothing bumps).
+ * Falls back to "dev" wherever there is no git history to read, e.g. a
+ * tarball build.
+ */
+function buildVersion(): string {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'dev';
+  }
+}
 
 // GitHub Pages serves a project repo from /<repo>/, so absolute asset paths
 // resolve against the domain root and 404 — a blank page with no error. Set
@@ -19,6 +35,9 @@ const isPortable = process.env['VITE_PORTABLE'] === 'true';
 // path that does not exist.
 export default defineConfig({
   base: isPortable ? './' : base,
+  define: {
+    'import.meta.env.VITE_BUILD_VERSION': JSON.stringify(buildVersion()),
+  },
   plugins: [
     react(),
     ...(isPortable ? [] : [VitePWA({

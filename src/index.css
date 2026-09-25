@@ -911,6 +911,14 @@ button.link.danger { color: var(--danger); }
   outline-offset: 3px;
 }
 
+.build-version {
+  margin-top: clamp(12px, 2vw, 20px);
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--on-dark-faint);
+}
+
 /* ---------- filter disclosure ---------- */
 
 .filter-bar {
