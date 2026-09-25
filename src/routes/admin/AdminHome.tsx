@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/hooks/useAuth.js';
 import { signInAsPlatformAdmin } from '../../lib/auth.js';
 import { messageOf } from '../../lib/functions.js';
 import { isMock } from '../../lib/mock/mode.js';
+import { BuildInfo } from '../../components/BuildInfo.js';
 
 /**
  * Gate for everything under `/admin`.
@@ -63,5 +64,10 @@ export function AdminHome() {
     );
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <BuildInfo />
+    </>
+  );
 }
