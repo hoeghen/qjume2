@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { geocodeAddress, providerFromEnv, stubProvider } from './index.js';
+import {
+  geocodeAddress,
+  providerFromEnv,
+  stubProvider,
+  suggestAddresses,
+} from './index.js';
 import { openCageProvider } from './openCage.js';
 
 describe('provider selection', () => {
@@ -64,6 +69,28 @@ describe('geocodeAddress', () => {
   });
 });
 
+describe('suggestAddresses', () => {
+  it('returns candidates for a partial address', async () => {
+    const results = await suggestAddresses('1 Test Street', stubProvider);
+    expect(results).toHaveLength(1);
+    expect(results[0]!.formatted).toBe('1 Test Street');
+  });
+
+  it('returns nothing for a blank query, without asking the provider', async () => {
+    let called = false;
+    const spy = {
+      name: 'spy',
+      geocode: stubProvider.geocode,
+      async suggest(query: string) {
+        called = true;
+        return stubProvider.suggest(query);
+      },
+    };
+    expect(await suggestAddresses('   ', spy)).toEqual([]);
+    expect(called).toBe(false);
+  });
+});
+
 describe('openCage provider', () => {
   it('reads coordinates out of a result', async () => {
     const fetchMock = async () =>
@@ -97,6 +124,53 @@ describe('openCage provider', () => {
       })) as typeof fetch;
     try {
       expect(await openCageProvider('key').geocode('nowhere')).toBeNull();
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it('suggest asks for more than one result and returns every match', async () => {
+    let requestedUrl = '';
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL) => {
+      requestedUrl = String(url);
+      return new Response(
+        JSON.stringify({
+          results: [
+            { geometry: { lat: 51.5, lng: -0.12 }, formatted: '1 Test St, London' },
+            { geometry: { lat: 40.7, lng: -74.0 }, formatted: '1 Test St, New York' },
+          ],
+        }),
+        { status: 200 },
+      );
+    }) as typeof fetch;
+    try {
+      const results = await openCageProvider('key').suggest('1 Test St');
+      expect(results).toEqual([
+        { lat: 51.5, lng: -0.12, formatted: '1 Test St, London' },
+        { lat: 40.7, lng: -74.0, formatted: '1 Test St, New York' },
+      ]);
+      expect(requestedUrl).toContain('limit=5');
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it('suggest drops results with no usable coordinates', async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          results: [
+            { geometry: {}, formatted: 'Somewhere unplaceable' },
+            { geometry: { lat: 51.5, lng: -0.12 }, formatted: '1 Test St, London' },
+          ],
+        }),
+        { status: 200 },
+      )) as typeof fetch;
+    try {
+      const results = await openCageProvider('key').suggest('1 Test St');
+      expect(results).toEqual([{ lat: 51.5, lng: -0.12, formatted: '1 Test St, London' }]);
     } finally {
       globalThis.fetch = original;
     }

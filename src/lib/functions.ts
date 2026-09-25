@@ -142,6 +142,11 @@ export const updateQueue = callable<
   { geocoded: Geocoded | null }
 >('updateQueue');
 
+export const suggestAddresses = callable<
+  { query: string },
+  { suggestions: { formatted: string; lat: number; lng: number }[] }
+>('suggestAddresses');
+
 export const claimStation = callable<
   { shopId: string; queueId: string; stationId?: string; label?: string },
   { stationId: string; label: string }

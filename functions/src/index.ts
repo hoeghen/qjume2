@@ -25,6 +25,7 @@ export { updateQueue } from './shop/updateQueue.js';
 export { claimStation } from './shop/claimStation.js';
 export { closeQueue } from './shop/closeQueue.js';
 export { addStaff, removeStaff } from './shop/staff.js';
+export { suggestAddresses } from './geocoding/suggest.js';
 
 /**
  * Billing. The plan is server-owned — every free-tier limit reads it, so an

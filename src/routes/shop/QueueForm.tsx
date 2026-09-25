@@ -14,6 +14,7 @@ import {
   type QueueCategory,
 } from '../../types/index.js';
 import { CATEGORY_LABELS } from '../../lib/categories.js';
+import { AddressField } from '../../components/AddressField.js';
 
 const PENALTY_LABELS: Record<NoShowPenalty, string> = {
   back: 'Move to the back of the queue',
@@ -103,12 +104,7 @@ export function QueueForm({
         <input id="name" name="name" defaultValue={q?.name ?? ''} required />
 
         <label htmlFor="address">Address</label>
-        <input
-          id="address"
-          name="address"
-          defaultValue={q?.address ?? ''}
-          required
-        />
+        <AddressField id="address" name="address" defaultValue={q?.address ?? ''} required />
         <p className="hint">
           A fixed address, not your device&rsquo;s location — this is what
           customers see and search by.

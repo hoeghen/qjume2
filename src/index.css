@@ -182,6 +182,35 @@ input::placeholder, textarea::placeholder { color: var(--card-muted); }
 .checkbox { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
 .checkbox input { width: auto; margin-top: 4px; }
 
+.address-field { position: relative; }
+.address-suggestions {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--card);
+  color: var(--card-fg);
+  border: 1px solid var(--card-line);
+  border-radius: var(--r-row);
+  box-shadow: 0 12px 24px rgb(0 0 0 / 0.18);
+  max-height: 260px;
+  overflow-y: auto;
+}
+.address-suggestions li {
+  padding: 10px 12px;
+  border-radius: var(--r-tile);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.address-suggestions li:hover,
+.address-suggestions li.active {
+  background: var(--cream-tint);
+}
+
 button, .button {
   font: inherit;
   font-weight: 700;
