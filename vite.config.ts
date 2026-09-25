@@ -18,6 +18,11 @@ function buildVersion(): string {
   }
 }
 
+/** When this build happened, so the admin page can show how long it's been live. */
+function buildTime(): string {
+  return new Date().toISOString();
+}
+
 // GitHub Pages serves a project repo from /<repo>/, so absolute asset paths
 // resolve against the domain root and 404 — a blank page with no error. Set
 // VITE_BASE=/qjume2/ for a Pages build; anywhere served from the root (the dev
@@ -37,6 +42,7 @@ export default defineConfig({
   base: isPortable ? './' : base,
   define: {
     'import.meta.env.VITE_BUILD_VERSION': JSON.stringify(buildVersion()),
+    'import.meta.env.VITE_BUILD_TIME': JSON.stringify(buildTime()),
   },
   plugins: [
     react(),

@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { AuthProvider } from './lib/hooks/useAuth.js';
 import { AppHeader } from './components/AppHeader.js';
-import { BuildVersion } from './components/BuildVersion.js';
 
 export function App() {
   return (
@@ -9,7 +8,6 @@ export function App() {
       <div className="app">
         <AppHeader />
         <Outlet />
-        <BuildVersion />
       </div>
     </AuthProvider>
   );

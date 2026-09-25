@@ -23,6 +23,8 @@ interface ImportMetaEnv {
   readonly VITE_PORTABLE?: string;
   /** Short commit SHA this build was made from, or "dev". See vite.config.ts. */
   readonly VITE_BUILD_VERSION: string;
+  /** ISO timestamp of when this build ran. See vite.config.ts. */
+  readonly VITE_BUILD_TIME: string;
 }
 
 interface ImportMeta {
