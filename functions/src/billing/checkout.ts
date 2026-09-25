@@ -4,7 +4,7 @@ import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
-import { STRIPE_SECRETS } from '../lib/secrets.js';
+import { STRIPE_SECRETS_IF_ENABLED } from '../lib/secrets.js';
 import { providerFromEnv, type PaymentProvider } from './index.js';
 import {
   FREE_TIER_LIMITS,
@@ -132,7 +132,7 @@ export async function performCompleteCheckout(
 }
 
 export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string }>>(
-  { secrets: STRIPE_SECRETS },
+  { secrets: STRIPE_SECRETS_IF_ENABLED },
   (request: CallableRequest<StartCheckoutRequest>) =>
     performStartCheckout(db, requireCaller(request).uid, request.data),
 );
@@ -140,6 +140,6 @@ export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string 
 export const completeCheckout = onCall<
   CompleteCheckoutRequest,
   Promise<{ plan: Plan }>
->({ secrets: STRIPE_SECRETS }, (request: CallableRequest<CompleteCheckoutRequest>) =>
+>({ secrets: STRIPE_SECRETS_IF_ENABLED }, (request: CallableRequest<CompleteCheckoutRequest>) =>
   performCompleteCheckout(db, requireCaller(request).uid, request.data),
 );
