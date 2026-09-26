@@ -7,6 +7,7 @@ import {
 } from '../../lib/discovery.js';
 import { useGeolocation } from '../../lib/hooks/useGeolocation.js';
 import { messageOf } from '../../lib/functions.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import { Filters } from './components/Filters.js';
 import { QueueCard } from './components/QueueCard.js';
 
@@ -55,6 +56,7 @@ function activeFilterCount(f: FilterState): number {
 }
 
 export function CustomerHome() {
+  const { t, tn } = useT();
   const { coords, status: locationStatus, request } = useGeolocation();
   const [filters, setFilters] = useState<FilterState>(DEFAULTS);
   const [queues, setQueues] = useState<DiscoveredQueue[] | null>(null);
@@ -120,22 +122,19 @@ export function CustomerHome() {
   return (
     <main className="screen">
       <div className="eyebrow-row">
-        <p className="eyebrow">[ CUSTOMER MODE ]</p>
+        <p className="eyebrow">{t('discovery.eyebrow')}</p>
         <span className="screen-count">
-          {queues ? `${shown.length} nearby` : '—'}
+          {queues ? t('discovery.nearby', { count: shown.length }) : t('discovery.noCount')}
         </span>
       </div>
 
       <div className="screen-intro">
         <h1>
-          <span className="light">Find a queue.</span>
+          <span className="light">{t('discovery.titleLight')}</span>
           <br />
-          Skip the wait.
+          {t('discovery.titleRest')}
         </h1>
-        <p className="screen-lede">
-          See how long the line is before you go. Join from anywhere — no
-          login, no standing around.
-        </p>
+        <p className="screen-lede">{t('discovery.lede')}</p>
       </div>
 
       <div className="filter-bar">
@@ -146,7 +145,7 @@ export function CustomerHome() {
           aria-controls="filters"
           onClick={() => setShowFilters((open) => !open)}
         >
-          Search and filter
+          {t('discovery.searchAndFilter')}
           {activeFilters > 0 && (
             <span className="filter-count" aria-hidden="true">
               {activeFilters}
@@ -159,7 +158,7 @@ export function CustomerHome() {
             className="link"
             onClick={() => setFilters(DEFAULTS)}
           >
-            Clear {activeFilters} filter{activeFilters > 1 ? 's' : ''}
+            {tn(activeFilters, 'discovery.clearFilters')}
           </button>
         )}
       </div>
@@ -174,16 +173,14 @@ export function CustomerHome() {
 
       {locationStatus === 'denied' && (
         <p className="notice">
-          Location is off, so distances are hidden.{' '}
+          {t('discovery.locationDenied')}{' '}
           <button type="button" className="link" onClick={request}>
-            Try again
+            {t('discovery.tryAgain')}
           </button>
         </p>
       )}
       {locationStatus === 'unavailable' && (
-        <p className="notice">
-          This device cannot share a location, so distances are hidden.
-        </p>
+        <p className="notice">{t('discovery.locationUnavailable')}</p>
       )}
 
       {error && (
@@ -192,14 +189,14 @@ export function CustomerHome() {
         </p>
       )}
 
-      {locationStatus === 'locating' && !queues && <p>Finding queues near you…</p>}
-      {loading && queues && <p className="muted">Updating…</p>}
+      {locationStatus === 'locating' && !queues && <p>{t('discovery.finding')}</p>}
+      {loading && queues && <p className="muted">{t('discovery.updating')}</p>}
 
       {queues && visible.length === 0 && !loading && (
         <p className="muted">
           {queues.length === 0
-            ? 'No queues anywhere yet.'
-            : 'No queues match these filters.'}
+            ? t('discovery.noQueuesAnywhere')
+            : t('discovery.noQueuesMatch')}
         </p>
       )}
 
@@ -213,17 +210,17 @@ export function CustomerHome() {
           away rather than being unreachable. */}
       {beyond > 0 && (
         <p className="list-note">
-          Showing the {NEAREST} closest.{' '}
+          {t('discovery.showingClosest', { n: NEAREST })}{' '}
           <button type="button" className="link" onClick={() => setShowAll(true)}>
-            Show all {visible.length}
+            {t('discovery.showAll', { n: visible.length })}
           </button>
         </p>
       )}
       {showAll && visible.length > NEAREST && (
         <p className="list-note">
-          Showing all {visible.length}.{' '}
+          {t('discovery.showingAll', { n: visible.length })}{' '}
           <button type="button" className="link" onClick={() => setShowAll(false)}>
-            Show the {NEAREST} closest
+            {t('discovery.showFewer', { n: NEAREST })}
           </button>
         </p>
       )}

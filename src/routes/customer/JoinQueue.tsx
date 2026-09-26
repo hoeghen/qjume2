@@ -3,6 +3,7 @@ import { signInAsGuest } from '../../lib/auth.js';
 import { useAuth } from '../../lib/hooks/useAuth.js';
 import { joinQueue, messageOf } from '../../lib/functions.js';
 import { rememberTicket } from '../../lib/myTickets.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -25,6 +26,7 @@ export function JoinQueue({
   onJoined,
   onCancel,
 }: Props) {
+  const { t } = useT();
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -62,7 +64,7 @@ export function JoinQueue({
 
   return (
     <form onSubmit={onSubmit} className="stack">
-      <label htmlFor="display-name">What should we call you?</label>
+      <label htmlFor="display-name">{t('joinQueue.nameLabel')}</label>
       <input
         id="display-name"
         value={name}
@@ -71,9 +73,9 @@ export function JoinQueue({
         autoFocus
         required
       />
-      <p className="hint">Staff will call this out, so a first name is plenty.</p>
+      <p className="hint">{t('joinQueue.nameHint')}</p>
 
-      <label htmlFor="join-email">Email (optional)</label>
+      <label htmlFor="join-email">{t('joinQueue.emailLabel')}</label>
       <input
         id="join-email"
         type="email"
@@ -81,16 +83,14 @@ export function JoinQueue({
         onChange={(e) => setEmail(e.target.value)}
         autoComplete="email"
       />
-      <p className="hint">
-        So we can reach you if notifications do not work on your phone.
-      </p>
+      <p className="hint">{t('joinQueue.emailHint')}</p>
 
       <div className="row">
         <button type="submit" disabled={busy}>
-          {busy ? 'Joining…' : 'Join the queue'}
+          {busy ? t('joinQueue.joining') : t('joinQueue.join')}
         </button>
         <button type="button" className="secondary" onClick={onCancel}>
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
 

@@ -1,6 +1,6 @@
 import { QUEUE_CATEGORIES } from '../../../types/index.js';
 import type { Filters as FilterState } from '../../../lib/discovery.js';
-import { CATEGORY_LABELS } from '../../../lib/categories.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 /**
  * A single building (50 m) to a short drive (50 km), ten steps on the 1-2-5
@@ -44,6 +44,7 @@ export function Filters({
   onChange,
   canUseDistance,
 }: Props) {
+  const { t } = useT();
   const set = <K extends keyof FilterState>(key: K, v: FilterState[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -53,19 +54,19 @@ export function Filters({
   return (
     <div className="filters" id={id} hidden={hidden}>
       <label className="sr-only" htmlFor="search">
-        Search
+        {t('filters.searchLabel')}
       </label>
       <input
         id="search"
         type="search"
-        placeholder="Search by name, address or service"
+        placeholder={t('filters.searchPlaceholder')}
         value={value.search}
         onChange={(e) => set('search', e.target.value)}
       />
 
       <div className="filter-row">
         <label>
-          <span>Within</span>
+          <span>{t('filters.within')}</span>
           <select
             value={value.radiusKm ?? ''}
             disabled={!canUseDistance}
@@ -74,7 +75,7 @@ export function Filters({
             }
           >
             {/* The default. Not a distance, so it carries no number. */}
-            <option value="">Any distance</option>
+            <option value="">{t('filters.anyDistance')}</option>
             {RADII.map(([r, label]) => (
               <option key={r} value={r}>
                 {label}
@@ -84,33 +85,33 @@ export function Filters({
         </label>
 
         <label>
-          <span>Category</span>
+          <span>{t('filters.category')}</span>
           <select
             value={value.category}
             onChange={(e) =>
               set('category', e.target.value as FilterState['category'])
             }
           >
-            <option value="all">All</option>
+            <option value="all">{t('filters.all')}</option>
             {QUEUE_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
+                {t(`categories.${c}`)}
               </option>
             ))}
           </select>
         </label>
 
         <label>
-          <span>Status</span>
+          <span>{t('filters.status')}</span>
           <select
             value={value.status}
             onChange={(e) =>
               set('status', e.target.value as FilterState['status'])
             }
           >
-            <option value="active">Open now</option>
-            <option value="inactive">Closed</option>
-            <option value="all">Any</option>
+            <option value="active">{t('filters.statusOpen')}</option>
+            <option value="inactive">{t('filters.statusClosed')}</option>
+            <option value="all">{t('filters.statusAny')}</option>
           </select>
         </label>
       </div>

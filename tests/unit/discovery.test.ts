@@ -6,6 +6,9 @@ import {
   type Filters,
 } from '../../src/lib/discovery.js';
 import { formatDistance, formatWait } from '../../src/lib/format.js';
+import { createT } from '../../src/lib/i18n/LanguageContext.js';
+
+const t = createT('en');
 
 function queue(over: Partial<DiscoveredQueue> = {}): DiscoveredQueue {
   return {
@@ -160,7 +163,7 @@ describe('formatting', () => {
     [3600, 'About 1 hr'],
     [4200, 'About 1 hr 10 min'],
   ])('formats %i seconds as %s', (seconds, expected) => {
-    expect(formatWait(seconds)).toBe(expected);
+    expect(formatWait(seconds, t)).toBe(expected);
   });
 
   it.each([

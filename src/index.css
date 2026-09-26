@@ -917,7 +917,19 @@ button.link.danger { color: var(--danger); }
 .app-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: clamp(12px, 2vw, 20px);
+}
+
+.language-switch {
+  color: var(--on-dark-faint);
+  font-size: 13px;
+  text-decoration: none;
+}
+.language-switch:hover { color: var(--on-dark-muted); text-decoration: underline; }
+.language-switch:focus-visible {
+  outline: 2px solid var(--orange-on-dark);
+  outline-offset: 3px;
 }
 
 .home-link {

@@ -1,3 +1,5 @@
+import { useT } from '../../../lib/i18n/LanguageContext.js';
+
 interface Props {
   code: string;
   onDismiss: () => void;
@@ -11,20 +13,16 @@ interface Props {
  * prompt; not worth nagging.
  */
 export function ResumeCodePrompt({ code, onDismiss }: Props) {
+  const { t } = useT();
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-label="Your resume code">
+    <div className="dialog" role="dialog" aria-modal="true" aria-label={t('resumeCodePrompt.ariaLabel')}>
       <div className="dialog-body">
-        <h2>You&rsquo;re in the queue</h2>
-        <p>
-          Keep this code. It gets your place back if you lose your phone or
-          switch to another one.
-        </p>
+        <h2>{t('resumeCodePrompt.title')}</h2>
+        <p>{t('resumeCodePrompt.body')}</p>
         <p className="code big">{code}</p>
-        <p className="hint">
-          Without it, you would have to ask the shop to find you by name.
-        </p>
+        <p className="hint">{t('resumeCodePrompt.hint')}</p>
         <button type="button" onClick={onDismiss}>
-          Got it
+          {t('resumeCodePrompt.dismiss')}
         </button>
       </div>
     </div>

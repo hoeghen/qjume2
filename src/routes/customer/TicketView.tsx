@@ -5,6 +5,8 @@ import { ticketsAhead } from '../../lib/firestore/queries.js';
 import { leaveQueue, messageOf } from '../../lib/functions.js';
 import { forgetTicket } from '../../lib/myTickets.js';
 import { formatWait } from '../../lib/format.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
+import type { Locale } from '../../lib/i18n/locale.js';
 import { EnableNotifications } from './components/EnableNotifications.js';
 import type { Queue } from '../../types/index.js';
 
@@ -36,6 +38,7 @@ export function TicketView({
   stations,
   onLeft,
 }: Props) {
+  const { t, tn, locale } = useT();
   const ticket = useDoc(ticketDoc(shopId, queueId, ticketId));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,51 +49,51 @@ export function TicketView({
     `${shopId}/${queueId}/ahead/${position}`,
   );
 
-  if (ticket.loading) return <p>Loading your place…</p>;
+  if (ticket.loading) return <p>{t('ticketView.loading')}</p>;
   if (!ticket.data) {
     return (
       <div className="notice">
-        <p>We can no longer find that ticket.</p>
+        <p>{t('ticketView.notFound')}</p>
         <button type="button" onClick={onLeft}>
-          Back to the queue
+          {t('ticketView.backToQueue')}
         </button>
       </div>
     );
   }
 
-  const t = ticket.data;
+  const ticketData = ticket.data;
   const tillName =
-    activeStations > 1 && t.station
-      ? (stations.find((s) => s.id === t.station)?.label ?? null)
+    activeStations > 1 && ticketData.station
+      ? (stations.find((s) => s.id === ticketData.station)?.label ?? null)
       : null;
 
-  if (t.state === 'serving') {
+  if (ticketData.state === 'serving') {
     return (
       <section className="now-serving">
-        <p className="label">It&rsquo;s your turn</p>
-        <p className="called-name">{t.displayName}</p>
+        <p className="label">{t('ticketView.yourTurn')}</p>
+        <p className="called-name">{ticketData.displayName}</p>
         {/* `ticket.station` is an id, not a label — printing it raw showed
             the customer something like "Go to station3-muay189". And with one
             counter there is nowhere else to go, so it says nothing. */}
-        {tillName && <p className="called-station">Go to {tillName}</p>}
+        {tillName && <p className="called-station">{t('ticketView.goTo', { station: tillName })}</p>}
       </section>
     );
   }
 
-  if (t.state !== 'waiting') {
+  if (ticketData.state !== 'waiting') {
     const reason =
-      t.state === 'noShow' || t.state === 'removed'
-        ? t.noShowCount >= 3
-          ? 'You missed your turn three times, so your place has gone.'
-          : 'The shop took you out of the queue.'
-        : t.state === 'left'
-          ? 'You left this queue.'
-          : 'You have been served.';
+      ticketData.state === 'noShow' || ticketData.state === 'removed'
+        ? ticketData.noShowCount >= 3
+          ? t('ticketView.missedThreeTimes')
+          : t('ticketView.removedByShop')
+        : ticketData.state === 'left'
+          ? t('ticketView.leftQueue')
+          : t('ticketView.alreadyServed');
     return (
       <div className="notice">
         <p>{reason}</p>
         <button type="button" onClick={onLeft}>
-          Back to the queue
+          {t('ticketView.backToQueue')}
         </button>
       </div>
     );
@@ -121,48 +124,46 @@ export function TicketView({
   return (
     <>
       <section className="ticket">
-        <p className="label">You are</p>
+        <p className="label">{t('ticketView.youAre')}</p>
         <p className="called-name">
-          {peopleAhead === 0 ? 'next' : `${peopleAhead + 1}${ordinal(peopleAhead + 1)}`}
+          {peopleAhead === 0
+            ? t('ticketView.next')
+            : `${peopleAhead + 1}${formatOrdinalSuffix(peopleAhead + 1, locale)}`}
         </p>
         <p className="called-station">
           {peopleAhead === 0
-            ? 'You should be called any moment'
-            : `${peopleAhead} ${peopleAhead === 1 ? 'person' : 'people'} ahead of you`}
+            ? t('ticketView.calledAnyMoment')
+            : tn(peopleAhead, 'ticketView.peopleAhead')}
         </p>
       </section>
 
       <section className="stats">
         <div>
-          <span className="stat-value">{formatWait(wait)}</span>
-          <span className="stat-label">estimated wait</span>
+          <span className="stat-value">{formatWait(wait, t)}</span>
+          <span className="stat-label">{t('ticketView.estimatedWait')}</span>
         </div>
         <div>
-          <span className="stat-value">{t.displayName}</span>
-          <span className="stat-label">called as</span>
+          <span className="stat-value">{ticketData.displayName}</span>
+          <span className="stat-label">{t('ticketView.calledAs')}</span>
         </div>
       </section>
 
       {queue.status === 'unavailable' && (
         <p className="status-banner status-unavailable" role="status">
-          <span>
-            The shop is offline, so this may be out of date. Your place is
-            safe.
-          </span>
+          <span>{t('ticketView.offlineNotice')}</span>
         </p>
       )}
 
-      {t.noShowCount > 0 && (
+      {ticketData.noShowCount > 0 && (
         <p className="notice">
-          You have missed {t.noShowCount} of 3 calls. After three, you lose your
-          place.
+          {t('ticketView.missedCalls', { count: ticketData.noShowCount })}
         </p>
       )}
 
       <EnableNotifications shopId={shopId} queueId={queueId} ticketId={ticketId} />
 
       <button type="button" className="secondary" disabled={busy} onClick={leave}>
-        Leave the queue
+        {t('ticketView.leaveQueue')}
       </button>
 
       {error && (
@@ -174,7 +175,12 @@ export function TicketView({
   );
 }
 
-function ordinal(n: number): string {
+/**
+ * English reads "2nd", "3rd"; Danish just appends a period ("2.", "3."),
+ * the standard written form for a numeral ordinal.
+ */
+function formatOrdinalSuffix(n: number, locale: Locale): string {
+  if (locale === 'da') return '.';
   if (n % 100 >= 11 && n % 100 <= 13) return 'th';
   switch (n % 10) {
     case 1:

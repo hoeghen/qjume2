@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
 import { estimatedWaitSeconds } from '../../lib/discovery.js';
 import { formatWait } from '../../lib/format.js';
-import { CATEGORY_LABELS } from '../../lib/categories.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import { JoinQueue } from './JoinQueue.js';
 import { TicketView } from './TicketView.js';
 import { ResumeCodePrompt } from './components/ResumeCodePrompt.js';
@@ -13,15 +14,10 @@ import { ResumeForm } from './components/ResumeForm.js';
 import { heldTicket } from '../../lib/myTickets.js';
 import type { QueueStatus } from '../../types/index.js';
 
-const STATUS_NOTES: Partial<Record<QueueStatus, string>> = {
-  drainMode: 'Closing soon — not taking anyone new.',
-  paused: 'Paused for a moment. Nobody is being called right now.',
-  unavailable:
-    'This shop is offline, so these numbers may be out of date and nobody new can join.',
-  closed: 'Closed.',
-};
+const NOTE_STATUSES: QueueStatus[] = ['drainMode', 'paused', 'unavailable', 'closed'];
 
 export function QueueDetail() {
+  const { t, tn } = useT();
   const { shopId = '', queueId = '' } = useParams();
   const [params] = useSearchParams();
   // A QR code at the counter drops straight into the join form.
@@ -44,8 +40,8 @@ export function QueueDetail() {
     `${shopId}/queues`,
   );
 
-  if (queue.loading) return <p>Loading…</p>;
-  if (!queue.data) return <p>This queue no longer exists.</p>;
+  if (queue.loading) return <p>{t('common.loading')}</p>;
+  if (!queue.data) return <p>{t('queueDetail.notFound')}</p>;
 
   const q = queue.data;
   // A station with nobody assigned is still a staffed position; what matters
@@ -53,7 +49,7 @@ export function QueueDetail() {
   const activeStations = Math.max(1, stations?.length ?? 1);
   const wait = estimatedWaitSeconds(q, activeStations);
   const otherQueues = Math.max(0, (siblings?.length ?? 1) - 1);
-  const note = STATUS_NOTES[q.status];
+  const note = NOTE_STATUSES.includes(q.status) ? t(`status.note.${q.status}`) : null;
   // A platform suspension refuses a join regardless of the queue's own
   // status — checked here too so the button doesn't invite a tap that the
   // server would only then refuse. See CLAUDE.md decision 9.
@@ -64,17 +60,17 @@ export function QueueDetail() {
   return (
     <main>
       <p>
-        <Link to="/find" className="link">
-          ← All queues
-        </Link>
+        <LocalizedLink to="/find" className="link">
+          {t('common.allQueues')}
+        </LocalizedLink>
       </p>
 
       {/* The shop is a place with possibly several lines; its name leads to
           all of them. The queue's own name is what this page is about. */}
       <h1>
-        <Link to={`/s/${shopId}`} className="shop-link">
+        <LocalizedLink to={`/s/${shopId}`} className="shop-link">
           {q.shopName}
-        </Link>
+        </LocalizedLink>
       </h1>
       <p className="queue-name">{q.name}</p>
 
@@ -92,12 +88,12 @@ export function QueueDetail() {
           <div>
             <span className="stat-value">{q.waitingCount}</span>
             <span className="stat-label">
-              {q.waitingCount === 1 ? 'person waiting' : 'people waiting'}
+              {tn(q.waitingCount, 'queueDetail.peopleWaiting')}
             </span>
           </div>
           <div>
-            <span className="stat-value">{formatWait(wait)}</span>
-            <span className="stat-label">estimated wait</span>
+            <span className="stat-value">{formatWait(wait, t)}</span>
+            <span className="stat-label">{t('queueDetail.estimatedWait')}</span>
           </div>
         </section>
       )}
@@ -105,19 +101,19 @@ export function QueueDetail() {
       {q.description && <p>{q.description}</p>}
 
       <dl className="detail">
-        <dt>Address</dt>
+        <dt>{t('queueDetail.address')}</dt>
         <dd>{q.address}</dd>
 
-        <dt>Category</dt>
-        <dd>{CATEGORY_LABELS[q.category]}</dd>
+        <dt>{t('queueDetail.category')}</dt>
+        <dd>{t(`categories.${q.category}`)}</dd>
 
         {otherQueues > 0 && (
           <>
-            <dt>Also at this shop</dt>
+            <dt>{t('queueDetail.alsoAtShop')}</dt>
             <dd>
-              <Link to={`/s/${shopId}`} className="link">
-                {otherQueues} other {otherQueues === 1 ? 'queue' : 'queues'}
-              </Link>
+              <LocalizedLink to={`/s/${shopId}`} className="link">
+                {tn(otherQueues, 'queueDetail.otherQueues')}
+              </LocalizedLink>
             </dd>
           </>
         )}
@@ -150,14 +146,12 @@ export function QueueDetail() {
           <button
             type="button"
             disabled={!joinable}
-            title={note}
+            title={note ?? undefined}
             onClick={() => setJoining(true)}
           >
-            {joinable ? 'Join this queue' : 'Not taking joiners'}
+            {joinable ? t('queueDetail.join') : t('queueDetail.notTakingJoiners')}
           </button>
-          {joinable && (
-            <p className="hint">No account needed — just a name to be called by.</p>
-          )}
+          {joinable && <p className="hint">{t('queueDetail.joinHint')}</p>}
           <ResumeForm
             shopId={shopId}
             queueId={queueId}
