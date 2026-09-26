@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo.js';
+import { LocalizedLink } from '../lib/i18n/LocalizedLink.js';
+import { useT } from '../lib/i18n/LanguageContext.js';
 
 /**
  * The front door, built to the design canvas.
@@ -10,26 +11,25 @@ import { Logo } from '../components/Logo.js';
  * someone makes once, so it gets a line of text.
  */
 export function Splash() {
+  const { t } = useT();
+
   return (
     <section className="splash">
       <Logo size={44} />
 
       <h1 className="splash-wordmark">QjuMe</h1>
 
-      <p className="splash-lede">
-        See the wait before you go. Join any queue from anywhere — no login
-        required.
-      </p>
+      <p className="splash-lede">{t('splash.lede')}</p>
 
       <QueueIllustration />
 
       <div className="splash-actions">
-        <Link className="button splash-primary" to="/find">
-          Join a queue
-        </Link>
-        <Link className="splash-secondary" to="/shop">
-          or create one for your business →
-        </Link>
+        <LocalizedLink className="button splash-primary" to="/find">
+          {t('splash.join')}
+        </LocalizedLink>
+        <LocalizedLink className="splash-secondary" to="/shop">
+          {t('splash.createLink')}
+        </LocalizedLink>
       </div>
     </section>
   );

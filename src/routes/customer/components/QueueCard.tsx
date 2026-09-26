@@ -1,16 +1,10 @@
-import { Link } from 'react-router-dom';
+import { LocalizedLink } from '../../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 import type { DiscoveredQueue } from '../../../lib/discovery.js';
 import { estimatedWaitSeconds } from '../../../lib/discovery.js';
 import { formatDistance, formatWaitCompact } from '../../../lib/format.js';
 import { CategoryIcon } from '../../../components/CategoryIcon.js';
-import type { QueueStatus } from '../../../types/index.js';
-
-const STATUS_LABELS: Partial<Record<QueueStatus, string>> = {
-  drainMode: 'Closing soon',
-  paused: 'Paused',
-  unavailable: 'Temporarily unavailable',
-  closed: 'Closed',
-};
+import { statusBadgeLabel } from '../../../lib/i18n/statusLabels.js';
 
 /**
  * A row in the discovery list.
@@ -27,12 +21,13 @@ export function QueueCard({
   queue: DiscoveredQueue;
   showDistance: boolean;
 }) {
-  const status = STATUS_LABELS[queue.status];
+  const { t } = useT();
+  const status = statusBadgeLabel(t, queue.status);
   const wait = estimatedWaitSeconds(queue);
 
   return (
     <li className="queue-card">
-      <Link to={`/q/${queue.shopId}/${queue.id}`}>
+      <LocalizedLink to={`/q/${queue.shopId}/${queue.id}`}>
         <CategoryIcon category={queue.category} />
 
         <div className="queue-card-main">
@@ -52,13 +47,13 @@ export function QueueCard({
         </div>
 
         <div className="queue-card-meta">
-          <span className="wait">{formatWaitCompact(wait)}</span>
+          <span className="wait">{formatWaitCompact(wait, t)}</span>
           <span className="queue-card-stats">
             {showDistance && <>{formatDistance(queue.distanceKm)} · </>}
-            {queue.waitingCount} waiting
+            {t('queueCard.waiting', { count: queue.waitingCount })}
           </span>
         </div>
-      </Link>
+      </LocalizedLink>
     </li>
   );
 }

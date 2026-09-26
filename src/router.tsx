@@ -23,50 +23,61 @@ import { AdminAuditLog } from './routes/admin/AdminAuditLog.js';
 // route in the fragment solves both: the server only ever sees index.html.
 const isPortable = import.meta.env.VITE_PORTABLE === 'true';
 
+/**
+ * Every route, written once and unprefixed. Mounted twice below - as-is for
+ * English, and again under `da/` for Danish - rather than as a `:lang?`
+ * dynamic segment: a literal `da` branch can never be ambiguous with a
+ * sibling route the way an optional dynamic prefix can (an unprefixed
+ * `/find` would otherwise be parseable either as the `find` route or as
+ * `:lang="find"` matching the index route). See src/lib/i18n/locale.ts for
+ * the other half of this - detecting which branch a URL is under.
+ */
+const ROUTE_CHILDREN = [
+  { index: true, element: <Splash /> },
+  { path: 'find', element: <CustomerHome /> },
+  { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
+  // Public, and deliberately not under /shop — that is the owner's area.
+  { path: 's/:shopId', element: <ShopQueues /> },
+  {
+    path: 'shop',
+    element: <ShopHome />,
+    children: [
+      { index: true, element: <ShopIndex /> },
+      { path: 'billing', element: <Billing /> },
+      { path: 'q/new', element: <QueueFormRoute /> },
+      { path: 'q/:queueId/settings', element: <QueueFormRoute /> },
+      { path: 'q/:queueId/serve', element: <ServingRoute /> },
+    ],
+  },
+  { path: 'monitor', element: <MonitorHome /> },
+  { path: 'terms', element: <Terms /> },
+  { path: 'privacy', element: <Privacy /> },
+  {
+    // Not linked from anywhere in the app, the same as /monitor — the
+    // one person who needs this reaches it by URL. See CLAUDE.md
+    // decision 9.
+    path: 'admin',
+    element: <AdminHome />,
+    children: [
+      { index: true, element: <AdminShopList /> },
+      { path: 'log', element: <AdminAuditLog /> },
+      { path: 'shops/:shopId', element: <AdminShopDetail /> },
+      {
+        path: 'shops/:shopId/q/:queueId',
+        element: <AdminQueueEditRoute />,
+      },
+    ],
+  },
+];
+
 export const router = (isPortable ? createHashRouter : createBrowserRouter)(
   [
     {
       path: '/',
       element: <App />,
-      children: [
-        { index: true, element: <Splash /> },
-        { path: 'find', element: <CustomerHome /> },
-        { path: 'q/:shopId/:queueId', element: <QueueDetail /> },
-        // Public, and deliberately not under /shop — that is the owner's area.
-        { path: 's/:shopId', element: <ShopQueues /> },
-        {
-          path: 'shop',
-          element: <ShopHome />,
-          children: [
-            { index: true, element: <ShopIndex /> },
-            { path: 'billing', element: <Billing /> },
-            { path: 'q/new', element: <QueueFormRoute /> },
-            { path: 'q/:queueId/settings', element: <QueueFormRoute /> },
-            { path: 'q/:queueId/serve', element: <ServingRoute /> },
-          ],
-        },
-        { path: 'monitor', element: <MonitorHome /> },
-        { path: 'terms', element: <Terms /> },
-        { path: 'privacy', element: <Privacy /> },
-        {
-          // Not linked from anywhere in the app, the same as /monitor — the
-          // one person who needs this reaches it by URL. See CLAUDE.md
-          // decision 9.
-          path: 'admin',
-          element: <AdminHome />,
-          children: [
-            { index: true, element: <AdminShopList /> },
-            { path: 'log', element: <AdminAuditLog /> },
-            { path: 'shops/:shopId', element: <AdminShopDetail /> },
-            {
-              path: 'shops/:shopId/q/:queueId',
-              element: <AdminQueueEditRoute />,
-            },
-          ],
-        },
-        ],
-      },
-    ],
+      children: [...ROUTE_CHILDREN, { path: 'da', children: ROUTE_CHILDREN }],
+    },
+  ],
   // Served from a subdirectory on GitHub Pages, from the root everywhere else.
   // Vite fills this in from `base` at build time. A hash router carries the
   // route in the fragment, so it needs no basename at all.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { enablePush, pushAvailability, type PushAvailability } from '../../../lib/push.js';
 import { messageOf, registerPushToken } from '../../../lib/functions.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -21,6 +22,7 @@ interface Props {
  * this is an extra channel, not the delivery mechanism.
  */
 export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
+  const { t } = useT();
   const [availability, setAvailability] = useState<PushAvailability | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -41,29 +43,23 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   if (availability === 'unsupported') return null;
 
   if (availability === 'denied') {
-    return (
-      <p className="notice">
-        Notifications are switched off for this site. Your place is on this
-        screen either way, and we&rsquo;ll email you if you gave us an address.
-      </p>
-    );
+    return <p className="notice">{t('enableNotifications.off')}</p>;
   }
 
   if (availability === 'needs-install') {
     return (
       <div className="notice">
         <p>
-          <strong>Want a nudge when your turn is close?</strong>
+          <strong>{t('enableNotifications.needsInstallTitle')}</strong>
         </p>
         <p>
-          On iPhone that needs Qjume on your Home Screen first. Tap{' '}
-          <strong>Share</strong>, then <strong>Add to Home Screen</strong>, and
-          open it from there.
+          {t('enableNotifications.needsInstallBefore')}
+          <strong>{t('enableNotifications.share')}</strong>
+          {t('enableNotifications.needsInstallMiddle')}
+          <strong>{t('enableNotifications.addToHomeScreen')}</strong>
+          {t('enableNotifications.needsInstallAfter')}
         </p>
-        <p className="hint">
-          Skip it if you like — this page keeps working, and we&rsquo;ll email
-          you if you gave us an address.
-        </p>
+        <p className="hint">{t('enableNotifications.needsInstallHint')}</p>
       </div>
     );
   }
@@ -91,7 +87,7 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   return (
     <div className="notice">
       <button type="button" className="secondary" disabled={busy} onClick={turnOn}>
-        {busy ? 'Turning on…' : 'Notify me when my turn is close'}
+        {busy ? t('enableNotifications.turningOn') : t('enableNotifications.turnOnQuestion')}
       </button>
       {error && (
         <p className="error" role="alert">

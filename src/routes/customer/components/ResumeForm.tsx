@@ -3,6 +3,7 @@ import { signInAsGuest } from '../../../lib/auth.js';
 import { useAuth } from '../../../lib/hooks/useAuth.js';
 import { claimTicket, messageOf } from '../../../lib/functions.js';
 import { rememberTicket } from '../../../lib/myTickets.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -12,6 +13,7 @@ interface Props {
 
 /** Getting a place back on a new device, using the code from joining. */
 export function ResumeForm({ shopId, queueId, onClaimed }: Props) {
+  const { t } = useT();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
@@ -21,7 +23,7 @@ export function ResumeForm({ shopId, queueId, onClaimed }: Props) {
   if (!open) {
     return (
       <button type="button" className="link" onClick={() => setOpen(true)}>
-        Already in this queue? Enter your code
+        {t('resumeForm.prompt')}
       </button>
     );
   }
@@ -49,7 +51,7 @@ export function ResumeForm({ shopId, queueId, onClaimed }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="stack">
-      <label htmlFor="resume-code">Your code</label>
+      <label htmlFor="resume-code">{t('resumeForm.codeLabel')}</label>
       <input
         id="resume-code"
         value={code}
@@ -63,15 +65,13 @@ export function ResumeForm({ shopId, queueId, onClaimed }: Props) {
         autoFocus
         required
       />
-      <p className="hint">
-        Lost it? Ask the shop — they can find you by name and issue a new one.
-      </p>
+      <p className="hint">{t('resumeForm.hint')}</p>
       <div className="row">
         <button type="submit" disabled={busy}>
-          Get my place back
+          {t('resumeForm.submit')}
         </button>
         <button type="button" className="secondary" onClick={() => setOpen(false)}>
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
       {error && (
