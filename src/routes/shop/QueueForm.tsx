@@ -7,6 +7,7 @@ import {
   createQueue,
   messageOf,
   updateQueue,
+  type Geocoded,
 } from '../../lib/functions.js';
 import {
   QUEUE_CATEGORIES,
@@ -51,11 +52,33 @@ export function QueueForm({
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; warn: boolean } | null>(
+    null,
+  );
 
   if (queueId && existing.loading) return <p className="panel">Loading…</p>;
 
   const q = existing.data;
   const done = onDone ?? (() => navigate('/shop'));
+
+  // How long "Saved" (and the geocoding outcome) stays on screen before
+  // moving on — long enough to actually read, short enough that leaving
+  // still feels immediate.
+  const NOTICE_DELAY_MS = 1400;
+
+  function placementNotice(geocoded: Geocoded | null): {
+    text: string;
+    warn: boolean;
+  } {
+    return geocoded
+      ? { text: `Placed at ${geocoded.formatted}.`, warn: false }
+      : {
+          text:
+            "Couldn't place this address on the map — it won't show up in " +
+            'nearby search until the address is fixed.',
+          warn: true,
+        };
+  }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,24 +95,33 @@ export function QueueForm({
 
     setBusy(true);
     setError(null);
+    setNotice(null);
     void (async () => {
       try {
         if (admin && queueId) {
-          await adminUpdateQueue({ shopId, queueId, ...values });
-          done();
+          const { geocoded } = await adminUpdateQueue({ shopId, queueId, ...values });
+          const { text, warn } = placementNotice(geocoded);
+          setNotice({ text: `Saved. ${text}`, warn });
+          setTimeout(done, NOTICE_DELAY_MS);
         } else if (queueId) {
           // Goes through a function, not a direct write: changing the address
           // has to re-geocode, or the queue would be listed where it no
           // longer is.
-          await updateQueue({ shopId, queueId, ...values });
-          done();
+          const { geocoded } = await updateQueue({ shopId, queueId, ...values });
+          const { text, warn } = placementNotice(geocoded);
+          setNotice({ text: `Saved. ${text}`, warn });
+          setTimeout(done, NOTICE_DELAY_MS);
         } else {
-          const { queueId: created } = await createQueue({ shopId, ...values });
-          navigate(`/shop/q/${created}/serve`);
+          const { queueId: created, geocoded } = await createQueue({
+            shopId,
+            ...values,
+          });
+          const { text, warn } = placementNotice(geocoded);
+          setNotice({ text: `Queue created. ${text}`, warn });
+          setTimeout(() => navigate(`/shop/q/${created}/serve`), NOTICE_DELAY_MS);
         }
       } catch (e) {
         setError(messageOf(e));
-      } finally {
         setBusy(false);
       }
     })();
@@ -184,6 +216,12 @@ export function QueueForm({
           </button>
         </div>
       </form>
+
+      {notice && (
+        <p className={`notice${notice.warn ? ' warn' : ''}`} role="status">
+          {notice.text}
+        </p>
+      )}
 
       {error && (
         <p className="error" role="alert">
