@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { addWalkIn, messageOf } from '../../../lib/functions.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -9,6 +10,7 @@ interface Props {
 
 /** For a customer with no smartphone. They follow the in-shop monitor. */
 export function WalkInDialog({ shopId, queueId, onClose }: Props) {
+  const { t } = useT();
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,27 +38,28 @@ export function WalkInDialog({ shopId, queueId, onClose }: Props) {
   }
 
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-label="Add a walk-in">
+    <div className="dialog" role="dialog" aria-modal="true" aria-label={t('shop.walkIn.dialogLabel')}>
       <div className="dialog-body">
         {issued ? (
           <>
-            <h2>Ticket {issued.number}</h2>
+            <h2>{t('shop.walkIn.ticketNumber', { number: issued.number })}</h2>
             <p>
-              Give <strong>{name.trim()}</strong> this number, and tell them to
-              watch the screen.
+              {t('shop.walkIn.giveBefore')}
+              <strong>{name.trim()}</strong>
+              {t('shop.walkIn.giveAfter')}
             </p>
             <p className="hint">
-              If they do have a phone after all, this code claims the ticket:{' '}
+              {t('shop.walkIn.hintBefore')}
               <code className="code">{issued.code}</code>
             </p>
             <button type="button" onClick={onClose}>
-              Done
+              {t('shop.walkIn.done')}
             </button>
           </>
         ) : (
           <form onSubmit={onSubmit} className="stack">
-            <h2>Add a walk-in</h2>
-            <label htmlFor="walkin-name">Name to call them by</label>
+            <h2>{t('shop.walkIn.dialogLabel')}</h2>
+            <label htmlFor="walkin-name">{t('shop.walkIn.nameLabel')}</label>
             <input
               id="walkin-name"
               value={name}
@@ -66,10 +69,10 @@ export function WalkInDialog({ shopId, queueId, onClose }: Props) {
             />
             <div className="row">
               <button type="submit" disabled={busy}>
-                Add to queue
+                {t('shop.walkIn.addToQueue')}
               </button>
               <button type="button" className="secondary" onClick={onClose}>
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
             {error && (

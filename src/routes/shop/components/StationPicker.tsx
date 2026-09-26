@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useCollection } from '../../../lib/hooks/useFirestore.js';
 import { stationsOf } from '../../../lib/firestore/queries.js';
 import { claimStation, messageOf } from '../../../lib/functions.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -15,6 +16,7 @@ interface Props {
  * is told where to go ("Marta, Till 2").
  */
 export function StationPicker({ shopId, queueId, stationId, onPick }: Props) {
+  const { t } = useT();
   const { data: stations } = useCollection(
     stationsOf(shopId, queueId),
     `${shopId}/${queueId}/stations`,
@@ -51,7 +53,7 @@ export function StationPicker({ shopId, queueId, stationId, onPick }: Props) {
 
   return (
     <main className="panel">
-      <h1>Which position are you serving from?</h1>
+      <h1>{t('shop.stationPicker.title')}</h1>
 
       <div className="stack">
         {stations?.map((s) => (
@@ -65,7 +67,7 @@ export function StationPicker({ shopId, queueId, stationId, onPick }: Props) {
           disabled={busy}
           onClick={() => void claim()}
         >
-          Open another position
+          {t('shop.stationPicker.openAnother')}
         </button>
       </div>
 

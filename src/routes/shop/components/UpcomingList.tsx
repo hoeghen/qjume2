@@ -4,6 +4,7 @@ import {
   relinkTicket,
   removeTicket,
 } from '../../../lib/functions.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 import type { Ticket } from '../../../types/index.js';
 
 type WaitingTicket = Ticket & { id: string };
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
+  const { t } = useT();
   const [error, setError] = useState<string | null>(null);
   const [relinked, setRelinked] = useState<{ name: string; code: string } | null>(
     null,
@@ -32,19 +34,19 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
   }
 
   if (waiting.length === 0) {
-    return <p className="muted">Nobody waiting.</p>;
+    return <p className="muted">{t('shop.upcomingList.nobodyWaiting')}</p>;
   }
 
   return (
     <>
       <ol className="upcoming">
-        {waiting.map((t, i) => (
-          <li key={t.id}>
+        {waiting.map((ticket, i) => (
+          <li key={ticket.id}>
             <span className="place">{i + 1}</span>
-            <span className="name">{t.displayName}</span>
-            {t.noShowCount > 0 && (
-              <span className="strikes" title="No-shows so far">
-                {t.noShowCount} of 3
+            <span className="name">{ticket.displayName}</span>
+            {ticket.noShowCount > 0 && (
+              <span className="strikes" title={t('shop.upcomingList.noShowTitle')}>
+                {t('shop.upcomingList.noShowCount', { count: ticket.noShowCount })}
               </span>
             )}
             <span className="row tight">
@@ -57,13 +59,13 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
                     const r = await relinkTicket({
                       shopId,
                       queueId,
-                      ticketId: t.id,
+                      ticketId: ticket.id,
                     });
                     setRelinked({ name: r.displayName, code: r.resumeCode });
                   })
                 }
               >
-                Re-link
+                {t('shop.upcomingList.relink')}
               </button>
               <button
                 type="button"
@@ -71,13 +73,13 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
                 disabled={!online}
                 onClick={() =>
                   void run(() =>
-                    removeTicket({ shopId, queueId, ticketId: t.id }).then(
+                    removeTicket({ shopId, queueId, ticketId: ticket.id }).then(
                       () => undefined,
                     ),
                   )
                 }
               >
-                Remove
+                {t('shop.upcomingList.remove')}
               </button>
             </span>
           </li>
@@ -87,14 +89,11 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
       {relinked && (
         <div className="dialog" role="dialog" aria-modal="true">
           <div className="dialog-body">
-            <h2>New code for {relinked.name}</h2>
-            <p>
-              Read this out. It replaces any code they had, and gets their place
-              back on a new phone.
-            </p>
+            <h2>{t('shop.upcomingList.newCodeTitle', { name: relinked.name })}</h2>
+            <p>{t('shop.upcomingList.newCodeBody')}</p>
             <p className="code big">{relinked.code}</p>
             <button type="button" onClick={() => setRelinked(null)}>
-              Done
+              {t('shop.upcomingList.done')}
             </button>
           </div>
         </div>

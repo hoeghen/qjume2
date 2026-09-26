@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { adminDeleteShop, messageOf } from '../../../lib/functions.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -15,6 +16,7 @@ interface Props {
  * recoverable the way a wrong suspend is.
  */
 export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props) {
+  const { t } = useT();
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,17 +37,12 @@ export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props
   }
 
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-label="Delete shop">
+    <div className="dialog" role="dialog" aria-modal="true" aria-label={t('admin.deleteShop.ariaLabel')}>
       <div className="dialog-body">
-        <h2>Delete {shopName}</h2>
-        <p>
-          Permanently removes this shop, every one of its queues, and
-          everyone waiting in them. There is no undo.
-        </p>
+        <h2>{t('admin.deleteShop.title', { name: shopName })}</h2>
+        <p>{t('admin.deleteShop.body')}</p>
 
-        <label htmlFor="confirm-name">
-          Type the shop&rsquo;s name to confirm
-        </label>
+        <label htmlFor="confirm-name">{t('admin.deleteShop.confirmLabel')}</label>
         <input
           id="confirm-name"
           value={typed}
@@ -61,10 +58,10 @@ export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props
             disabled={busy || !matches}
             onClick={run}
           >
-            Delete permanently
+            {t('admin.deleteShop.deletePermanently')}
           </button>
           <button type="button" className="secondary" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
 

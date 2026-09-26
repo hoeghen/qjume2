@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
 import {
   sendEmailLink,
   signInWithApple,
   signInWithGoogle,
 } from '../../lib/auth.js';
 import { messageOf } from '../../lib/functions.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 
 export function SignIn() {
+  const { t } = useT();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,18 +38,18 @@ export function SignIn() {
 
   return (
     <main className="panel">
-      <h1>Run a queue</h1>
-      <p className="muted">
-        Sign up to create a queue. No business verification needed.
-      </p>
+      <h1>{t('shop.signIn.title')}</h1>
+      <p className="muted">{t('shop.signIn.subtitle')}</p>
 
       {sent ? (
         <p className="notice" role="status">
-          Check <strong>{email}</strong> for a sign-in link.
+          {t('shop.signIn.checkEmailBefore')}
+          <strong>{email}</strong>
+          {t('shop.signIn.checkEmailAfter')}
         </p>
       ) : (
         <form onSubmit={onSubmit} className="stack">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('shop.signIn.emailLabel')}</label>
           <input
             id="email"
             type="email"
@@ -57,12 +59,12 @@ export function SignIn() {
             required
           />
           <button type="submit" disabled={busy}>
-            Email me a link
+            {t('shop.signIn.emailButton')}
           </button>
         </form>
       )}
 
-      <div className="divider">or</div>
+      <div className="divider">{t('shop.signIn.or')}</div>
 
       <div className="stack">
         <button
@@ -71,7 +73,7 @@ export function SignIn() {
           disabled={busy}
           onClick={() => void run(signInWithGoogle)}
         >
-          Continue with Google
+          {t('shop.signIn.continueGoogle')}
         </button>
         <button
           type="button"
@@ -79,7 +81,7 @@ export function SignIn() {
           disabled={busy}
           onClick={() => void run(signInWithApple)}
         >
-          Continue with Apple
+          {t('shop.signIn.continueApple')}
         </button>
       </div>
 
@@ -90,8 +92,11 @@ export function SignIn() {
       )}
 
       <p className="hint">
-        By continuing you agree to our <Link to="/terms">Terms</Link> and{' '}
-        <Link to="/privacy">Privacy Policy</Link>.
+        {t('shop.signIn.agreeBefore')}
+        <LocalizedLink to="/terms">{t('shop.signIn.terms')}</LocalizedLink>
+        {t('shop.signIn.and')}
+        <LocalizedLink to="/privacy">{t('shop.signIn.privacy')}</LocalizedLink>
+        {t('shop.signIn.period')}
       </p>
     </main>
   );

@@ -1,16 +1,8 @@
-import { Link } from 'react-router-dom';
 import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
 import { signOut } from '../../lib/auth.js';
-import type { QueueStatus } from '../../types/index.js';
-
-const STATUS_LABELS: Record<QueueStatus, string> = {
-  open: 'Open',
-  drainMode: 'Closing — walk-ins only',
-  paused: 'Paused',
-  unavailable: 'Offline',
-  closed: 'Closed',
-};
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 
 export function QueueList({
   shopId,
@@ -19,6 +11,7 @@ export function QueueList({
   shopId: string;
   shopName: string;
 }) {
+  const { t } = useT();
   const { data: queues, loading } = useCollection(
     queuesOf(shopId),
     `${shopId}/queues`,
@@ -29,19 +22,19 @@ export function QueueList({
       <header className="serving-header">
         <h1>{shopName}</h1>
         <span className="row tight">
-          <Link className="link" to="/shop/billing">
-            Plan
-          </Link>
+          <LocalizedLink className="link" to="/shop/billing">
+            {t('shop.queueList.plan')}
+          </LocalizedLink>
           <button type="button" className="link" onClick={() => void signOut()}>
-            Sign out
+            {t('shop.queueList.signOut')}
           </button>
         </span>
       </header>
 
-      {loading && <p>Loading…</p>}
+      {loading && <p>{t('common.loading')}</p>}
 
       {!loading && queues?.length === 0 && (
-        <p className="muted">No queues yet.</p>
+        <p className="muted">{t('shop.queueList.noQueues')}</p>
       )}
 
       <ul className="queue-list">
@@ -50,36 +43,36 @@ export function QueueList({
             <div>
               <strong>{q.name}</strong>
               <span className={`badge status-${q.status}`}>
-                {STATUS_LABELS[q.status]}
+                {t(`shopQueueStatus.${q.status}`)}
               </span>
               <p className="muted">
-                {q.waitingCount} waiting · {q.address}
+                {t('shop.queueList.waitingAddress', { count: q.waitingCount, address: q.address })}
               </p>
             </div>
             <span className="row tight">
-              <Link className="button" to={`/shop/q/${q.id}/serve`}>
-                Serve
-              </Link>
-              <Link className="link" to={`/shop/q/${q.id}/settings`}>
-                Settings
-              </Link>
+              <LocalizedLink className="button" to={`/shop/q/${q.id}/serve`}>
+                {t('shop.queueList.serve')}
+              </LocalizedLink>
+              <LocalizedLink className="link" to={`/shop/q/${q.id}/settings`}>
+                {t('shop.queueList.settings')}
+              </LocalizedLink>
               {/* The wall display, for this queue. The monitor needs both ids,
                   so it can only be linked from somewhere that knows them —
                   which is here, not a bare link in the footer. */}
-              <Link
+              <LocalizedLink
                 className="link"
                 to={`/monitor?shop=${shopId}&queue=${q.id}`}
               >
-                Monitor
-              </Link>
+                {t('shop.queueList.monitor')}
+              </LocalizedLink>
             </span>
           </li>
         ))}
       </ul>
 
-      <Link className="button" to="/shop/q/new">
-        New queue
-      </Link>
+      <LocalizedLink className="button" to="/shop/q/new">
+        {t('shop.queueList.newQueue')}
+      </LocalizedLink>
     </main>
   );
 }

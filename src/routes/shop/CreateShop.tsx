@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { createShop } from '../../lib/firestore/writes.js';
 import { messageOf } from '../../lib/functions.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import type { Shop } from '../../types/index.js';
 
 export function CreateShop({ ownerUid }: { ownerUid: string }) {
+  const { t } = useT();
   const [name, setName] = useState('');
   const [exclusive, setExclusive] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -38,14 +40,11 @@ export function CreateShop({ ownerUid }: { ownerUid: string }) {
 
   return (
     <main className="panel">
-      <h1>Set up your shop</h1>
-      <p className="muted">
-        &ldquo;Shop&rdquo; means any organisation running a queue — a clinic, a
-        council office, a workshop.
-      </p>
+      <h1>{t('shop.createShop.title')}</h1>
+      <p className="muted">{t('shop.createShop.subtitle')}</p>
 
       <form onSubmit={onSubmit} className="stack">
-        <label htmlFor="shop-name">Name</label>
+        <label htmlFor="shop-name">{t('shop.createShop.nameLabel')}</label>
         <input
           id="shop-name"
           value={name}
@@ -59,14 +58,11 @@ export function CreateShop({ ownerUid }: { ownerUid: string }) {
             checked={exclusive}
             onChange={(e) => setExclusive(e.target.checked)}
           />
-          <span>
-            My queues are alternatives to each other — a customer should join
-            only one
-          </span>
+          <span>{t('shop.createShop.exclusiveLabel')}</span>
         </label>
 
         <button type="submit" disabled={busy}>
-          Create shop
+          {t('shop.createShop.submit')}
         </button>
       </form>
 

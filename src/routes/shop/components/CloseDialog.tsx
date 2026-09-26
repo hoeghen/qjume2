@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { closeQueue, messageOf } from '../../../lib/functions.js';
+import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
@@ -13,6 +14,7 @@ interface Props {
  * moment, seeing how many are left — not a setting chosen in advance.
  */
 export function CloseDialog({ shopId, queueId, waitingCount, onClose }: Props) {
+  const { t, tn } = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,18 +33,18 @@ export function CloseDialog({ shopId, queueId, waitingCount, onClose }: Props) {
   }
 
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-label="Close the queue">
+    <div className="dialog" role="dialog" aria-modal="true" aria-label={t('shop.closeDialog.ariaLabel')}>
       <div className="dialog-body">
-        <h2>Close the queue</h2>
+        <h2>{t('shop.closeDialog.title')}</h2>
         <p>
           {waitingCount === 0
-            ? 'Nobody is waiting.'
-            : `${waitingCount} ${waitingCount === 1 ? 'person is' : 'people are'} still waiting.`}
+            ? t('shop.closeDialog.nobodyWaiting')
+            : tn(waitingCount, 'shop.closeDialog.someWaiting')}
         </p>
 
         <div className="stack">
           <button type="button" disabled={busy} onClick={() => run('drain')}>
-            Stop online joiners, finish serving
+            {t('shop.closeDialog.drainAction')}
           </button>
           <button
             type="button"
@@ -50,10 +52,10 @@ export function CloseDialog({ shopId, queueId, waitingCount, onClose }: Props) {
             disabled={busy}
             onClick={() => run('hard')}
           >
-            Close now and clear the queue
+            {t('shop.closeDialog.hardAction')}
           </button>
           <button type="button" className="secondary" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
 
