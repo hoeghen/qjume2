@@ -1,3 +1,5 @@
+import { useT } from '../../../lib/i18n/LanguageContext.js';
+
 export interface AdminShopFilterState {
   search: string;
   plan: 'all' | 'free' | 'paid';
@@ -39,6 +41,7 @@ interface Props {
  * nor a distance to filter by.
  */
 export function AdminFilters({ id, hidden, value, onChange }: Props) {
+  const { t } = useT();
   const set = <K extends keyof AdminShopFilterState>(
     key: K,
     v: AdminShopFilterState[K],
@@ -47,42 +50,42 @@ export function AdminFilters({ id, hidden, value, onChange }: Props) {
   return (
     <div className="filters" id={id} hidden={hidden}>
       <label className="sr-only" htmlFor="shop-search">
-        Search shops by name
+        {t('admin.filters.searchLabel')}
       </label>
       <input
         id="shop-search"
         type="search"
-        placeholder="Search by name"
+        placeholder={t('admin.filters.searchPlaceholder')}
         value={value.search}
         onChange={(e) => set('search', e.target.value)}
       />
 
       <div className="filter-row">
         <label>
-          <span>Plan</span>
+          <span>{t('admin.filters.plan')}</span>
           <select
             value={value.plan}
             onChange={(e) =>
               set('plan', e.target.value as AdminShopFilterState['plan'])
             }
           >
-            <option value="all">All</option>
-            <option value="free">Free</option>
-            <option value="paid">Paid</option>
+            <option value="all">{t('admin.filters.all')}</option>
+            <option value="free">{t('admin.filters.free')}</option>
+            <option value="paid">{t('admin.filters.paid')}</option>
           </select>
         </label>
 
         <label>
-          <span>Status</span>
+          <span>{t('admin.filters.status')}</span>
           <select
             value={value.status}
             onChange={(e) =>
               set('status', e.target.value as AdminShopFilterState['status'])
             }
           >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
+            <option value="all">{t('admin.filters.all')}</option>
+            <option value="active">{t('admin.filters.active')}</option>
+            <option value="suspended">{t('admin.filters.suspended')}</option>
           </select>
         </label>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../lib/i18n/LanguageContext.js';
 
 const REPO_URL = 'https://github.com/hoeghen/qjume2';
 const BUILD_TIME = new Date(import.meta.env.VITE_BUILD_TIME).getTime();
@@ -28,6 +29,7 @@ function formatDuration(ms: number): string {
  * to ask. It resets the moment a new build actually reaches this tab.
  */
 export function BuildInfo() {
+  const { t } = useT();
   const version = import.meta.env.VITE_BUILD_VERSION;
   const [now, setNow] = useState(() => Date.now());
 
@@ -47,7 +49,7 @@ export function BuildInfo() {
           {version}
         </a>
       )}
-      {alive && <> · alive for {alive}</>}
+      {alive && <>{t('admin.buildInfo.aliveFor', { duration: alive })}</>}
     </footer>
   );
 }

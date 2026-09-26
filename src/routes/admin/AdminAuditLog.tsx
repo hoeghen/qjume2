@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
 import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { auditLogEntries } from '../../lib/firestore/queries.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 
 /**
  * Every admin action, most recent first. Nothing here is editable — it is a
@@ -8,6 +9,7 @@ import { auditLogEntries } from '../../lib/firestore/queries.js';
  * CLAUDE.md decision 9.
  */
 export function AdminAuditLog() {
+  const { t } = useT();
   const { data: entries, loading } = useCollection(
     auditLogEntries(),
     'admin/log',
@@ -16,15 +18,15 @@ export function AdminAuditLog() {
   return (
     <main className="panel">
       <p>
-        <Link className="link" to="/admin">
-          ← All shops
-        </Link>
+        <LocalizedLink className="link" to="/admin">
+          {t('admin.shopDetail.allShops')}
+        </LocalizedLink>
       </p>
-      <h1>Admin activity</h1>
+      <h1>{t('admin.auditLog.title')}</h1>
 
-      {loading && <p>Loading…</p>}
+      {loading && <p>{t('common.loading')}</p>}
       {!loading && entries?.length === 0 && (
-        <p className="muted">Nothing logged yet.</p>
+        <p className="muted">{t('admin.auditLog.nothingLogged')}</p>
       )}
 
       <ul className="queue-list">
@@ -38,13 +40,13 @@ export function AdminAuditLog() {
               </p>
               {entry.changes && (
                 <p className="muted">
-                  Changed: {Object.keys(entry.changes).join(', ')}
+                  {t('admin.auditLog.changed', { fields: Object.keys(entry.changes).join(', ') })}
                 </p>
               )}
             </div>
-            <Link className="link" to={`/admin/shops/${entry.shopId}`}>
-              Shop
-            </Link>
+            <LocalizedLink className="link" to={`/admin/shops/${entry.shopId}`}>
+              {t('admin.auditLog.shop')}
+            </LocalizedLink>
           </li>
         ))}
       </ul>
