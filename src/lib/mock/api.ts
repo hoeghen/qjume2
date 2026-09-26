@@ -464,7 +464,10 @@ export const mockApi = {
       waitingCount: 0,
     };
     mockStore.set(qPath(input.shopId, queueId), queue as unknown as Record<string, unknown>);
-    return { queueId, geocoded: null };
+    // Not a real geocode, but a real placement - the mock has no geocoder to
+    // report a formatted address from, so it echoes the one typed in rather
+    // than claiming the address couldn't be placed when it plainly was.
+    return { queueId, geocoded: { lat: queue.lat, lng: queue.lng, formatted: input.address } };
   },
 
   updateQueue({ shopId, queueId, ...settings }: {
@@ -478,11 +481,19 @@ export const mockApi = {
     noShowPenalty: Queue['noShowPenalty'];
     description?: string | null;
   }) {
+    const existing = readQueue(shopId, queueId);
     mockStore.update(qPath(shopId, queueId), {
       ...settings,
       description: settings.description ?? null,
     });
-    return { geocoded: null };
+    // Address changes aren't re-geocoded in the mock (see adminUpdateQueue
+    // below) - the coordinates from creation still stand.
+    return {
+      geocoded:
+        existing.lat !== null && existing.lng !== null
+          ? { lat: existing.lat, lng: existing.lng, formatted: settings.address }
+          : null,
+    };
   },
 
   claimStation({ shopId, queueId, stationId, label }: {
@@ -670,7 +681,12 @@ export const mockApi = {
         changes,
       });
     }
-    return { geocoded: null };
+    return {
+      geocoded:
+        existing.lat !== null && existing.lng !== null
+          ? { lat: existing.lat, lng: existing.lng, formatted: address }
+          : null,
+    };
   },
 
   adminDeleteShop({ shopId }: { shopId: string }) {

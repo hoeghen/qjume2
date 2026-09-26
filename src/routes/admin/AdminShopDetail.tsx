@@ -36,6 +36,7 @@ export function AdminShopDetail() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shopSaved, setShopSaved] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
   if (shop.loading) return <p className="panel">Loading…</p>;
@@ -64,12 +65,14 @@ export function AdminShopDetail() {
 
     setBusy(true);
     setError(null);
+    setShopSaved(false);
     void adminUpdateShop({
       shopId,
       name,
       exclusiveQueues,
       profile: hasProfile ? { logo, hours, phone, description } : null,
     })
+      .then(() => setShopSaved(true))
       .catch((e: unknown) => setError(messageOf(e)))
       .finally(() => setBusy(false));
   }
@@ -153,6 +156,12 @@ export function AdminShopDetail() {
           </button>
         </div>
       </form>
+
+      {shopSaved && (
+        <p className="notice" role="status">
+          Shop saved.
+        </p>
+      )}
 
       {error && (
         <p className="error" role="alert">
