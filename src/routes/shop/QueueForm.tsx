@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { useDoc } from '../../lib/hooks/useFirestore.js';
 import {
@@ -14,14 +14,11 @@ import {
   type NoShowPenalty,
   type QueueCategory,
 } from '../../types/index.js';
-import { CATEGORY_LABELS } from '../../lib/categories.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import { AddressField } from '../../components/AddressField.js';
 
-const PENALTY_LABELS: Record<NoShowPenalty, string> = {
-  back: 'Move to the back of the queue',
-  back3: 'Move back 3 places',
-  back5: 'Move back 5 places',
-};
+const PENALTIES: NoShowPenalty[] = ['back', 'back3', 'back5'];
 
 /**
  * The owner's queue settings form, and (via `admin`) the platform admin's
@@ -46,6 +43,7 @@ export function QueueForm({
   /** Where "Save" and "Cancel" go. Defaults to the owner's `/shop`. */
   onDone?: () => void;
 }) {
+  const { t } = useT();
   const { queueId } = useParams();
   const navigate = useNavigate();
   const existing = useDoc(queueId ? queueDoc(shopId, queueId) : null);
@@ -56,7 +54,7 @@ export function QueueForm({
     null,
   );
 
-  if (queueId && existing.loading) return <p className="panel">Loading…</p>;
+  if (queueId && existing.loading) return <p className="panel">{t('common.loading')}</p>;
 
   const q = existing.data;
   const done = onDone ?? (() => navigate('/shop'));
@@ -71,13 +69,8 @@ export function QueueForm({
     warn: boolean;
   } {
     return geocoded
-      ? { text: `Placed at ${geocoded.formatted}.`, warn: false }
-      : {
-          text:
-            "Couldn't place this address on the map — it won't show up in " +
-            'nearby search until the address is fixed.',
-          warn: true,
-        };
+      ? { text: t('shop.queueForm.noticePlacedAt', { address: geocoded.formatted }), warn: false }
+      : { text: t('shop.queueForm.noticePlacementFailed'), warn: true };
   }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -101,7 +94,7 @@ export function QueueForm({
         if (admin && queueId) {
           const { geocoded } = await adminUpdateQueue({ shopId, queueId, ...values });
           const { text, warn } = placementNotice(geocoded);
-          setNotice({ text: `Saved. ${text}`, warn });
+          setNotice({ text: t('shop.queueForm.noticeSaved', { detail: text }), warn });
           setTimeout(done, NOTICE_DELAY_MS);
         } else if (queueId) {
           // Goes through a function, not a direct write: changing the address
@@ -109,7 +102,7 @@ export function QueueForm({
           // longer is.
           const { geocoded } = await updateQueue({ shopId, queueId, ...values });
           const { text, warn } = placementNotice(geocoded);
-          setNotice({ text: `Saved. ${text}`, warn });
+          setNotice({ text: t('shop.queueForm.noticeSaved', { detail: text }), warn });
           setTimeout(done, NOTICE_DELAY_MS);
         } else {
           const { queueId: created, geocoded } = await createQueue({
@@ -117,7 +110,7 @@ export function QueueForm({
             ...values,
           });
           const { text, warn } = placementNotice(geocoded);
-          setNotice({ text: `Queue created. ${text}`, warn });
+          setNotice({ text: t('shop.queueForm.noticeCreated', { detail: text }), warn });
           setTimeout(() => navigate(`/shop/q/${created}/serve`), NOTICE_DELAY_MS);
         }
       } catch (e) {
@@ -129,29 +122,26 @@ export function QueueForm({
 
   return (
     <main className="panel">
-      <h1>{queueId ? 'Queue settings' : 'New queue'}</h1>
+      <h1>{queueId ? t('shop.queueForm.titleSettings') : t('shop.queueForm.titleNew')}</h1>
 
       <form onSubmit={onSubmit} className="stack">
-        <label htmlFor="name">Queue name</label>
+        <label htmlFor="name">{t('shop.queueForm.nameLabel')}</label>
         <input id="name" name="name" defaultValue={q?.name ?? ''} required />
 
-        <label htmlFor="address">Address</label>
+        <label htmlFor="address">{t('shop.queueForm.addressLabel')}</label>
         <AddressField id="address" name="address" defaultValue={q?.address ?? ''} required />
-        <p className="hint">
-          A fixed address, not your device&rsquo;s location — this is what
-          customers see and search by.
-        </p>
+        <p className="hint">{t('shop.queueForm.addressHint')}</p>
 
-        <label htmlFor="category">Category</label>
+        <label htmlFor="category">{t('shop.queueForm.categoryLabel')}</label>
         <select id="category" name="category" defaultValue={q?.category ?? 'other'}>
           {QUEUE_CATEGORIES.map((c) => (
             <option key={c} value={c}>
-              {CATEGORY_LABELS[c]}
+              {t(`categories.${c}`)}
             </option>
           ))}
         </select>
 
-        <label htmlFor="maxSize">Maximum queue size</label>
+        <label htmlFor="maxSize">{t('shop.queueForm.maxSizeLabel')}</label>
         <input
           id="maxSize"
           name="maxSize"
@@ -161,9 +151,7 @@ export function QueueForm({
           required
         />
 
-        <label htmlFor="avgServiceMinutes">
-          Average time per customer (minutes)
-        </label>
+        <label htmlFor="avgServiceMinutes">{t('shop.queueForm.avgServiceLabel')}</label>
         <input
           id="avgServiceMinutes"
           name="avgServiceMinutes"
@@ -172,27 +160,23 @@ export function QueueForm({
           defaultValue={(q?.avgServiceTimeSeconds ?? 300) / 60}
           required
         />
-        <p className="hint">
-          A starting estimate. Qjume refines it from how long you actually take.
-        </p>
+        <p className="hint">{t('shop.queueForm.avgServiceHint')}</p>
 
-        <label htmlFor="noShowPenalty">If someone isn&rsquo;t there</label>
+        <label htmlFor="noShowPenalty">{t('shop.queueForm.noShowLabel')}</label>
         <select
           id="noShowPenalty"
           name="noShowPenalty"
           defaultValue={q?.noShowPenalty ?? 'back'}
         >
-          {(Object.keys(PENALTY_LABELS) as NoShowPenalty[]).map((p) => (
+          {PENALTIES.map((p) => (
             <option key={p} value={p}>
-              {PENALTY_LABELS[p]}
+              {t(`shop.queueForm.penalty.${p}`)}
             </option>
           ))}
         </select>
-        <p className="hint">
-          After three no-shows they lose their place entirely.
-        </p>
+        <p className="hint">{t('shop.queueForm.noShowHint')}</p>
 
-        <label htmlFor="description">Description (optional)</label>
+        <label htmlFor="description">{t('shop.queueForm.descriptionLabel')}</label>
         <textarea
           id="description"
           name="description"
@@ -202,17 +186,17 @@ export function QueueForm({
         />
         {!paid && (
           <p className="hint">
-            Descriptions are part of the paid plan.{' '}
-            <Link to="/shop/billing">See plans</Link>.
+            {t('shop.queueForm.descriptionPaidHint')}{' '}
+            <LocalizedLink to="/shop/billing">{t('shop.queueForm.seePlans')}</LocalizedLink>.
           </p>
         )}
 
         <div className="row">
           <button type="submit" disabled={busy}>
-            {queueId ? 'Save' : 'Create queue'}
+            {queueId ? t('shop.queueForm.save') : t('shop.queueForm.create')}
           </button>
           <button type="button" className="secondary" onClick={done}>
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
       </form>

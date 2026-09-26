@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { setQueueStatus } from '../../lib/firestore/writes.js';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
@@ -10,6 +10,8 @@ import {
 } from '../../lib/firestore/queries.js';
 import { callNext, messageOf } from '../../lib/functions.js';
 import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import { PauseBanner } from './components/PauseBanner.js';
 import { StationPicker } from './components/StationPicker.js';
 import { UpcomingList } from './components/UpcomingList.js';
@@ -40,6 +42,7 @@ function recallStation(queueId: string): string | null {
 }
 
 export function ServingScreen({ shopId }: { shopId: string }) {
+  const { t, tn } = useT();
   const { queueId = '' } = useParams();
   const [station, setStation] = useState<{ id: string; label: string } | null>(
     () => {
@@ -82,12 +85,12 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     [queueId],
   );
 
-  if (queue.loading) return <p className="panel">Loading…</p>;
-  if (!queue.data) return <p className="panel">Queue not found.</p>;
+  if (queue.loading) return <p className="panel">{t('common.loading')}</p>;
+  if (!queue.data) return <p className="panel">{t('shop.serving.queueNotFound')}</p>;
 
   const q = queue.data;
-  const mine = serving?.find((t) => t.station === station?.id) ?? null;
-  const others = serving?.filter((t) => t.station !== station?.id) ?? [];
+  const mine = serving?.find((ticket) => ticket.station === station?.id) ?? null;
+  const others = serving?.filter((ticket) => ticket.station !== station?.id) ?? [];
   // Offline, the server's idea of who is being served is frozen, so the till
   // reads ahead in its cached waiting list by however many taps it has taken.
   const offlineCurrent =
@@ -151,18 +154,18 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     <main className="serving">
       {!offline.online && (
         <div className="status-banner status-unavailable" role="status">
-          <strong>No connection</strong>
+          <strong>{t('shop.serving.noConnectionTitle')}</strong>
           <span>
-            Keep serving — {offline.pending}{' '}
-            {offline.pending === 1 ? 'tap is' : 'taps are'} saved and will sync
-            when you are back. Nobody new can join meanwhile.
+            {t('shop.serving.noConnectionBefore')}
+            {tn(offline.pending, 'shop.serving.pendingTaps')}
+            {t('shop.serving.noConnectionAfter')}
           </span>
         </div>
       )}
       {offline.online && offline.pending > 0 && (
         <div className="status-banner status-paused" role="status">
-          <strong>Catching up</strong>
-          <span>Sending {offline.pending} saved from while you were offline.</span>
+          <strong>{t('shop.serving.catchingUpTitle')}</strong>
+          <span>{t('shop.serving.catchingUpBody', { count: offline.pending })}</span>
         </div>
       )}
       <PauseBanner status={q.status} />
@@ -171,24 +174,25 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <div>
           <h1>{q.name}</h1>
           <p className="muted">
-            {(manyTills && station.label) || 'Serving'} · {waitingNow} waiting
+            {(manyTills && station.label) || t('shop.serving.servingLabel')} ·{' '}
+            {t('shop.serving.waitingCount', { count: waitingNow })}
           </p>
         </div>
-        <Link to="/shop" className="link">
-          All queues
-        </Link>
+        <LocalizedLink to="/shop" className="link">
+          {t('shop.serving.allQueues')}
+        </LocalizedLink>
       </header>
 
       <section className="now-serving">
         {currentName ? (
           <>
-            <p className="label">Now serving</p>
+            <p className="label">{t('shop.serving.nowServing')}</p>
             <p className="called-name">{currentName}</p>
             {manyTills && <p className="called-station">{station.label}</p>}
           </>
         ) : (
           <p className="called-name muted">
-            {q.waitingCount > 0 ? 'Ready for the next customer' : 'Nobody waiting'}
+            {q.waitingCount > 0 ? t('shop.serving.readyForNext') : t('shop.serving.nobodyWaiting')}
           </p>
         )}
       </section>
@@ -200,7 +204,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           disabled={busy || q.status === 'paused'}
           onClick={() => advance('served')}
         >
-          {currentName ? 'Done — next' : 'Call next'}
+          {currentName ? t('shop.serving.doneNext') : t('shop.serving.callNext')}
         </button>
         <button
           type="button"
@@ -208,7 +212,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           disabled={busy || !currentName}
           onClick={() => advance('noShow')}
         >
-          Not here
+          {t('shop.serving.notHere')}
         </button>
       </div>
 
@@ -220,11 +224,11 @@ export function ServingScreen({ shopId }: { shopId: string }) {
 
       {others.length > 0 && (
         <section>
-          <h2>Also serving</h2>
+          <h2>{t('shop.serving.alsoServing')}</h2>
           <ul className="pairings">
-            {others.map((t) => (
-              <li key={t.id}>
-                <strong>{t.displayName}</strong> — {tillName(t.station)}
+            {others.map((ticket) => (
+              <li key={ticket.id}>
+                <strong>{ticket.displayName}</strong> — {tillName(ticket.station)}
               </li>
             ))}
           </ul>
@@ -232,7 +236,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       )}
 
       <section>
-        <h2>Waiting</h2>
+        <h2>{t('shop.serving.waitingHeading')}</h2>
         <UpcomingList
           shopId={shopId}
           queueId={queueId}
@@ -244,7 +248,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       <footer className="serve-footer">
         {q.status === 'paused' ? (
           <button type="button" onClick={() => void setStatus('open')}>
-            Resume
+            {t('shop.serving.resume')}
           </button>
         ) : (
           <button
@@ -253,7 +257,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
             disabled={q.status !== 'open'}
             onClick={() => void setStatus('paused')}
           >
-            Pause
+            {t('shop.serving.pause')}
           </button>
         )}
         <button
@@ -269,11 +273,11 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           }
           onClick={() => setShowWalkIn(true)}
         >
-          Add walk-in
+          {t('shop.serving.addWalkIn')}
         </button>
         {q.status === 'closed' ? (
           <button type="button" onClick={() => void setStatus('open')}>
-            Open queue
+            {t('shop.serving.openQueue')}
           </button>
         ) : (
           <button
@@ -282,7 +286,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
             disabled={!offline.online}
             onClick={() => setShowClose(true)}
           >
-            Close
+            {t('shop.serving.close')}
           </button>
         )}
         <button
@@ -290,7 +294,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           className="secondary"
           onClick={() => setShowQr(true)}
         >
-          Show QR
+          {t('shop.serving.showQr')}
         </button>
         <button
           type="button"
@@ -300,7 +304,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
             setStation(null);
           }}
         >
-          Change position
+          {t('shop.serving.changePosition')}
         </button>
       </footer>
 

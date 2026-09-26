@@ -2,6 +2,7 @@ import { Outlet, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../lib/hooks/useAuth.js';
 import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { shopsOwnedBy } from '../../lib/firestore/queries.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import { SignIn } from './SignIn.js';
 import { CreateShop } from './CreateShop.js';
 
@@ -19,17 +20,18 @@ export function useShopContext(): ShopContext {
  * screens. Rendered as a layout route so the child screens can assume a shop.
  */
 export function ShopHome() {
+  const { t } = useT();
   const { user, loading: authLoading } = useAuth();
   const { data: shops, loading: shopsLoading } = useCollection(
     user ? shopsOwnedBy(user.uid) : null,
     user ? `shops-of/${user.uid}` : 'no-user',
   );
 
-  if (authLoading) return <p className="panel">Loading…</p>;
+  if (authLoading) return <p className="panel">{t('common.loading')}</p>;
   // An anonymous customer is not a shop. Without this, someone who joined a
   // queue would land in the admin screens of whatever shop that uid owns.
   if (!user || user.isAnonymous) return <SignIn />;
-  if (shopsLoading) return <p className="panel">Loading…</p>;
+  if (shopsLoading) return <p className="panel">{t('common.loading')}</p>;
 
   const shop = shops?.[0];
   if (!shop) return <CreateShop ownerUid={user.uid} />;
