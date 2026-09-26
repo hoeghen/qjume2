@@ -461,4 +461,115 @@ export const en = {
       aliveFor: ' · alive for {duration}',
     },
   },
+
+  legal: {
+    terms: {
+      title: 'Terms of Service',
+      lastUpdated: 'Last updated: [date of launch]',
+      intro: 'These Terms govern use of Qjume (the “Service”), operated by Bitwork.dk (“Bitwork.dk”, “we”, “us”). By creating a queue, joining one, or otherwise using the Service, you agree to these Terms. If you are accepting them on behalf of a business, you confirm you have the authority to do so.',
+
+      s1Heading: '1. What the Service is',
+      s1Body: 'Qjume lets a business (a “Shop”) run one or more waiting lines (“Queues”) that customers can see and join remotely, and lets a customer join a Queue, track their place in it, and be notified as their turn approaches. A Shop is run by its owner and, on paid plans, staff the owner adds. A customer does not need an account to join a Queue.',
+
+      s2Heading: '2. Accounts',
+      s2Body1: 'A Shop owner signs in with an email address and is responsible for everything done under their account, including staff they add. A customer’s session is anonymous unless they choose to give an email or phone number for updates on their place in a Queue.',
+      s2Body2Before: 'You must give accurate information and are responsible for keeping your sign-in access to yourself. Tell us at ',
+      s2Body2After: ' if you believe your account has been accessed without your permission.',
+
+      s3Heading: '3. Plans, fees and billing',
+      s3Body1Before: 'Qjume offers a free plan and a paid plan with additional features, shown in the app. The paid plan is billed on a ',
+      s3Body1Strong: 'recurring subscription',
+      s3Body1After: ' at the price and interval shown at checkout, charged automatically until cancelled. Payment is processed by Stripe; Bitwork.dk never receives or stores your card details.',
+      s3Body2: 'You can cancel at any time from your billing settings. Cancelling stops future renewals; it does not refund the period already paid for, and access to paid features continues until that period ends. Except where the law gives you a right to one, payments already made are not refundable. We may change plan pricing with reasonable notice; continuing to use the paid plan after a price change takes effect means you accept it.',
+
+      s4Heading: '4. Acceptable use',
+      s4Intro: 'You agree not to:',
+      s4Item1: 'Use the Service for anything unlawful, fraudulent, or misleading;',
+      s4Item2: 'Create a Queue for a business you are not authorised to represent;',
+      s4Item3: 'Interfere with the Service’s operation or try to bypass its security, including its queue-ordering and no-show rules;',
+      s4Item4: 'Use another person’s name or contact details to join a Queue without their knowledge;',
+      s4Item5: 'Scrape, resell, or build a competing service from data obtained through the Service.',
+      s4Body: 'A Shop found to be doing any of the above may be suspended or removed from discovery, and in serious cases removed from the Service entirely, at our discretion.',
+
+      s5Heading: '5. Content you provide',
+      s5BodyBefore: 'You are responsible for what you enter — a Shop’s name, address, description and queue details; a customer’s display name. You keep ownership of it; by providing it you let us store and display it as needed to run the Service (a Queue’s details to customers discovering it; a customer’s chosen name to the Shop serving them and to a monitor screen in that Shop, per our ',
+      s5PrivacyLink: 'Privacy Policy',
+      s5BodyAfter: ').',
+
+      s6Heading: '6. Availability',
+      s6Body: 'We aim to keep the Service running but do not guarantee it will be uninterrupted or error-free. If a Shop’s connection drops, its Queue is marked unavailable to new joiners until it reconnects, and picks up service from where it left off — we are not responsible for a Shop’s own network or device failing.',
+
+      s7Heading: '7. Disclaimers and liability',
+      s7Body: 'The Service is provided “as is”, without warranties of any kind beyond those the law does not allow us to exclude. To the fullest extent permitted by law, Bitwork.dk is not liable for indirect or consequential losses arising from use of the Service, including lost business or lost custom from a Queue being unavailable. Nothing in these Terms limits liability for death, personal injury, or fraud, where the law does not allow it to be limited.',
+
+      s8Heading: '8. Suspension and termination',
+      s8Body: 'We may suspend or close a Shop’s account for breach of these Terms, non-payment, or where the law requires it. You may stop using the Service, or close your Shop, at any time. Sections that by their nature should survive ending your use of the Service — including billing already due and the limitation of liability — continue to apply.',
+
+      s9Heading: '9. Changes to these Terms',
+      s9Body: 'We may update these Terms as the Service changes. We will post the updated Terms here with a new date; continuing to use the Service after that means you accept them. If a change is material, we will make a reasonable effort to tell Shop owners directly.',
+
+      s10Heading: '10. Governing law',
+      s10BodyBefore: 'These Terms are governed by the laws of Denmark. Any dispute that cannot be resolved directly will be subject to the jurisdiction of the Danish courts. If you are an EU consumer, you may also be able to use the European Commission’s ',
+      s10Link: 'Online Dispute Resolution',
+      s10BodyAfter: ' platform.',
+
+      s11Heading: '11. Contact',
+      s11BodyBefore: 'Bitwork.dk — ',
+      s11BodyAfter: '.',
+    },
+
+    privacy: {
+      title: 'Privacy Policy',
+      lastUpdated: 'Last updated: [date of launch]',
+      introBefore: 'Bitwork.dk (“we”, “us”) is the data controller for personal data collected through Qjume. This policy explains what we collect, why, and what you can do about it. Questions or requests: ',
+      introAfter: '.',
+
+      s1Heading: '1. What we collect',
+      s1Para1Strong: 'Joining a Queue as a customer',
+      s1Para1Rest: ' needs no account. We store the display name you choose to be called by — it does not have to be your real name — and, only if you give them, an email address or phone number so we can tell you when your turn is near. Your device also gets an anonymous, random id, used only to stop you joining the same Queue twice and to let you reclaim your place if you switch devices with a resume code.',
+      s1Para2Strong: 'Running a Shop',
+      s1Para2Rest: ' needs an email address to sign in with. We store the Shop’s own details you enter — name, address, the queues it runs — and, on the paid plan, billing status from our payment processor (never your card number, which we never receive).',
+      s1Para3Strong: 'Location.',
+      s1Para3Rest: ' If you allow it, your browser’s location is used to sort search results by distance and is kept only on your own device (in local browser storage) to speed up your next visit — we do not store it on our servers or attach it to your account.',
+      s1Para4Strong: 'We do not collect',
+      s1Para4Rest: ' more than the above: no tracking of your activity outside the app, no advertising identifiers, no sale of personal data to anyone.',
+
+      s2Heading: '2. Why we use it, and on what basis',
+      s2Item1: 'Running the Queue you joined, and telling you when it’s your turn — necessary to provide the service you asked for.',
+      s2Item2: 'Letting a Shop’s staff call a waiting customer by name, and letting a customer count their own place — the same necessity, and it is why a customer’s chosen name (not their contact details) is visible to Shop staff and to the in-shop screen.',
+      s2Item3: 'Billing a Shop’s paid plan — necessary to perform that contract.',
+      s2Item4: 'Meeting our own legal obligations, such as keeping records tax law requires.',
+
+      s3Heading: '3. Who else sees it',
+      s3Intro: 'We use a small number of processors to run the Service, each bound by its own data processing terms:',
+      s3Item1Strong: 'Google (Firebase / Google Cloud)',
+      s3Item1Rest: ' — hosts the database, the app, and sends push notifications and sign-in emails.',
+      s3Item2Strong: 'Stripe',
+      s3Item2Rest: ' — processes payments for the paid plan. Stripe receives and stores your payment details directly; we do not.',
+      s3Item3Strong: 'Resend',
+      s3Item3Rest: ' — sends the email notifications you asked for (a milestone update, a receipt).',
+      s3Item4Strong: 'OpenCage',
+      s3Item4Rest: ' — turns a Shop’s address into map coordinates when it is created or edited. Only the address text is sent; no customer data.',
+      s3Body1: 'Some of these process data outside the European Economic Area. Where that happens, it is under a mechanism the law recognises for that transfer, such as the EU Standard Contractual Clauses.',
+      s3Body2: 'A Shop’s staff can see the public details of tickets in their own Queue — a customer’s chosen display name and place in line, never another Shop’s data and never a customer’s email or phone unless the customer contacts them directly.',
+
+      s4Heading: '4. How long we keep it',
+      s4Body: 'A ticket’s public details are kept for as long as needed to run the Queue and for a limited period afterwards for the Shop’s own record of who it served, then deleted. Contact details (email, phone) are kept only as long as the ticket that used them. A Shop’s own account and its queues are kept until the Shop is closed or deleted, by its owner or, where these Terms allow, by us.',
+
+      s5Heading: '5. Your rights',
+      s5BodyBefore: 'If you are in the EU/EEA, the GDPR gives you the right to access, correct, delete, or export the personal data we hold about you, and to object to or restrict some uses of it. To exercise any of these, email ',
+      s5BodyMiddle: '. You can also complain to your national data protection authority — in Denmark, the ',
+      s5DatatilsynetLink: 'Datatilsynet',
+      s5BodyAfter: '.',
+
+      s6Heading: '6. Security',
+      s6Body: 'Access to a ticket’s contact details is restricted to the Shop serving it and the customer who holds it; a resume code, not a plain id, is what proves that hold. All traffic to the Service is encrypted in transit. No system is perfectly secure, and we cannot guarantee absolute security of information you provide.',
+
+      s7Heading: '7. Children',
+      s7Body: 'The Service is not directed at children, and we do not knowingly collect personal data from a child below the age Danish/EU law sets for consent to an information-society service without a parent’s agreement.',
+
+      s8Heading: '8. Changes to this policy',
+      s8Body: 'We may update this policy as the Service changes. We will post the updated version here with a new date.',
+    },
+  },
 };

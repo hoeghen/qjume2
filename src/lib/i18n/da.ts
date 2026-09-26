@@ -457,4 +457,115 @@ export const da: DeepPartial<typeof en> = {
       aliveFor: ' · aktiv i {duration}',
     },
   },
+
+  legal: {
+    terms: {
+      title: 'Vilkår for brug',
+      lastUpdated: 'Sidst opdateret: [lanceringsdato]',
+      intro: 'Disse vilkår regulerer brugen af Qjume ("Tjenesten"), som drives af Bitwork.dk ("Bitwork.dk", "vi", "os"). Ved at oprette en kø, tilslutte dig en, eller på anden måde bruge Tjenesten, accepterer du disse vilkår. Hvis du accepterer dem på vegne af en virksomhed, bekræfter du, at du har bemyndigelse til det.',
+
+      s1Heading: '1. Hvad Tjenesten er',
+      s1Body: 'Qjume lader en virksomhed ("Butik") drive en eller flere ventelinjer ("Køer"), som kunder kan se og tilslutte sig eksternt, og lader en kunde tilslutte sig en kø, følge sin plads i den, og få besked, når deres tur nærmer sig. En Butik drives af sin ejer og, på betalte abonnementer, af personale ejeren tilføjer. En kunde behøver ingen konto for at tilslutte sig en kø.',
+
+      s2Heading: '2. Konti',
+      s2Body1: 'En Butiks ejer logger ind med en e-mailadresse og er ansvarlig for alt, der sker under vedkommendes konto, herunder personale, de tilføjer. En kundes session er anonym, medmindre kunden vælger at give en e-mailadresse eller et telefonnummer for at få opdateringer om sin plads i en kø.',
+      s2Body2Before: 'Du skal give korrekte oplysninger og er ansvarlig for at holde din login-adgang for dig selv. Fortæl os det på ',
+      s2Body2After: ', hvis du mener, at din konto er blevet tilgået uden din tilladelse.',
+
+      s3Heading: '3. Abonnementer, gebyrer og fakturering',
+      s3Body1Before: 'Qjume tilbyder et gratis abonnement og et betalt abonnement med yderligere funktioner, vist i appen. Det betalte abonnement faktureres som et ',
+      s3Body1Strong: 'tilbagevendende abonnement',
+      s3Body1After: ' til den pris og det interval, der vises ved betaling, og opkræves automatisk, indtil det opsiges. Betaling behandles af Stripe; Bitwork.dk modtager eller opbevarer aldrig dine kortoplysninger.',
+      s3Body2: 'Du kan opsige når som helst fra dine faktureringsindstillinger. Opsigelse stopper fremtidige fornyelser; det refunderer ikke den periode, der allerede er betalt for, og adgang til betalte funktioner fortsætter, indtil den periode udløber. Bortset fra hvor loven giver dig ret til det, refunderes allerede foretagne betalinger ikke. Vi kan ændre abonnementspriser med rimeligt varsel; fortsat brug af det betalte abonnement, efter en prisændring træder i kraft, betyder, at du accepterer den.',
+
+      s4Heading: '4. Acceptabel brug',
+      s4Intro: 'Du accepterer ikke at:',
+      s4Item1: 'Bruge Tjenesten til noget ulovligt, svigagtigt eller vildledende;',
+      s4Item2: 'Oprette en kø for en virksomhed, du ikke er bemyndiget til at repræsentere;',
+      s4Item3: 'Forstyrre Tjenestens drift eller forsøge at omgå dens sikkerhed, herunder dens regler for kørækkefølge og udeblivelser;',
+      s4Item4: 'Bruge en anden persons navn eller kontaktoplysninger til at tilslutte dig en kø uden vedkommendes viden;',
+      s4Item5: 'Scrape, videresælge eller opbygge en konkurrerende tjeneste ud fra data indhentet gennem Tjenesten.',
+      s4Body: 'En Butik, der findes at gøre noget af ovenstående, kan blive suspenderet eller fjernet fra søgning, og i alvorlige tilfælde fjernet fra Tjenesten helt, efter vores skøn.',
+
+      s5Heading: '5. Indhold, du angiver',
+      s5BodyBefore: 'Du er ansvarlig for det, du indtaster — en Butiks navn, adresse, beskrivelse og kødetaljer; en kundes visningsnavn. Du bevarer ejerskabet af det; ved at angive det giver du os lov til at gemme og vise det, som nødvendigt for at drive Tjenesten (en køs detaljer til kunder, der opdager den; en kundes valgte navn til den Butik, der betjener dem, og til en skærm i den Butik, jf. vores ',
+      s5PrivacyLink: 'privatlivspolitik',
+      s5BodyAfter: ').',
+
+      s6Heading: '6. Tilgængelighed',
+      s6Body: 'Vi bestræber os på at holde Tjenesten kørende, men garanterer ikke, at den vil være uafbrudt eller fejlfri. Hvis en Butiks forbindelse afbrydes, markeres dens kø som utilgængelig for nye deltagere, indtil den genopretter forbindelsen, og fortsætter betjeningen, hvor den slap — vi er ikke ansvarlige for, at en Butiks eget netværk eller enhed svigter.',
+
+      s7Heading: '7. Ansvarsfraskrivelser og ansvar',
+      s7Body: 'Tjenesten leveres "som den er", uden garantier af nogen art ud over dem, loven ikke tillader os at udelukke. I det videst mulige omfang, loven tillader, er Bitwork.dk ikke ansvarlig for indirekte tab eller følgeskader som følge af brug af Tjenesten, herunder tabt forretning eller tabte kunder som følge af, at en kø er utilgængelig. Intet i disse vilkår begrænser ansvar for død, personskade eller svig, hvor loven ikke tillader, at det begrænses.',
+
+      s8Heading: '8. Suspension og ophør',
+      s8Body: 'Vi kan suspendere eller lukke en Butiks konto ved brud på disse vilkår, manglende betaling, eller hvor loven kræver det. Du kan til enhver tid stoppe med at bruge Tjenesten eller lukke din Butik. Afsnit, der efter deres natur bør overleve afslutningen af din brug af Tjenesten — herunder allerede forfalden fakturering og ansvarsbegrænsningen — fortsætter med at gælde.',
+
+      s9Heading: '9. Ændringer af disse vilkår',
+      s9Body: 'Vi kan opdatere disse vilkår, efterhånden som Tjenesten ændrer sig. Vi vil offentliggøre de opdaterede vilkår her med en ny dato; fortsat brug af Tjenesten derefter betyder, at du accepterer dem. Hvis en ændring er væsentlig, vil vi gøre en rimelig indsats for at fortælle Butiksejere direkte.',
+
+      s10Heading: '10. Lovvalg',
+      s10BodyBefore: 'Disse vilkår er underlagt dansk ret. Enhver tvist, der ikke kan løses direkte, er underlagt de danske domstoles jurisdiktion. Hvis du er EU-forbruger, kan du også have mulighed for at bruge EU-Kommissionens ',
+      s10Link: 'onlineklageportal',
+      s10BodyAfter: '.',
+
+      s11Heading: '11. Kontakt',
+      s11BodyBefore: 'Bitwork.dk — ',
+      s11BodyAfter: '.',
+    },
+
+    privacy: {
+      title: 'Privatlivspolitik',
+      lastUpdated: 'Sidst opdateret: [lanceringsdato]',
+      introBefore: 'Bitwork.dk ("vi", "os") er dataansvarlig for personoplysninger indsamlet gennem Qjume. Denne politik forklarer, hvad vi indsamler, hvorfor, og hvad du kan gøre ved det. Spørgsmål eller anmodninger: ',
+      introAfter: '.',
+
+      s1Heading: '1. Hvad vi indsamler',
+      s1Para1Strong: 'At tilslutte sig en kø som kunde',
+      s1Para1Rest: ' kræver ingen konto. Vi gemmer det visningsnavn, du vælger at blive kaldt ved — det behøver ikke at være dit rigtige navn — og, kun hvis du angiver dem, en e-mailadresse eller et telefonnummer, så vi kan fortælle dig, når din tur nærmer sig. Din enhed får også et anonymt, tilfældigt id, der kun bruges til at forhindre dig i at tilslutte dig den samme kø to gange og til at lade dig genoptage din plads, hvis du skifter enhed med en genoptagelseskode.',
+      s1Para2Strong: 'At drive en Butik',
+      s1Para2Rest: ' kræver en e-mailadresse at logge ind med. Vi gemmer Butikkens egne oplysninger, du indtaster — navn, adresse, de køer, den driver — og, på det betalte abonnement, faktureringsstatus fra vores betalingsudbyder (aldrig dit kortnummer, som vi aldrig modtager).',
+      s1Para3Strong: 'Placering.',
+      s1Para3Rest: ' Hvis du tillader det, bruges din browsers placering til at sortere søgeresultater efter afstand og gemmes kun på din egen enhed (i lokal browserlagring) for at fremskynde dit næste besøg — vi gemmer den ikke på vores servere eller knytter den til din konto.',
+      s1Para4Strong: 'Vi indsamler ikke',
+      s1Para4Rest: ' mere end ovenstående: ingen sporing af din aktivitet uden for appen, ingen reklame-id’er, intet salg af personoplysninger til nogen.',
+
+      s2Heading: '2. Hvorfor vi bruger det, og på hvilket grundlag',
+      s2Item1: 'At drive den kø, du tilsluttede dig, og fortælle dig, når det er din tur — nødvendigt for at levere den tjeneste, du bad om.',
+      s2Item2: 'At lade en Butiks personale kalde en ventende kunde ved navn, og lade en kunde tælle sin egen plads — samme nødvendighed, og det er grunden til, at en kundes valgte navn (ikke deres kontaktoplysninger) er synligt for Butikkens personale og for skærmen i butikken.',
+      s2Item3: 'At fakturere en Butiks betalte abonnement — nødvendigt for at opfylde den kontrakt.',
+      s2Item4: 'At overholde vores egne juridiske forpligtelser, såsom at føre optegnelser, som skattelovgivningen kræver.',
+
+      s3Heading: '3. Hvem ellers ser det',
+      s3Intro: 'Vi bruger et lille antal databehandlere til at drive Tjenesten, hver bundet af sine egne databehandlingsvilkår:',
+      s3Item1Strong: 'Google (Firebase / Google Cloud)',
+      s3Item1Rest: ' — hoster databasen, appen, og sender push-notifikationer og login-e-mails.',
+      s3Item2Strong: 'Stripe',
+      s3Item2Rest: ' — behandler betalinger for det betalte abonnement. Stripe modtager og gemmer dine betalingsoplysninger direkte; det gør vi ikke.',
+      s3Item3Strong: 'Resend',
+      s3Item3Rest: ' — sender de e-mailnotifikationer, du bad om (en statusopdatering, en kvittering).',
+      s3Item4Strong: 'OpenCage',
+      s3Item4Rest: ' — omdanner en Butiks adresse til kortkoordinater, når den oprettes eller redigeres. Kun adresseteksten sendes; ingen kundedata.',
+      s3Body1: 'Nogle af disse behandler data uden for Det Europæiske Økonomiske Samarbejdsområde. Hvor det sker, er det under en mekanisme, loven anerkender for den overførsel, såsom EU’s standardkontraktbestemmelser.',
+      s3Body2: 'En Butiks personale kan se de offentlige detaljer for billetter i deres egen kø — en kundes valgte visningsnavn og plads i køen, aldrig en anden Butiks data og aldrig en kundes e-mail eller telefon, medmindre kunden kontakter dem direkte.',
+
+      s4Heading: '4. Hvor længe vi opbevarer det',
+      s4Body: 'En billets offentlige detaljer opbevares, så længe det er nødvendigt for at drive køen og i en begrænset periode derefter til Butikkens eget register over, hvem den betjente, og slettes derefter. Kontaktoplysninger (e-mail, telefon) opbevares kun, så længe den billet, der brugte dem, eksisterer. En Butiks egen konto og dens køer opbevares, indtil Butikken lukkes eller slettes, af dens ejer eller, hvor disse vilkår tillader det, af os.',
+
+      s5Heading: '5. Dine rettigheder',
+      s5BodyBefore: 'Hvis du er i EU/EØS, giver GDPR dig ret til at få adgang til, rette, slette eller eksportere de personoplysninger, vi opbevarer om dig, og til at gøre indsigelse mod eller begrænse nogle anvendelser af dem. For at udøve nogen af disse, send en e-mail til ',
+      s5BodyMiddle: '. Du kan også klage til din nationale databeskyttelsesmyndighed — i Danmark, ',
+      s5DatatilsynetLink: 'Datatilsynet',
+      s5BodyAfter: '.',
+
+      s6Heading: '6. Sikkerhed',
+      s6Body: 'Adgang til en billets kontaktoplysninger er begrænset til den Butik, der betjener den, og den kunde, der har den; en genoptagelseskode, ikke et almindeligt id, er det, der beviser den besiddelse. Al trafik til Tjenesten er krypteret under overførsel. Intet system er fuldstændig sikkert, og vi kan ikke garantere absolut sikkerhed for de oplysninger, du angiver.',
+
+      s7Heading: '7. Børn',
+      s7Body: 'Tjenesten er ikke rettet mod børn, og vi indsamler ikke bevidst personoplysninger fra et barn under den alder, dansk/EU-lovgivning fastsætter for samtykke til en informationssamfundstjeneste uden en forælders godkendelse.',
+
+      s8Heading: '8. Ændringer af denne politik',
+      s8Body: 'Vi kan opdatere denne politik, efterhånden som Tjenesten ændrer sig. Vi vil offentliggøre den opdaterede version her med en ny dato.',
+    },
+  },
 };
