@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
@@ -9,16 +9,9 @@ import {
   reinstateShop,
   suspendShop,
 } from '../../lib/functions.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import { DeleteShopDialog } from '../shop/components/DeleteShopDialog.js';
-import type { QueueStatus } from '../../types/index.js';
-
-const STATUS_LABELS: Record<QueueStatus, string> = {
-  open: 'Open',
-  drainMode: 'Closing — walk-ins only',
-  paused: 'Paused',
-  unavailable: 'Offline',
-  closed: 'Closed',
-};
 
 /**
  * One shop, fully in an admin's hands: edit its settings, suspend or
@@ -26,6 +19,7 @@ const STATUS_LABELS: Record<QueueStatus, string> = {
  * queues to edit them or open their live monitor.
  */
 export function AdminShopDetail() {
+  const { t, tn } = useT();
   const { shopId = '' } = useParams();
   const navigate = useNavigate();
   const shop = useDoc(shopId ? shopDoc(shopId) : null);
@@ -39,9 +33,9 @@ export function AdminShopDetail() {
   const [shopSaved, setShopSaved] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
-  if (shop.loading) return <p className="panel">Loading…</p>;
+  if (shop.loading) return <p className="panel">{t('common.loading')}</p>;
   const s = shop.data;
-  if (!s) return <p className="panel">This shop no longer exists.</p>;
+  if (!s) return <p className="panel">{t('shopQueues.shopGone')}</p>;
 
   const suspended = s.suspended;
   function toggleSuspension() {
@@ -80,9 +74,9 @@ export function AdminShopDetail() {
   return (
     <main className="panel">
       <p>
-        <Link className="link" to="/admin">
-          ← All shops
-        </Link>
+        <LocalizedLink className="link" to="/admin">
+          {t('admin.shopDetail.allShops')}
+        </LocalizedLink>
       </p>
 
       <header className="serving-header">
@@ -92,15 +86,15 @@ export function AdminShopDetail() {
             solid fill the badge set has (drainMode's), not the stop colour a
             queue-status badge would otherwise reach for. */}
         <span className={`badge${s.plan === 'paid' ? ' status-drainMode' : ''}`}>
-          {s.plan}
+          {t(`admin.planLabel.${s.plan}`)}
         </span>
-        {s.suspended && <span className="badge status-closed">Suspended</span>}
+        {s.suspended && <span className="badge status-closed">{t('admin.shopList.suspended')}</span>}
       </header>
-      <p className="muted">Owner: {s.ownerUid}</p>
+      <p className="muted">{t('admin.shopDetail.owner', { uid: s.ownerUid })}</p>
 
       <div className="row tight">
         <button type="button" disabled={busy} onClick={toggleSuspension}>
-          {s.suspended ? 'Reinstate shop' : 'Suspend shop'}
+          {s.suspended ? t('admin.shopDetail.reinstate') : t('admin.shopDetail.suspend')}
         </button>
         <button
           type="button"
@@ -108,20 +102,14 @@ export function AdminShopDetail() {
           disabled={busy}
           onClick={() => setShowDelete(true)}
         >
-          Delete shop
+          {t('admin.shopDetail.delete')}
         </button>
       </div>
-      {s.suspended && (
-        <p className="hint">
-          Every queue below is hidden from discovery and refusing new
-          joiners, whatever its own status says. Staff can still serve
-          anyone already waiting.
-        </p>
-      )}
+      {s.suspended && <p className="hint">{t('admin.shopDetail.suspendedHint')}</p>}
 
-      <h2>Edit shop</h2>
+      <h2>{t('admin.shopDetail.editShop')}</h2>
       <form onSubmit={onSaveShop} className="stack">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name">{t('admin.shopDetail.nameLabel')}</label>
         <input id="name" name="name" defaultValue={s.name} required />
 
         <label className="row tight">
@@ -130,19 +118,19 @@ export function AdminShopDetail() {
             name="exclusiveQueues"
             defaultChecked={s.exclusiveQueues}
           />
-          One ticket per customer across all of this shop&rsquo;s queues
+          {t('admin.shopDetail.exclusiveLabel')}
         </label>
 
-        <label htmlFor="hours">Hours (optional)</label>
+        <label htmlFor="hours">{t('admin.shopDetail.hoursLabel')}</label>
         <input id="hours" name="hours" defaultValue={s.profile?.hours ?? ''} />
 
-        <label htmlFor="phone">Phone (optional)</label>
+        <label htmlFor="phone">{t('admin.shopDetail.phoneLabel')}</label>
         <input id="phone" name="phone" defaultValue={s.profile?.phone ?? ''} />
 
-        <label htmlFor="logo">Logo URL (optional)</label>
+        <label htmlFor="logo">{t('admin.shopDetail.logoLabel')}</label>
         <input id="logo" name="logo" defaultValue={s.profile?.logo ?? ''} />
 
-        <label htmlFor="description">Description (optional)</label>
+        <label htmlFor="description">{t('admin.shopDetail.descriptionLabel')}</label>
         <textarea
           id="description"
           name="description"
@@ -152,14 +140,14 @@ export function AdminShopDetail() {
 
         <div className="row">
           <button type="submit" disabled={busy}>
-            Save
+            {t('common.save')}
           </button>
         </div>
       </form>
 
       {shopSaved && (
         <p className="notice" role="status">
-          Shop saved.
+          {t('admin.shopDetail.shopSaved')}
         </p>
       )}
 
@@ -169,29 +157,27 @@ export function AdminShopDetail() {
         </p>
       )}
 
-      <h2>
-        {queuesList?.length ?? 0} {queuesList?.length === 1 ? 'queue' : 'queues'}
-      </h2>
-      {queuesLoading && <p>Loading…</p>}
+      <h2>{tn(queuesList?.length ?? 0, 'admin.shopDetail.queuesHeading')}</h2>
+      {queuesLoading && <p>{t('common.loading')}</p>}
       <ul className="queue-list">
         {queuesList?.map((q) => (
           <li key={q.id}>
             <div>
               <strong>{q.name}</strong>
               <span className={`badge status-${q.status}`}>
-                {STATUS_LABELS[q.status]}
+                {t(`shopQueueStatus.${q.status}`)}
               </span>
               <p className="muted">
-                {q.waitingCount} waiting · {q.address}
+                {t('admin.shopDetail.waitingAddress', { count: q.waitingCount, address: q.address })}
               </p>
             </div>
             <span className="row tight">
-              <Link className="link" to={`/admin/shops/${shopId}/q/${q.id}`}>
-                Edit
-              </Link>
-              <Link className="link" to={`/monitor?shop=${shopId}&queue=${q.id}`}>
-                Monitor
-              </Link>
+              <LocalizedLink className="link" to={`/admin/shops/${shopId}/q/${q.id}`}>
+                {t('admin.shopDetail.edit')}
+              </LocalizedLink>
+              <LocalizedLink className="link" to={`/monitor?shop=${shopId}&queue=${q.id}`}>
+                {t('admin.shopDetail.monitor')}
+              </LocalizedLink>
             </span>
           </li>
         ))}

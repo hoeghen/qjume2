@@ -390,5 +390,75 @@ export const en = {
       confirmLabel: 'Type the shop’s name to confirm',
       deletePermanently: 'Delete permanently',
     },
+
+    planLabel: {
+      free: 'Free',
+      paid: 'Paid',
+    },
+
+    gate: {
+      title: 'Platform admin',
+      mockNotice: 'This is the mock’s stand-in for the platform admin claim — nothing here is a real credential.',
+      continueAsAdmin: 'Continue as platform admin',
+      noAccess: 'This account doesn’t have platform admin access.',
+      signInPrompt: 'Sign in with the platform admin account to continue.',
+    },
+
+    shopList: {
+      title: 'Shops',
+      auditLog: 'Audit log',
+      signOut: 'Sign out',
+      searchAndFilter: 'Search and filter',
+      clearFilters: { one: 'Clear {count} filter', other: 'Clear {count} filters' },
+      noMatch: 'No shop matches these filters.',
+      noShops: 'No shops yet.',
+      suspended: 'Suspended',
+      owner: 'Owner: {uid}',
+      manage: 'Manage',
+    },
+
+    filters: {
+      searchLabel: 'Search shops by name',
+      searchPlaceholder: 'Search by name',
+      plan: 'Plan',
+      all: 'All',
+      free: 'Free',
+      paid: 'Paid',
+      status: 'Status',
+      active: 'Active',
+      suspended: 'Suspended',
+    },
+
+    shopDetail: {
+      allShops: '← All shops',
+      owner: 'Owner: {uid}',
+      reinstate: 'Reinstate shop',
+      suspend: 'Suspend shop',
+      delete: 'Delete shop',
+      suspendedHint: 'Every queue below is hidden from discovery and refusing new joiners, whatever its own status says. Staff can still serve anyone already waiting.',
+      editShop: 'Edit shop',
+      nameLabel: 'Name',
+      exclusiveLabel: 'One ticket per customer across all of this shop’s queues',
+      hoursLabel: 'Hours (optional)',
+      phoneLabel: 'Phone (optional)',
+      logoLabel: 'Logo URL (optional)',
+      descriptionLabel: 'Description (optional)',
+      shopSaved: 'Shop saved.',
+      queuesHeading: { one: '{count} queue', other: '{count} queues' },
+      waitingAddress: '{count} waiting · {address}',
+      edit: 'Edit',
+      monitor: 'Monitor',
+    },
+
+    auditLog: {
+      title: 'Admin activity',
+      nothingLogged: 'Nothing logged yet.',
+      changed: 'Changed: {fields}',
+      shop: 'Shop',
+    },
+
+    buildInfo: {
+      aliveFor: ' · alive for {duration}',
+    },
   },
 };

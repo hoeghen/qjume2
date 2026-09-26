@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { allShops } from '../../lib/firestore/queries.js';
 import { signOut } from '../../lib/auth.js';
+import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 import {
   ADMIN_FILTER_DEFAULTS,
   AdminFilters,
@@ -20,6 +21,7 @@ import {
  * problem to have, and not one this needs to anticipate before it exists.
  */
 export function AdminShopList() {
+  const { t, tn } = useT();
   const { data: shops, loading } = useCollection(allShops(), 'admin/shops');
   const [filters, setFilters] = useState<AdminShopFilterState>(
     ADMIN_FILTER_DEFAULTS,
@@ -40,13 +42,13 @@ export function AdminShopList() {
   return (
     <main className="panel">
       <header className="serving-header">
-        <h1>Shops</h1>
+        <h1>{t('admin.shopList.title')}</h1>
         <span className="row tight">
-          <Link className="link" to="/admin/log">
-            Audit log
-          </Link>
+          <LocalizedLink className="link" to="/admin/log">
+            {t('admin.shopList.auditLog')}
+          </LocalizedLink>
           <button type="button" className="link" onClick={() => void signOut()}>
-            Sign out
+            {t('admin.shopList.signOut')}
           </button>
         </span>
       </header>
@@ -59,7 +61,7 @@ export function AdminShopList() {
           aria-controls="shop-filters"
           onClick={() => setShowFilters((open) => !open)}
         >
-          Search and filter
+          {t('admin.shopList.searchAndFilter')}
           {activeFilters > 0 && (
             <span className="filter-count" aria-hidden="true">
               {activeFilters}
@@ -72,7 +74,7 @@ export function AdminShopList() {
             className="link"
             onClick={() => setFilters(ADMIN_FILTER_DEFAULTS)}
           >
-            Clear {activeFilters} filter{activeFilters > 1 ? 's' : ''}
+            {tn(activeFilters, 'admin.shopList.clearFilters')}
           </button>
         )}
       </div>
@@ -84,10 +86,10 @@ export function AdminShopList() {
         onChange={setFilters}
       />
 
-      {loading && <p>Loading…</p>}
+      {loading && <p>{t('common.loading')}</p>}
       {!loading && filtered?.length === 0 && (
         <p className="muted">
-          {shops?.length ? 'No shop matches these filters.' : 'No shops yet.'}
+          {shops?.length ? t('admin.shopList.noMatch') : t('admin.shopList.noShops')}
         </p>
       )}
 
@@ -97,15 +99,17 @@ export function AdminShopList() {
             <div>
               <strong>{s.name}</strong>
               <span className={`badge${s.plan === 'paid' ? ' status-drainMode' : ''}`}>
-                {s.plan}
+                {t(`admin.planLabel.${s.plan}`)}
               </span>
-              {s.suspended && <span className="badge status-closed">Suspended</span>}
-              <p className="muted">Owner: {s.ownerUid}</p>
+              {s.suspended && (
+                <span className="badge status-closed">{t('admin.shopList.suspended')}</span>
+              )}
+              <p className="muted">{t('admin.shopList.owner', { uid: s.ownerUid })}</p>
             </div>
             <span className="row tight">
-              <Link className="button" to={`/admin/shops/${s.id}`}>
-                Manage
-              </Link>
+              <LocalizedLink className="button" to={`/admin/shops/${s.id}`}>
+                {t('admin.shopList.manage')}
+              </LocalizedLink>
             </span>
           </li>
         ))}

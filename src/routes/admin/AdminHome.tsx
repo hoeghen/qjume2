@@ -5,6 +5,7 @@ import { signInAsPlatformAdmin } from '../../lib/auth.js';
 import { messageOf } from '../../lib/functions.js';
 import { isMock } from '../../lib/mock/mode.js';
 import { BuildInfo } from '../../components/BuildInfo.js';
+import { useT } from '../../lib/i18n/LanguageContext.js';
 
 /**
  * Gate for everything under `/admin`.
@@ -18,22 +19,20 @@ import { BuildInfo } from '../../components/BuildInfo.js';
  * is no real credential to check.
  */
 export function AdminHome() {
+  const { t } = useT();
   const { user, loading, isPlatformAdmin } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (loading) return <p className="panel">Loading…</p>;
+  if (loading) return <p className="panel">{t('common.loading')}</p>;
 
   if (!isPlatformAdmin) {
     return (
       <main className="panel">
-        <h1>Platform admin</h1>
+        <h1>{t('admin.gate.title')}</h1>
         {isMock ? (
           <>
-            <p className="muted">
-              This is the mock&rsquo;s stand-in for the platform admin claim —
-              nothing here is a real credential.
-            </p>
+            <p className="muted">{t('admin.gate.mockNotice')}</p>
             <button
               type="button"
               disabled={busy}
@@ -45,14 +44,12 @@ export function AdminHome() {
                   .finally(() => setBusy(false));
               }}
             >
-              Continue as platform admin
+              {t('admin.gate.continueAsAdmin')}
             </button>
           </>
         ) : (
           <p className="muted">
-            {user
-              ? "This account doesn't have platform admin access."
-              : 'Sign in with the platform admin account to continue.'}
+            {user ? t('admin.gate.noAccess') : t('admin.gate.signInPrompt')}
           </p>
         )}
         {error && (

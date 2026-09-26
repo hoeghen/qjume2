@@ -386,5 +386,75 @@ export const da: DeepPartial<typeof en> = {
       confirmLabel: 'Skriv butikkens navn for at bekræfte',
       deletePermanently: 'Slet permanent',
     },
+
+    planLabel: {
+      free: 'Gratis',
+      paid: 'Betalt',
+    },
+
+    gate: {
+      title: 'Platformsadministrator',
+      mockNotice: 'Dette er mock-udgavens erstatning for platformsadministrator-krav — intet her er en rigtig legitimation.',
+      continueAsAdmin: 'Fortsæt som platformsadministrator',
+      noAccess: 'Denne konto har ikke platformsadministrator-adgang.',
+      signInPrompt: 'Log ind med platformsadministrator-kontoen for at fortsætte.',
+    },
+
+    shopList: {
+      title: 'Butikker',
+      auditLog: 'Aktivitetslog',
+      signOut: 'Log ud',
+      searchAndFilter: 'Søg og filtrer',
+      clearFilters: { one: 'Ryd {count} filter', other: 'Ryd {count} filtre' },
+      noMatch: 'Ingen butik matcher disse filtre.',
+      noShops: 'Ingen butikker endnu.',
+      suspended: 'Suspenderet',
+      owner: 'Ejer: {uid}',
+      manage: 'Administrer',
+    },
+
+    filters: {
+      searchLabel: 'Søg butikker efter navn',
+      searchPlaceholder: 'Søg efter navn',
+      plan: 'Abonnement',
+      all: 'Alle',
+      free: 'Gratis',
+      paid: 'Betalt',
+      status: 'Status',
+      active: 'Aktiv',
+      suspended: 'Suspenderet',
+    },
+
+    shopDetail: {
+      allShops: '← Alle butikker',
+      owner: 'Ejer: {uid}',
+      reinstate: 'Genindsæt butik',
+      suspend: 'Suspender butik',
+      delete: 'Slet butik',
+      suspendedHint: 'Hver kø nedenfor er skjult fra søgning og afviser nye deltagere, uanset hvad dens egen status siger. Personale kan stadig betjene alle, der allerede venter.',
+      editShop: 'Rediger butik',
+      nameLabel: 'Navn',
+      exclusiveLabel: 'Én billet per kunde på tværs af alle denne butiks køer',
+      hoursLabel: 'Åbningstider (valgfrit)',
+      phoneLabel: 'Telefon (valgfrit)',
+      logoLabel: 'Logo-URL (valgfrit)',
+      descriptionLabel: 'Beskrivelse (valgfrit)',
+      shopSaved: 'Butik gemt.',
+      queuesHeading: { one: '{count} kø', other: '{count} køer' },
+      waitingAddress: '{count} venter · {address}',
+      edit: 'Rediger',
+      monitor: 'Skærm',
+    },
+
+    auditLog: {
+      title: 'Administratoraktivitet',
+      nothingLogged: 'Intet logget endnu.',
+      changed: 'Ændret: {fields}',
+      shop: 'Butik',
+    },
+
+    buildInfo: {
+      aliveFor: ' · aktiv i {duration}',
+    },
   },
 };
