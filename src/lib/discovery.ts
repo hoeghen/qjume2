@@ -69,6 +69,14 @@ export interface Filters {
  * search starts small and widens only while it still needs results. Someone in
  * a dense city pays for the 10km ring; someone with nothing for a thousand
  * kilometres widens all the way and still gets an answer.
+ *
+ * This still tops out at 5000 km, which is not "everywhere": geohash bounding
+ * boxes stop being reliable at a global scale (confirmed against the live
+ * database - a query centred thousands of km away collapses to a single
+ * narrow geohash-prefix range and misses most of the planet, rather than
+ * widening to cover it). Anyone whose true nearest queue is farther than the
+ * last ring - a stale or IP-based location guess can easily be a continent
+ * off - falls through to `scanEverywhere` below instead of one more ring.
  */
 const SEARCH_RINGS_KM = [10, 50, 250, 1000, 5000];
 
@@ -111,7 +119,59 @@ export async function findNearest(
     found = await queryRing(center, radiusKm);
     if (found.length >= limit) break;
   }
+
+  // The rings above can under-cover a queue whose true distance is beyond the
+  // last one — not a rare edge case, since a stale or IP-based location guess
+  // can land a continent away from someone's actual nearest queue. Falling
+  // through to a plain scan (no geohash bound at all) is what actually
+  // delivers on "a count cannot produce an empty list when queues exist" in
+  // that case, at the cost of one extra read only when the rings came up
+  // short.
+  if (found.length < limit) {
+    const everywhere = await scanEverywhere(limit);
+    const byPath = new Map(found.map((q) => [`${q.shopId}/${q.id}`, q]));
+    for (const queue of everywhere) {
+      const key = `${queue.shopId}/${queue.id}`;
+      if (!byPath.has(key)) {
+        byPath.set(key, {
+          ...queue,
+          distanceKm: distanceBetween(
+            [queue.lat!, queue.lng!],
+            [center.lat, center.lng],
+          ),
+        });
+      }
+    }
+    found = [...byPath.values()];
+  }
+
   return byDistance(found).slice(0, limit);
+}
+
+/**
+ * Every queue, unbounded by any geohash range — the fallback `findNearest`
+ * reaches for once the widening rings still haven't found enough. Distances
+ * are computed by the caller, who has the real centre; this only fetches.
+ */
+async function scanEverywhere(limit: number): Promise<DiscoveredQueue[]> {
+  const snapshot = await getDocs(
+    query(
+      collectionGroup(db, 'queues').withConverter(queueConverter),
+      orderBy('geohash'),
+      fsLimit(limit),
+    ),
+  );
+
+  return snapshot.docs.flatMap((doc) => {
+    const queue = doc.data();
+    if (queue.lat === null || queue.lng === null) return [];
+    if (queue.shopSuspended) return [];
+    const shopId = doc.ref.parent.parent?.id;
+    if (!shopId) return [];
+    // distanceKm is a placeholder here - findNearest overwrites it with the
+    // real distance from its own centre once this returns.
+    return [{ ...queue, id: doc.id, shopId, distanceKm: 0 }];
+  });
 }
 
 function byDistance(queues: DiscoveredQueue[]): DiscoveredQueue[] {
