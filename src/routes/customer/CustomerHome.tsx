@@ -9,6 +9,7 @@ import {
 import { useGeolocation } from '../../lib/hooks/useGeolocation.js';
 import { messageOf } from '../../lib/functions.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
+import { Spinner } from '../../components/Spinner.js';
 import { Filters } from './components/Filters.js';
 import { QueueCard } from './components/QueueCard.js';
 
@@ -215,8 +216,21 @@ export function CustomerHome() {
         </p>
       )}
 
-      {locationStatus === 'locating' && !queues && <p>{t('discovery.finding')}</p>}
-      {loading && queues && <p className="muted">{t('discovery.updating')}</p>}
+      {/* Covers both waits that happen before there is anything to show: the
+          browser resolving (or refusing) a position, and the fetch that
+          follows once it has. Without the second half of this, a fetch in
+          flight against an already-settled location looked identical to one
+          that had silently stalled. */}
+      {!queues && (locationStatus === 'locating' || loading) && (
+        <p className="loading-row">
+          <Spinner /> {t('discovery.finding')}
+        </p>
+      )}
+      {loading && queues && (
+        <p className="loading-row muted">
+          <Spinner /> {t('discovery.updating')}
+        </p>
+      )}
 
       {queues && visible.length === 0 && !loading && (
         <p className="muted">

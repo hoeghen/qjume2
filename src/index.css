@@ -486,6 +486,19 @@ button.link.danger { color: var(--danger); }
   color: var(--ink);
 }
 
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.spinner { animation: spin 0.8s linear infinite; flex: none; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
+
 .queue-card-main { flex: 1 1 0; min-width: 0; }
 .queue-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .queue-card-title strong { font-size: 14.5px; font-weight: 700; }
