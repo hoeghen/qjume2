@@ -2,6 +2,7 @@ import {
   collectionGroup,
   endAt,
   getDocs,
+  limit as fsLimit,
   orderBy,
   query,
   startAt,
@@ -115,6 +116,49 @@ export async function findNearest(
 
 function byDistance(queues: DiscoveredQueue[]): DiscoveredQueue[] {
   return [...queues].sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
+/**
+ * Every queue, ordered by shop name, for when there is no position to search
+ * around at all — a denied or unavailable location prompt.
+ *
+ * `findNearest` cannot fall back to this on its own: `geohashQueryBounds`
+ * needs a centre to bound the query by, and without one there is nothing to
+ * widen from. This is a plain ordered scan instead, capped by count the same
+ * way `findNearest` is (CLAUDE.md: cut by count, never by distance).
+ *
+ * `distanceKm` is meaningless here and is never read — every caller checks
+ * for a location before showing it (`QueueCard`'s `showDistance` prop).
+ */
+export async function findAllByName(count: number): Promise<DiscoveredQueue[]> {
+  if (isMock) {
+    const named = mockStore
+      .listGroup<Queue>('queues')
+      .flatMap((queue) => {
+        if (queue.shopSuspended) return [];
+        const shopId = queue.path.split('/')[1];
+        if (!shopId) return [];
+        return [{ ...queue, shopId, distanceKm: 0 }];
+      })
+      .sort((a, b) => a.shopName.localeCompare(b.shopName));
+    return named.slice(0, count);
+  }
+
+  const snapshot = await getDocs(
+    query(
+      collectionGroup(db, 'queues').withConverter(queueConverter),
+      orderBy('shopName'),
+      fsLimit(count),
+    ),
+  );
+
+  return snapshot.docs.flatMap((doc) => {
+    const queue = doc.data();
+    if (queue.shopSuspended) return [];
+    const shopId = doc.ref.parent.parent?.id;
+    if (!shopId) return [];
+    return [{ ...queue, id: doc.id, shopId, distanceKm: 0 }];
+  });
 }
 
 async function queryRing(
