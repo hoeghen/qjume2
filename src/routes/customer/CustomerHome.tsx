@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   applyFilters,
+  findAllByName,
   findNearest,
   type DiscoveredQueue,
   type Filters as FilterState,
@@ -74,13 +75,39 @@ export function CustomerHome() {
 
   // Only the radius round-trips to Firestore. Category, status, sort and search
   // are applied to the results already in hand.
+  //
+  // Without a position there is nothing for `findNearest` to search around —
+  // `geohashQueryBounds` needs a centre to bound the query by, and there is no
+  // fallback centre that wouldn't be an invented distance. So a denied or
+  // unavailable prompt gets a different query entirely: every queue, ordered
+  // by name, the same "cut by count, never by distance" cap as the nearby
+  // search. Only fires once the browser has actually settled on a refusal,
+  // not while it is still `locating` — a real position might still arrive.
   useEffect(() => {
-    if (!coords) return;
-    let cancelled = false;
+    if (coords) {
+      let cancelled = false;
+      setLoading(true);
+      setError(null);
+      findNearest(coords, WORKING_SET)
+        .then((found) => {
+          if (!cancelled) setQueues(found);
+        })
+        .catch((e: unknown) => {
+          if (!cancelled) setError(messageOf(e));
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
 
+    if (!noLocationPossible) return;
+    let cancelled = false;
     setLoading(true);
     setError(null);
-    findNearest(coords, WORKING_SET)
+    findAllByName(WORKING_SET)
       .then((found) => {
         if (!cancelled) setQueues(found);
       })
@@ -90,11 +117,10 @@ export function CustomerHome() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
-  }, [coords]);
+  }, [coords, noLocationPossible]);
 
   // The list is always in distance order. Name is the fallback for when the
   // browser has actually refused or cannot answer — without a position there
@@ -207,10 +233,14 @@ export function CustomerHome() {
       </ul>
 
       {/* A cap with no way past it is a dead end, so the rest stay one tap
-          away rather than being unreachable. */}
+          away rather than being unreachable. "Closest" only means something
+          once there is a position to measure from — without one the list is
+          ordered by name, so the cap talks about "the first N" instead. */}
       {beyond > 0 && (
         <p className="list-note">
-          {t('discovery.showingClosest', { n: NEAREST })}{' '}
+          {hasLocation
+            ? t('discovery.showingClosest', { n: NEAREST })
+            : t('discovery.showingFirst', { n: NEAREST })}{' '}
           <button type="button" className="link" onClick={() => setShowAll(true)}>
             {t('discovery.showAll', { n: visible.length })}
           </button>
@@ -220,7 +250,9 @@ export function CustomerHome() {
         <p className="list-note">
           {t('discovery.showingAll', { n: visible.length })}{' '}
           <button type="button" className="link" onClick={() => setShowAll(false)}>
-            {t('discovery.showFewer', { n: NEAREST })}
+            {hasLocation
+              ? t('discovery.showFewer', { n: NEAREST })
+              : t('discovery.showFirst', { n: NEAREST })}
           </button>
         </p>
       )}
