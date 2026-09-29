@@ -4,6 +4,7 @@ import { queueDoc } from '../../lib/firestore/paths.js';
 import { servingTickets, stationsOf, waitingTickets } from '../../lib/firestore/queries.js';
 import { JoinQr } from '../../components/JoinQr.js';
 import { counterJoinUrl } from '../../lib/url.js';
+import { formatWaitCompact } from '../../lib/format.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import type { QueueStatus } from '../../types/index.js';
 
@@ -83,10 +84,19 @@ export function MonitorHome() {
   const status = queue.data.status;
   const scannable = SCANNABLE.includes(status);
   const closedReasonKey = CLOSED_TO_JOINERS_KEYS[status];
+  // The owner's own estimate until enough real completions replace it —
+  // the same fallback TicketView uses for a customer's personal wait.
+  const serviceTime =
+    queue.data.observedServiceTimeSeconds ?? queue.data.avgServiceTimeSeconds;
 
   return (
     <main className="monitor screen">
       <h1>{queue.data.name || queue.data.shopName}</h1>
+      <p className="monitor-stats">
+        {t('monitor.waitingCount', { count: queue.data.waitingCount })}
+        {' · '}
+        {t('monitor.avgServiceTime', { time: formatWaitCompact(serviceTime, t) })}
+      </p>
 
       <div className="monitor-split">
         <div className="monitor-live">

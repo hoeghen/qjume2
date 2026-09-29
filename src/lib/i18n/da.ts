@@ -182,6 +182,8 @@ export const da: DeepPartial<typeof en> = {
     helpBefore: 'Åbn denne med en kø, for eksempel ',
     helpAfter: '. Knappen "Vis QR" på betjeningsskærmen har id’erne.',
     notFound: 'Køen blev ikke fundet.',
+    waitingCount: '{count} venter',
+    avgServiceTime: 'Gns. ekspeditionstid {time}',
     nowServing: 'Betjener nu',
     nobodyServed: 'Der bliver ikke betjent nogen lige nu.',
     comingUp: 'På vej',
