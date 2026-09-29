@@ -62,3 +62,17 @@ export async function suggestAddresses(
   if (!trimmed) return [];
   return provider.suggest(trimmed);
 }
+
+/**
+ * The address at a coordinate, for filling the address field from the
+ * device's own location. No geohash, same reasoning as `suggestAddresses`:
+ * `geocodeAddress` runs again on whatever text this leaves the owner with at
+ * save time, so this is never stored on its own.
+ */
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+  provider: GeocodingProvider = providerFromEnv(),
+): Promise<GeocodeResult | null> {
+  return provider.reverseGeocode(lat, lng);
+}

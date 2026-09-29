@@ -428,6 +428,13 @@ export const mockApi = {
     return { suggestions: [] as { formatted: string; lat: number; lng: number }[] };
   },
 
+  reverseGeocode(_input: { lat: number; lng: number }) {
+    // Same honesty as suggestAddresses above: reverse geocoding a coordinate
+    // into a real street address needs the same API key the mock has none
+    // of, and there is no fake address that wouldn't mislead the owner.
+    throw new MockError('Could not find an address for that location.');
+  },
+
   createQueue(input: {
     shopId: string;
     name: string;

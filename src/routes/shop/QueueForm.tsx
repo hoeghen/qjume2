@@ -38,6 +38,7 @@ export function QueueForm({
   admin = false,
   onDone,
   soleQueue,
+  suggestedAddress,
 }: {
   shopId: string;
   paid: boolean;
@@ -51,6 +52,12 @@ export function QueueForm({
    * queues apart, so it is only required once there is a second one.
    */
   soleQueue: boolean;
+  /**
+   * A sibling queue's address, to default a *new* queue's address field to —
+   * most queues at one shop share a location. Never used once editing an
+   * existing queue, which already has its own address to show.
+   */
+  suggestedAddress?: string;
 }) {
   const { t } = useT();
   const { queueId } = useParams();
@@ -140,7 +147,12 @@ export function QueueForm({
         {soleQueue && <p className="hint">{t('shop.queueForm.nameOptionalHint')}</p>}
 
         <label htmlFor="address">{t('shop.queueForm.addressLabel')}</label>
-        <AddressField id="address" name="address" defaultValue={q?.address ?? ''} required />
+        <AddressField
+          id="address"
+          name="address"
+          defaultValue={q?.address ?? suggestedAddress ?? ''}
+          required
+        />
         <p className="hint">{t('shop.queueForm.addressHint')}</p>
 
         <label htmlFor="category">{t('shop.queueForm.categoryLabel')}</label>

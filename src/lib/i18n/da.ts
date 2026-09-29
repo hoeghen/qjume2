@@ -54,6 +54,13 @@ export const da: DeepPartial<typeof en> = {
     hoursMinutesCompact: '{hours} t {minutes} min',
   },
 
+  addressField: {
+    useLocation: 'Brug min placering',
+    locating: 'Finder placering…',
+    unavailable: 'Denne browser kan ikke dele en placering.',
+    denied: 'Kunne ikke finde din placering.',
+  },
+
   splash: {
     lede: 'Se ventetiden, inden du tager af sted. Tilslut dig en kø hvor som helst — ingen login nødvendig.',
     join: 'Tilslut dig en kø',

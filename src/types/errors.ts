@@ -24,4 +24,5 @@ export type QueueErrorReason =
   | 'downgrade-blocked'
   | 'not-shop-staff'
   | 'free-tier-staff-limit'
-  | 'not-platform-admin';
+  | 'not-platform-admin'
+  | 'address-not-found';

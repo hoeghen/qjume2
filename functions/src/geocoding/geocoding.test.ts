@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   geocodeAddress,
   providerFromEnv,
+  reverseGeocode,
   stubProvider,
   suggestAddresses,
 } from './index.js';
@@ -91,6 +92,13 @@ describe('suggestAddresses', () => {
   });
 });
 
+describe('reverseGeocode', () => {
+  it('returns a placeholder built from the coordinates themselves', async () => {
+    const result = await reverseGeocode(51.5, -0.12, stubProvider);
+    expect(result).toEqual({ lat: 51.5, lng: -0.12, formatted: '51.5000, -0.1200' });
+  });
+});
+
 describe('openCage provider', () => {
   it('reads coordinates out of a result', async () => {
     const fetchMock = async () =>
@@ -171,6 +179,48 @@ describe('openCage provider', () => {
     try {
       const results = await openCageProvider('key').suggest('1 Test St');
       expect(results).toEqual([{ lat: 51.5, lng: -0.12, formatted: '1 Test St, London' }]);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it('reverseGeocode queries by coordinates and reads back a formatted address', async () => {
+    let requestedUrl = '';
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL) => {
+      requestedUrl = String(url);
+      return new Response(
+        JSON.stringify({
+          results: [
+            { geometry: { lat: 51.5, lng: -0.12 }, formatted: '1 Test St, London' },
+          ],
+        }),
+        { status: 200 },
+      );
+    }) as typeof fetch;
+    try {
+      const result = await openCageProvider('key').reverseGeocode(51.5, -0.12);
+      expect(result).toEqual({
+        lat: 51.5,
+        lng: -0.12,
+        formatted: '1 Test St, London',
+      });
+      expect(requestedUrl).toContain('q=51.5%2C-0.12');
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it('reverseGeocode returns null when nothing matches', async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ results: [] }), {
+        status: 200,
+      })) as typeof fetch;
+    try {
+      expect(
+        await openCageProvider('key').reverseGeocode(0, 0),
+      ).toBeNull();
     } finally {
       globalThis.fetch = original;
     }
