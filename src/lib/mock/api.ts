@@ -159,6 +159,7 @@ function issueTicket(
     phone: null,
     fcmTokens: [],
     dispatchedMilestones: [],
+    dispatchedPositions: [],
   };
   mockStore.set(
     `${tPath(shopId, queueId, ticketId)}/private/contact`,

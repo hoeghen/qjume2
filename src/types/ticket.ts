@@ -18,6 +18,21 @@ export const NOTIFICATION_MILESTONES_MINUTES = [15, 10, 5, 1] as const;
 export type NotificationMilestone =
   (typeof NOTIFICATION_MILESTONES_MINUTES)[number];
 
+/**
+ * Position milestones, by how many people are still ahead rather than an
+ * estimate of minutes — 2 is "third in line", 1 is "second in line". A count
+ * cannot drift the way a service-time estimate can, so these land reliably
+ * right at the front regardless of how accurate the queue's average is.
+ * "Next" is deliberately not a third entry here: `waitMinutesFor` always
+ * returns 0 once nobody is ahead, so the existing minute milestone `1`
+ * already fires at exactly that moment — a separate position milestone for
+ * it would just be the same alert twice.
+ */
+export const NOTIFICATION_POSITIONS_AHEAD = [2, 1] as const;
+
+export type NotificationPositionMilestone =
+  (typeof NOTIFICATION_POSITIONS_AHEAD)[number];
+
 /** Three no-shows removes a ticket. Per ticket, per queue. Invariant 3. */
 export const NO_SHOW_REMOVAL_THRESHOLD = 3;
 
@@ -78,6 +93,9 @@ export interface TicketContact {
 
   /** Milestones already dispatched, so an advance cannot duplicate one. */
   dispatchedMilestones: NotificationMilestone[];
+  /** Position milestones already dispatched — tracked separately from the
+   *  minute-based ones above since the two are independent scales. */
+  dispatchedPositions: NotificationPositionMilestone[];
 }
 
 /** Document id of the private half, under a ticket's `private` subcollection. */

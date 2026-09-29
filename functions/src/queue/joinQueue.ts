@@ -177,6 +177,7 @@ export async function performJoinQueue(
         phone: phone?.trim() || null,
         fcmTokens: [],
         dispatchedMilestones: [],
+        dispatchedPositions: [],
       };
 
       tx.set(ticketRef, ticket);
