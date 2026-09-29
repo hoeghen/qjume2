@@ -65,7 +65,7 @@ describe('joinQueue', () => {
       displayName: 'Marta',
     });
 
-    expect(result.resumeCode).toMatch(/^[0-9A-HJKMNP-TV-Z]{6}$/);
+    expect(result.resumeCode).toMatch(/^([A-HJKMNP-TV-Z][0-9]){3}$/);
 
     // The code is a credential, so it is kept out of the publicly readable
     // half of the ticket entirely, and stored only as a hash.

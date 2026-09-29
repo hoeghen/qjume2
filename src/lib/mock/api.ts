@@ -64,12 +64,16 @@ function diffFields(
  * nobody to keep honest.
  */
 
-const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+// No I, L, O or U — see functions/src/queue/resumeCode.ts, which this
+// mirrors (that file's node:crypto import doesn't bundle for the browser).
+const LETTERS = 'ABCDEFGHJKMNPQRSTVWXYZ';
+const DIGITS = '0123456789';
 
 function mockResumeCode(): string {
   let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+  for (let i = 0; i < 3; i++) {
+    code += LETTERS[Math.floor(Math.random() * LETTERS.length)];
+    code += DIGITS[Math.floor(Math.random() * DIGITS.length)];
   }
   return code;
 }
