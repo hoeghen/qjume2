@@ -70,10 +70,10 @@ const LETTERS = 'ABCDEFGHJKMNPQRSTVWXYZ';
 const DIGITS = '0123456789';
 
 function mockResumeCode(): string {
-  return (
-    LETTERS[Math.floor(Math.random() * LETTERS.length)] +
-    DIGITS[Math.floor(Math.random() * DIGITS.length)]
-  );
+  let code = '';
+  code += LETTERS[Math.floor(Math.random() * LETTERS.length)];
+  code += DIGITS[Math.floor(Math.random() * DIGITS.length)];
+  return code;
 }
 
 class MockError extends Error {
