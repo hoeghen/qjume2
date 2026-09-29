@@ -88,7 +88,7 @@ export function QueueList({
 
           <button
             type="button"
-            className="danger"
+            className="link danger"
             onClick={() => setShowDelete(true)}
           >
             {t('shop.deleteShop.button')}
