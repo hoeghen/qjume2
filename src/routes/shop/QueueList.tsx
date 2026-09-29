@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
 import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
+import { DeleteShopDialog } from './components/DeleteShopDialog.js';
 
 export function QueueList({
   shopId,
@@ -16,6 +18,7 @@ export function QueueList({
     queuesOf(shopId),
     `${shopId}/queues`,
   );
+  const [showDelete, setShowDelete] = useState(false);
 
   return (
     <main className="panel">
@@ -73,6 +76,28 @@ export function QueueList({
       <LocalizedLink className="button" to="/shop/q/new">
         {t('shop.queueList.newQueue')}
       </LocalizedLink>
+
+      <button
+        type="button"
+        className="danger"
+        onClick={() => setShowDelete(true)}
+      >
+        {t('shop.deleteShop.button')}
+      </button>
+
+      {showDelete && (
+        <DeleteShopDialog
+          shopId={shopId}
+          shopName={shopName}
+          admin={false}
+          onClose={() => setShowDelete(false)}
+          onDeleted={() => {
+            // The shop is gone; ShopHome's own query re-fires and falls
+            // through to CreateShop once `shops` comes back empty, so there
+            // is nowhere else that still needs this shop's id to navigate to.
+          }}
+        />
+      )}
     </main>
   );
 }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { performCreateQueue } from './createQueue.js';
 import { performUpdateQueue } from './updateQueue.js';
 import { performDeleteQueue } from './deleteQueue.js';
+import { performDeleteShop } from './deleteShop.js';
 import { performClaimStation } from './claimStation.js';
 import { performCloseQueue } from './closeQueue.js';
 import { performAddWalkIn } from '../queue/addWalkIn.js';
@@ -533,6 +534,39 @@ describe('deleteQueue', () => {
     const shopId = await seedShop();
     await expect(
       performDeleteQueue(testDb, OWNER_UID, { shopId, queueId: 'nonexistent' }),
+    ).rejects.toThrow(/not found/i);
+  });
+});
+
+describe('deleteShop', () => {
+  it('removes the shop, its queues and everyone waiting in them', async () => {
+    const fx = await seedQueue();
+    await performJoinQueue(
+      testDb,
+      { uid: 'customer-1', isAnonymous: true },
+      { shopId: fx.shopId, queueId: fx.queueId, displayName: 'Waiting customer' },
+    );
+
+    await performDeleteShop(testDb, OWNER_UID, { shopId: fx.shopId });
+
+    const shopSnap = await testDb.doc(`shops/${fx.shopId}`).get();
+    expect(shopSnap.exists).toBe(false);
+    const queueSnap = await testDb
+      .doc(`shops/${fx.shopId}/queues/${fx.queueId}`)
+      .get();
+    expect(queueSnap.exists).toBe(false);
+  });
+
+  it('rejects a non-owner', async () => {
+    const shopId = await seedShop();
+    await expect(
+      performDeleteShop(testDb, 'someone-else', { shopId }),
+    ).rejects.toThrow(/shop owner/i);
+  });
+
+  it('rejects an unknown shop', async () => {
+    await expect(
+      performDeleteShop(testDb, OWNER_UID, { shopId: 'nonexistent' }),
     ).rejects.toThrow(/not found/i);
   });
 });

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { adminDeleteShop, messageOf } from '../../../lib/functions.js';
+import { adminDeleteShop, deleteShop, messageOf } from '../../../lib/functions.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
   shopId: string;
   shopName: string;
+  admin: boolean;
   onClose: () => void;
   onDeleted: () => void;
 }
@@ -12,10 +13,10 @@ interface Props {
 /**
  * Deleting a shop takes its queues, tickets and staff with it, and cannot be
  * undone. Typing the name back is the friction that makes this different
- * from every other confirm in the admin panel — a misclick here is not
- * recoverable the way a wrong suspend is.
+ * from every other confirm in either the owner's or the admin's screens — a
+ * misclick here is not recoverable the way a wrong suspend is.
  */
-export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props) {
+export function DeleteShopDialog({ shopId, shopName, admin, onClose, onDeleted }: Props) {
   const { t } = useT();
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
@@ -27,7 +28,8 @@ export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props
     setError(null);
     void (async () => {
       try {
-        await adminDeleteShop({ shopId });
+        const fn = admin ? adminDeleteShop : deleteShop;
+        await fn({ shopId });
         onDeleted();
       } catch (e) {
         setError(messageOf(e));
@@ -37,12 +39,12 @@ export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props
   }
 
   return (
-    <div className="dialog" role="dialog" aria-modal="true" aria-label={t('admin.deleteShop.ariaLabel')}>
+    <div className="dialog" role="dialog" aria-modal="true" aria-label={t('shop.deleteShop.ariaLabel')}>
       <div className="dialog-body">
-        <h2>{t('admin.deleteShop.title', { name: shopName })}</h2>
-        <p>{t('admin.deleteShop.body')}</p>
+        <h2>{t('shop.deleteShop.title', { name: shopName })}</h2>
+        <p>{t('shop.deleteShop.body')}</p>
 
-        <label htmlFor="confirm-name">{t('admin.deleteShop.confirmLabel')}</label>
+        <label htmlFor="confirm-name">{t('shop.deleteShop.confirmLabel')}</label>
         <input
           id="confirm-name"
           value={typed}
@@ -58,7 +60,7 @@ export function DeleteShopDialog({ shopId, shopName, onClose, onDeleted }: Props
             disabled={busy || !matches}
             onClick={run}
           >
-            {t('admin.deleteShop.deletePermanently')}
+            {t('shop.deleteShop.deletePermanently')}
           </button>
           <button type="button" className="secondary" onClick={onClose}>
             {t('common.cancel')}

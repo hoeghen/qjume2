@@ -273,6 +273,15 @@ export const da: DeepPartial<typeof en> = {
       deletePermanently: 'Slet permanent',
     },
 
+    deleteShop: {
+      button: 'Slet denne butik',
+      ariaLabel: 'Slet butik',
+      title: 'Slet {name}',
+      body: 'Fjerner denne butik permanent, alle dens køer, og alle der venter i dem. Der er ingen fortrydelse.',
+      confirmLabel: 'Skriv butikkens navn for at bekræfte',
+      deletePermanently: 'Slet permanent',
+    },
+
     serving: {
       queueNotFound: 'Køen blev ikke fundet.',
       noConnectionTitle: 'Ingen forbindelse',
@@ -391,14 +400,6 @@ export const da: DeepPartial<typeof en> = {
   },
 
   admin: {
-    deleteShop: {
-      ariaLabel: 'Slet butik',
-      title: 'Slet {name}',
-      body: 'Fjerner denne butik permanent, alle dens køer, og alle der venter i dem. Der er ingen fortrydelse.',
-      confirmLabel: 'Skriv butikkens navn for at bekræfte',
-      deletePermanently: 'Slet permanent',
-    },
-
     planLabel: {
       free: 'Gratis',
       paid: 'Betalt',
