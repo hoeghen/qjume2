@@ -307,12 +307,13 @@ export const da: DeepPartial<typeof en> = {
       openQueue: 'Åbn kø',
       close: 'Luk',
       showQr: 'Vis QR',
-      changePosition: 'Skift position',
+      changeStation: 'Skift station',
     },
 
     stationPicker: {
-      title: 'Hvilken position betjener du fra?',
-      openAnother: 'Åbn en anden position',
+      title: 'Hvilken station betjener du fra?',
+      openFirst: 'Åbn en station',
+      openAnother: 'Åbn en anden station',
     },
 
     walkIn: {
