@@ -60,7 +60,7 @@ export const en = {
   splash: {
     lede: 'See the wait before you go. Join any queue from anywhere — no login required.',
     join: 'Join a queue',
-    createLink: 'or create one for your business →',
+    createLink: 'I am a business',
   },
 
   discovery: {
