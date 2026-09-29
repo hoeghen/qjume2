@@ -6,6 +6,10 @@ functions/lib/
 .env
 .env.*
 !.env.example
+# functions/.env.<project-id> holds plain (non-secret) function config that
+# Firebase loads automatically at deploy time — see CLAUDE.md decision 10.
+# Real secrets never live here; those go through Secret Manager instead.
+!functions/.env.*
 .firebase/
 firebase-debug.log
 firestore-debug.log
