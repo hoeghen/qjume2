@@ -537,3 +537,40 @@ describe('staff records', () => {
     await assertSucceeds(updateDoc(doc(db, QUEUE), { status: 'paused' }));
   });
 });
+
+// The reverse index a staff member's own client reads to find out which shop
+// they staff at all — see StaffMembership's own comment for why a
+// collection-group query on shops/*/staff can't answer that question.
+describe('staff memberships', () => {
+  const MEMBERSHIP = 'staffMemberships/staff-uid';
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), MEMBERSHIP), { shopId: 'shop1' });
+    });
+  });
+
+  it('lets the named person read their own membership', async () => {
+    const db = env.authenticatedContext('staff-uid').firestore();
+    await assertSucceeds(getDoc(doc(db, MEMBERSHIP)));
+  });
+
+  it("refuses the shop's owner reading someone else's membership doc", async () => {
+    // Not what shows the owner their staff list — that is the per-shop
+    // shops/{shopId}/staff collection, already covered above.
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(getDoc(doc(db, MEMBERSHIP)));
+  });
+
+  it('refuses a stranger', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(getDoc(doc(db, MEMBERSHIP)));
+  });
+
+  it('refuses any client write, even by the person it names', async () => {
+    const db = env.authenticatedContext('staff-uid').firestore();
+    await assertFails(
+      setDoc(doc(db, MEMBERSHIP), { shopId: 'some-other-shop' }),
+    );
+  });
+});

@@ -8,6 +8,7 @@ import {
   type Queue,
   type Shop,
   type StaffMember,
+  type StaffMembership,
   type Station,
   type Ticket,
   type TicketContact,
@@ -560,7 +561,10 @@ export const mockApi = {
   },
 
   addStaff({ shopId, email }: { shopId: string; email: string }) {
-    const uid = mockId('staff');
+    // The mock has no account directory to look an email up against, unlike
+    // the real lookupUid — 'local-staff' is the one identity `signInAsStaff`
+    // can ever sign in as, so that's who any email resolves to here.
+    const uid = 'local-staff';
     const member: StaffMember = {
       email,
       addedAt: Date.now(),
@@ -570,11 +574,22 @@ export const mockApi = {
       `shops/${shopId}/staff/${uid}`,
       member as unknown as Record<string, unknown>,
     );
+    const membership: StaffMembership = { shopId };
+    mockStore.set(
+      `staffMemberships/${uid}`,
+      membership as unknown as Record<string, unknown>,
+    );
     return { uid };
   },
 
   removeStaff({ shopId, uid }: { shopId: string; uid: string }) {
     mockStore.delete(`shops/${shopId}/staff/${uid}`);
+    const membership = mockStore.get<StaffMembership>(
+      `staffMemberships/${uid}`,
+    );
+    if (membership?.shopId === shopId) {
+      mockStore.delete(`staffMemberships/${uid}`);
+    }
     return { ok: true } as const;
   },
 

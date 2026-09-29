@@ -13,6 +13,7 @@ import {
   queueConverter,
   shopConverter,
   staffConverter,
+  staffMembershipConverter,
   stationConverter,
   ticketConverter,
 } from './converters.js';
@@ -22,6 +23,7 @@ import type {
   Queue,
   Shop,
   StaffMember,
+  StaffMembership,
   Station,
   Ticket,
 } from '../../types/index.js';
@@ -54,6 +56,14 @@ export const shopDoc = (shopId: string): DocumentReference<Shop> =>
 export const staff = (shopId: string): CollectionReference<StaffMember> =>
   ref(`shops/${shopId}/staff`, () =>
     collection(db, 'shops', shopId, 'staff').withConverter(staffConverter),
+  );
+
+/** Reverse index: which shop, if any, this uid is staff at. */
+export const staffMembershipDoc = (
+  uid: string,
+): DocumentReference<StaffMembership> =>
+  ref(`staffMemberships/${uid}`, () =>
+    doc(db, 'staffMemberships', uid).withConverter(staffMembershipConverter),
   );
 
 export const queues = (shopId: string): CollectionReference<Queue> =>

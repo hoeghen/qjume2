@@ -214,6 +214,8 @@ export const da: DeepPartial<typeof en> = {
       and: ' og ',
       privacy: 'privatlivspolitik',
       period: '.',
+      mockStaffNotice: 'Tilføjet som ansat et sted? Mock-udgaven har ingen kontoliste at genkende din e-mail i — dette erstatter at logge ind som den konto.',
+      continueAsStaff: 'Fortsæt som ansat',
     },
 
     createShop: {

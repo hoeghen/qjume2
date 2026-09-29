@@ -9,6 +9,7 @@ import type {
   Queue,
   Shop,
   StaffMember,
+  StaffMembership,
   Station,
   Ticket,
 } from '../../types/index.js';
@@ -31,4 +32,5 @@ export const ticketConverter = converterFor<Ticket>();
 export const stationConverter = converterFor<Station>();
 export const customerConverter = converterFor<Customer>();
 export const staffConverter = converterFor<StaffMember>();
+export const staffMembershipConverter = converterFor<StaffMembership>();
 export const auditEntryConverter = converterFor<AdminAuditEntry>();
