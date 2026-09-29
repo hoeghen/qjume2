@@ -218,6 +218,8 @@ export const en = {
       and: ' and ',
       privacy: 'Privacy Policy',
       period: '.',
+      mockStaffNotice: 'Added as staff somewhere? The mock has no account directory to recognise your email by — this stands in for signing in as that account instead.',
+      continueAsStaff: 'Continue as staff',
     },
 
     createShop: {

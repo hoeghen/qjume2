@@ -29,7 +29,7 @@ const EMAIL_KEY = 'qjume:pending-email';
  * sets by hand on one account, so `/admin` has something to test against
  * without touching Firebase. See CLAUDE.md decision 9.
  */
-type Session = 'owner' | 'guest' | 'admin';
+type Session = 'owner' | 'guest' | 'admin' | 'staff';
 
 const LOCAL_USERS: Record<Session, User> = {
   owner: {
@@ -47,6 +47,18 @@ const LOCAL_USERS: Record<Session, User> = {
     email: 'admin@qjume.local',
     isAnonymous: false,
   } as unknown as User,
+  // On the real backend, staff sign in through the exact same email link as
+  // an owner — there is no separate flow, since which one you are comes from
+  // whether the resulting uid owns a shop or is listed in one's staff/{uid}.
+  // The mock's sendEmailLink always resolves to 'owner' (it has no account
+  // directory to look an address up against), so this stands in as its own
+  // identity instead, the same way local-admin stands in for the platformAdmin
+  // claim: chosen deliberately, entered by `signInAsStaff`, not discovered.
+  staff: {
+    uid: 'local-staff',
+    email: 'staff@example.com',
+    isAnonymous: false,
+  } as unknown as User,
 };
 
 /**
@@ -61,7 +73,10 @@ const SESSION_KEY = 'qjume:session';
 function readSession(): Session | null {
   try {
     const stored = window.localStorage.getItem(SESSION_KEY);
-    return stored === 'owner' || stored === 'guest' || stored === 'admin'
+    return stored === 'owner' ||
+      stored === 'guest' ||
+      stored === 'admin' ||
+      stored === 'staff'
       ? stored
       : null;
   } catch {
@@ -181,6 +196,23 @@ export async function signInAsPlatformAdmin(): Promise<void> {
     );
   }
   setLocalUser('admin');
+}
+
+/**
+ * Mock-only. On the real backend, becoming staff needs no separate sign-in —
+ * whoever the owner adds by email is staff the moment they next sign in
+ * through the normal email link, since access is decided by the resulting
+ * uid, not by how they signed in. The mock has nobody to look that email up
+ * against, so this is a deliberate stand-in identity instead, the same way
+ * `signInAsPlatformAdmin` stands in for the platformAdmin claim.
+ */
+export async function signInAsStaff(): Promise<void> {
+  if (!isMock) {
+    throw new Error(
+      'Staff sign in through the same email link as an owner; there is no separate flow for it here.',
+    );
+  }
+  setLocalUser('staff');
 }
 
 /**

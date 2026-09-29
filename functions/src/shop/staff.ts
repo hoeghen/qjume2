@@ -5,7 +5,7 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { requireOwnerAccess } from '../lib/access.js';
-import type { StaffMember } from '../../../src/types/index.js';
+import type { StaffMember, StaffMembership } from '../../../src/types/index.js';
 
 export interface AddStaffRequest {
   shopId: string;
@@ -73,7 +73,17 @@ export async function performAddStaff(
     addedAt: Date.now(),
     addedBy: callerUid,
   };
-  await firestore.doc(`shops/${shopId}/staff/${uid}`).set(member);
+  // Two writes: the per-shop record shopAccessFor checks, and a top-level
+  // reverse index (staffMemberships/{uid}) so the staff member's own client
+  // can find which shop that is at all — see StaffMembership's own comment
+  // for why a collection-group lookup can't do this. One membership per
+  // person, the same simplification shopsOwnedBy already makes for owners:
+  // being added somewhere new overwrites which shop they'll land on.
+  await firestore.runTransaction(async (tx) => {
+    tx.set(firestore.doc(`shops/${shopId}/staff/${uid}`), member);
+    const membership: StaffMembership = { shopId };
+    tx.set(firestore.doc(`staffMemberships/${uid}`), membership);
+  });
   return { uid };
 }
 
@@ -88,7 +98,18 @@ export async function performRemoveStaff(
   }
 
   await requireOwnerAccess(firestore, shopId, callerUid);
-  await firestore.doc(`shops/${shopId}/staff/${uid}`).delete();
+
+  const membershipRef = firestore.doc(`staffMemberships/${uid}`);
+  await firestore.runTransaction(async (tx) => {
+    // Reads before writes, as every Firestore transaction requires.
+    const membershipSnap = await tx.get(membershipRef);
+    const membership = membershipSnap.data() as StaffMembership | undefined;
+
+    tx.delete(firestore.doc(`shops/${shopId}/staff/${uid}`));
+    // Only clear the reverse index if it still points here — it may already
+    // point at a shop they were added to more recently.
+    if (membership?.shopId === shopId) tx.delete(membershipRef);
+  });
   return { ok: true } as const;
 }
 
