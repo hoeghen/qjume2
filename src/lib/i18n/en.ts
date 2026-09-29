@@ -311,12 +311,13 @@ export const en = {
       openQueue: 'Open queue',
       close: 'Close',
       showQr: 'Show QR',
-      changePosition: 'Change position',
+      changeStation: 'Change station',
     },
 
     stationPicker: {
-      title: 'Which position are you serving from?',
-      openAnother: 'Open another position',
+      title: 'Which station are you serving from?',
+      openFirst: 'Open a station',
+      openAnother: 'Open another station',
     },
 
     walkIn: {

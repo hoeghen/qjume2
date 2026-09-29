@@ -41,7 +41,13 @@ function recallStation(queueId: string): string | null {
   }
 }
 
-export function ServingScreen({ shopId }: { shopId: string }) {
+export function ServingScreen({
+  shopId,
+  paid,
+}: {
+  shopId: string;
+  paid: boolean;
+}) {
   const { t, tn } = useT();
   const { queueId = '' } = useParams();
   const [station, setStation] = useState<{ id: string; label: string } | null>(
@@ -107,6 +113,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         shopId={shopId}
         queueId={queueId}
         stationId={null}
+        paid={paid}
         onPick={onPick}
       />
     );
@@ -296,16 +303,18 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         >
           {t('shop.serving.showQr')}
         </button>
-        <button
-          type="button"
-          className="link"
-          onClick={() => {
-            rememberStation(queueId, null);
-            setStation(null);
-          }}
-        >
-          {t('shop.serving.changePosition')}
-        </button>
+        {paid && (
+          <button
+            type="button"
+            className="link"
+            onClick={() => {
+              rememberStation(queueId, null);
+              setStation(null);
+            }}
+          >
+            {t('shop.serving.changeStation')}
+          </button>
+        )}
       </footer>
 
       {showWalkIn && (
