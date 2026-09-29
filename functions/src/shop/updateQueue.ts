@@ -50,14 +50,14 @@ async function applyQueueUpdate(
   authorize: (shop: Shop) => void,
 ): Promise<{ before: Queue; result: UpdateQueueResult }> {
   const { shopId, queueId, category, maxSize, avgServiceTimeSeconds } = input;
-  const name = input.name?.trim();
+  const name = input.name?.trim() ?? '';
   const address = input.address?.trim();
 
-  if (!shopId || !queueId || !name || !address) {
+  if (!shopId || !queueId || !address) {
     throw fail(
       'invalid-argument',
       'queue-not-found',
-      'shopId, queueId, name and address are required.',
+      'shopId, queueId and address are required.',
     );
   }
   if (!QUEUE_CATEGORIES.includes(category)) {
@@ -109,6 +109,24 @@ async function applyQueueUpdate(
     const fresh = await tx.get(queueRef);
     if (!fresh.exists) {
       throw fail('not-found', 'queue-not-found', 'Queue not found.');
+    }
+
+    if (!name) {
+      // A name only tells two queues apart, so it is only required once
+      // there is a sibling to tell apart from. limit(2) is enough to know
+      // whether any queue besides this one exists without reading the
+      // whole collection.
+      const siblings = await tx.get(
+        queueRef.parent.limit(2),
+      );
+      const hasSibling = siblings.docs.some((doc) => doc.id !== queueId);
+      if (hasSibling) {
+        throw fail(
+          'invalid-argument',
+          'queue-not-found',
+          'Queue name is required once a shop has more than one queue.',
+        );
+      }
     }
 
     const update: Record<string, unknown> = {

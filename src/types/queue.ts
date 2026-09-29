@@ -38,6 +38,12 @@ export interface QueueSchedule {
 }
 
 export interface Queue {
+  /**
+   * Can be `''` — required by `createQueue`/`updateQueue` only once a shop
+   * has more than one queue, since a name only tells two queues apart.
+   * Every place this renders falls back to `shopName` or omits the line
+   * entirely, the same way a single-station queue hides its till label.
+   */
   name: string;
   /**
    * The owning shop's name, denormalised so a discovery list can render a card

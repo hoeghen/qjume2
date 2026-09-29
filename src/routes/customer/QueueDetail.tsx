@@ -72,7 +72,7 @@ export function QueueDetail() {
           {q.shopName}
         </LocalizedLink>
       </h1>
-      <p className="queue-name">{q.name}</p>
+      {q.name && <p className="queue-name">{q.name}</p>}
 
       {note && (
         <p className={`status-banner status-${q.status}`} role="status">

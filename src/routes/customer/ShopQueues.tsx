@@ -68,7 +68,7 @@ export function ShopQueues() {
                 <CategoryIcon category={q.category} />
                 <div className="queue-card-main">
                   <div className="queue-card-title">
-                    <strong>{q.name}</strong>
+                    {q.name && <strong>{q.name}</strong>}
                     {status && (
                       <span className={`badge status-${q.status}`}>
                         {status}

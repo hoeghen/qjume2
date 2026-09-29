@@ -98,7 +98,6 @@ describe('createQueue', () => {
     ['an unknown category', { category: 'nonsense' as never }],
     ['a zero max size', { maxSize: 0 }],
     ['a negative service time', { avgServiceTimeSeconds: -1 }],
-    ['a blank name', { name: '   ' }],
   ])('rejects %s', async (_label, override) => {
     const shopId = await seedShop();
     await expect(
@@ -108,6 +107,29 @@ describe('createQueue', () => {
         ...override,
       }),
     ).rejects.toThrow();
+  });
+
+  it('allows a blank name for a shop’s first queue', async () => {
+    const shopId = await seedShop();
+    const { queueId } = await performCreateQueue(testDb, OWNER_UID, {
+      shopId,
+      ...settings,
+      name: '   ',
+    });
+    const queue = await getQueue({ shopId, queueId });
+    expect(queue.name).toBe('');
+  });
+
+  it('rejects a blank name once the shop already has a queue', async () => {
+    const shopId = await seedShop('paid');
+    await performCreateQueue(testDb, OWNER_UID, { shopId, ...settings });
+    await expect(
+      performCreateQueue(testDb, OWNER_UID, {
+        shopId,
+        ...settings,
+        name: '   ',
+      }),
+    ).rejects.toThrow(/name is required/i);
   });
 });
 
@@ -450,5 +472,30 @@ describe('updateQueue', () => {
         ...settings,
       }),
     ).rejects.toThrow(/shop owner/i);
+  });
+
+  it('allows clearing the name of the shop’s only queue', async () => {
+    const { shopId, queueId } = await createdQueue();
+    await performUpdateQueue(testDb, OWNER_UID, {
+      shopId,
+      queueId,
+      ...settings,
+      name: '   ',
+    });
+    const after = await read(shopId, queueId);
+    expect(after.name).toBe('');
+  });
+
+  it('rejects a blank name once the shop has another queue', async () => {
+    const { shopId, queueId } = await createdQueue();
+    await performCreateQueue(testDb, OWNER_UID, { shopId, ...settings });
+    await expect(
+      performUpdateQueue(testDb, OWNER_UID, {
+        shopId,
+        queueId,
+        ...settings,
+        name: '   ',
+      }),
+    ).rejects.toThrow(/name is required/i);
   });
 });
