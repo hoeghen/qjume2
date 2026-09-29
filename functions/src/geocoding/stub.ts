@@ -33,4 +33,9 @@ export const stubProvider: GeocodingProvider = {
     const result = await stubProvider.geocode(partial);
     return result ? [result] : [];
   },
+  // No real reverse-geocoding without a network call; a coordinate string is
+  // an honest stand-in the owner can see is a placeholder and edit.
+  async reverseGeocode(lat: number, lng: number): Promise<GeocodeResult | null> {
+    return { lat, lng, formatted: `${lat.toFixed(4)}, ${lng.toFixed(4)}` };
+  },
 };

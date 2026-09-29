@@ -58,5 +58,16 @@ export function openCageProvider(apiKey: string): GeocodingProvider {
       }
       return results;
     },
+    // OpenCage's forward-geocode endpoint doubles as reverse geocoding when
+    // the query is coordinates rather than text — no separate endpoint.
+    async reverseGeocode(lat: number, lng: number): Promise<GeocodeResult | null> {
+      const body = await query(apiKey, `${lat},${lng}`, 1);
+      const first = body.results?.[0];
+      const foundLat = first?.geometry?.lat;
+      const foundLng = first?.geometry?.lng;
+      if (typeof foundLat !== 'number' || typeof foundLng !== 'number') return null;
+
+      return { lat: foundLat, lng: foundLng, formatted: first?.formatted ?? '' };
+    },
   };
 }

@@ -33,4 +33,11 @@ export interface GeocodingProvider {
    * relevance; callers show it as given.
    */
   suggest(query: string): Promise<GeocodeResult[]>;
+  /**
+   * The address at a coordinate — filling the address field from the
+   * device's own location, not looking one up by name. Like `suggest`, never
+   * stored on its own: `geocode` runs again on whatever text this leaves the
+   * owner with at save time.
+   */
+  reverseGeocode(lat: number, lng: number): Promise<GeocodeResult | null>;
 }

@@ -57,6 +57,13 @@ export const en = {
     hoursMinutesCompact: '{hours} hr {minutes} min',
   },
 
+  addressField: {
+    useLocation: 'Use my location',
+    locating: 'Locating…',
+    unavailable: 'This browser cannot share a location.',
+    denied: 'Could not get your location.',
+  },
+
   splash: {
     lede: 'See the wait before you go. Join any queue from anywhere — no login required.',
     join: 'Join a queue',

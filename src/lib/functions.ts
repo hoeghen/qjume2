@@ -147,6 +147,11 @@ export const suggestAddresses = callable<
   { suggestions: { formatted: string; lat: number; lng: number }[] }
 >('suggestAddresses');
 
+export const reverseGeocode = callable<
+  { lat: number; lng: number },
+  { formatted: string }
+>('reverseGeocode');
+
 export const claimStation = callable<
   { shopId: string; queueId: string; stationId?: string; label?: string },
   { stationId: string; label: string }

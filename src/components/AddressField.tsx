@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { suggestAddresses } from '../lib/functions.js';
+import { messageOf, reverseGeocode, suggestAddresses } from '../lib/functions.js';
+import { useT } from '../lib/i18n/LanguageContext.js';
 
 interface Suggestion {
   formatted: string;
@@ -34,10 +35,13 @@ export function AddressField({
   defaultValue?: string;
   required?: boolean;
 }) {
+  const { t } = useT();
   const [value, setValue] = useState(defaultValue ?? '');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState<string | null>(null);
   const latestQuery = useRef('');
 
   useEffect(() => {
@@ -74,6 +78,35 @@ export function AddressField({
     setSuggestions([]);
     setOpen(false);
     setActiveIndex(-1);
+  }
+
+  function useMyLocation() {
+    if (!('geolocation' in navigator)) {
+      setLocateError(t('addressField.unavailable'));
+      return;
+    }
+    setLocating(true);
+    setLocateError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        void reverseGeocode({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        })
+          .then(({ formatted }) => {
+            setValue(formatted);
+            setSuggestions([]);
+            setOpen(false);
+          })
+          .catch((e: unknown) => setLocateError(messageOf(e)))
+          .finally(() => setLocating(false));
+      },
+      () => {
+        setLocateError(t('addressField.denied'));
+        setLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 0 },
+    );
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -134,6 +167,15 @@ export function AddressField({
           ))}
         </ul>
       )}
+      <button
+        type="button"
+        className="link"
+        disabled={locating}
+        onClick={useMyLocation}
+      >
+        {locating ? t('addressField.locating') : t('addressField.useLocation')}
+      </button>
+      {locateError && <p className="error">{locateError}</p>}
     </div>
   );
 }
