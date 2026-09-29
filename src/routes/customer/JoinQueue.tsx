@@ -3,6 +3,7 @@ import { signInAsGuest } from '../../lib/auth.js';
 import { useAuth } from '../../lib/hooks/useAuth.js';
 import { joinQueue, messageOf } from '../../lib/functions.js';
 import { rememberTicket } from '../../lib/myTickets.js';
+import { recalledJoinDetails, rememberJoinDetails } from '../../lib/joinDetails.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 
 interface Props {
@@ -28,8 +29,9 @@ export function JoinQueue({
 }: Props) {
   const { t } = useT();
   const { user } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const recalled = recalledJoinDetails();
+  const [name, setName] = useState(recalled.name);
+  const [email, setEmail] = useState(recalled.email);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,6 +39,7 @@ export function JoinQueue({
     event.preventDefault();
     const displayName = name.trim();
     if (!displayName) return;
+    const trimmedEmail = email.trim();
 
     setBusy(true);
     setError(null);
@@ -49,10 +52,11 @@ export function JoinQueue({
           shopId,
           queueId,
           displayName,
-          ...(email.trim() ? { email: email.trim() } : {}),
+          ...(trimmedEmail ? { email: trimmedEmail } : {}),
           ...(atCounter ? { atCounter: true } : {}),
         });
         rememberTicket(shopId, queueId, result.ticketId);
+        rememberJoinDetails({ name: displayName, email: trimmedEmail });
         onJoined(result.ticketId, result.resumeCode);
       } catch (e) {
         setError(messageOf(e));
