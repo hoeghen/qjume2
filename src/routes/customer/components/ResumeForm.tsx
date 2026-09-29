@@ -56,8 +56,8 @@ export function ResumeForm({ shopId, queueId, onClaimed }: Props) {
         id="resume-code"
         value={code}
         onChange={(e) => setCode(e.target.value.toUpperCase())}
-        // Six characters, no ambiguous letters, so it survives being read out.
-        maxLength={6}
+        // One letter, one digit, no ambiguous letters.
+        maxLength={2}
         autoCapitalize="characters"
         autoComplete="off"
         spellCheck={false}

@@ -6,17 +6,20 @@ import { createHash, randomInt } from 'node:crypto';
  */
 const LETTERS = 'ABCDEFGHJKMNPQRSTVWXYZ';
 const DIGITS = '0123456789';
-const PAIR_COUNT = 3;
+const PAIR_COUNT = 1;
 
 /**
- * PRD 12.3 proposes six alphanumeric characters, scoped per queue. Drawn as
- * three letter-digit pairs (K3F9X2, not a character drawn from a single
- * mixed alphabet) — a fixed, guessable shape is a little easier to hold in
- * memory for the short while between joining and resuming than six
- * characters with no pattern to them at all. It costs some entropy (22³ ×
- * 10³ ≈ 10.6 million combinations, versus 32⁶ ≈ 1.1 billion for six
- * unconstrained characters), which is still far more than any one queue's
- * waiting list could plausibly be brute-forced across.
+ * PRD 12.3 proposes six alphanumeric characters, scoped per queue; shortened
+ * to one letter-digit pair (e.g. K3) on request, for maximum memorability.
+ *
+ * This is a deliberate, known trade-off, not an oversight: one pair is only
+ * 22 × 10 = 220 possible codes, and `claimTicket` (which looks a code up by
+ * hash) has no rate limiting — so any waiting ticket in a queue is
+ * realistically brute-forceable by a simple script trying all 220 codes.
+ * Claiming transfers the ticket, so a successful guess silently locks the
+ * real customer out of their own place in line. Revisit this (a rate limit
+ * on claimTicket, or more characters) if that turns out to matter in
+ * practice.
  */
 export function generateResumeCode(): string {
   let code = '';
