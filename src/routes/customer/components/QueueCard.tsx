@@ -39,10 +39,12 @@ export function QueueCard({
           </div>
           {/* Both names, and the queue's own carries weight: a pharmacy
               running prescriptions, vaccinations and collections is three
-              rows whose only difference is this line. */}
+              rows whose only difference is this line. Omitted entirely for
+              a shop's only queue, which was never given one to distinguish
+              it from a sibling that doesn't exist. */}
           <p className="queue-card-line">
-            <span className="queue-card-queue">{queue.name}</span>
-            <span className="muted"> · {queue.address}</span>
+            {queue.name && <span className="queue-card-queue">{queue.name}</span>}
+            <span className="muted">{queue.name ? ' · ' : ''}{queue.address}</span>
           </p>
         </div>
 

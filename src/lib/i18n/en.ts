@@ -243,6 +243,7 @@ export const en = {
       titleNew: 'New queue',
       titleSettings: 'Queue settings',
       nameLabel: 'Queue name',
+      nameOptionalHint: 'Optional while this is your only queue — a name only matters once there’s a second one to tell it apart from.',
       addressLabel: 'Address',
       addressHint: 'A fixed address, not your device’s location — this is what customers see and search by.',
       categoryLabel: 'Category',

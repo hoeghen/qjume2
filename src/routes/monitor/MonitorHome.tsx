@@ -86,7 +86,7 @@ export function MonitorHome() {
 
   return (
     <main className="monitor screen">
-      <h1>{queue.data.name}</h1>
+      <h1>{queue.data.name || queue.data.shopName}</h1>
 
       <div className="monitor-split">
         <div className="monitor-live">

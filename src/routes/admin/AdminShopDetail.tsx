@@ -163,7 +163,7 @@ export function AdminShopDetail() {
         {queuesList?.map((q) => (
           <li key={q.id}>
             <div>
-              <strong>{q.name}</strong>
+              {q.name && <strong>{q.name}</strong>}
               <span className={`badge status-${q.status}`}>
                 {t(`shopQueueStatus.${q.status}`)}
               </span>

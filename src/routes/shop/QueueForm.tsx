@@ -36,12 +36,20 @@ export function QueueForm({
   paid,
   admin = false,
   onDone,
+  soleQueue,
 }: {
   shopId: string;
   paid: boolean;
   admin?: boolean;
   /** Where "Save" and "Cancel" go. Defaults to the owner's `/shop`. */
   onDone?: () => void;
+  /**
+   * Whether saving this form leaves the shop with exactly one queue — the
+   * caller already has to fetch the shop's queues to know this, so it comes
+   * in as a prop rather than being refetched here. A name only tells two
+   * queues apart, so it is only required once there is a second one.
+   */
+  soleQueue: boolean;
 }) {
   const { t } = useT();
   const { queueId } = useParams();
@@ -126,7 +134,8 @@ export function QueueForm({
 
       <form onSubmit={onSubmit} className="stack">
         <label htmlFor="name">{t('shop.queueForm.nameLabel')}</label>
-        <input id="name" name="name" defaultValue={q?.name ?? ''} required />
+        <input id="name" name="name" defaultValue={q?.name ?? ''} required={!soleQueue} />
+        {soleQueue && <p className="hint">{t('shop.queueForm.nameOptionalHint')}</p>}
 
         <label htmlFor="address">{t('shop.queueForm.addressLabel')}</label>
         <AddressField id="address" name="address" defaultValue={q?.address ?? ''} required />

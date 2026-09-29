@@ -172,7 +172,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
 
       <header className="serving-header">
         <div>
-          <h1>{q.name}</h1>
+          <h1>{q.name || q.shopName}</h1>
           <p className="muted">
             {(manyTills && station.label) || t('shop.serving.servingLabel')} ·{' '}
             {t('shop.serving.waitingCount', { count: waitingNow })}
@@ -327,7 +327,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <QrDialog
           shopId={shopId}
           queueId={queueId}
-          queueName={q.name}
+          queueName={q.name || q.shopName}
           onClose={() => setShowQr(false)}
         />
       )}

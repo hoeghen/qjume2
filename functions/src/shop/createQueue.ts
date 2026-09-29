@@ -54,14 +54,14 @@ export async function performCreateQueue(
   const { shopId, name, address, category, maxSize, avgServiceTimeSeconds } =
     input;
 
-  const trimmedName = name?.trim();
+  const trimmedName = name?.trim() ?? '';
   const trimmedAddress = address?.trim();
 
-  if (!shopId || !trimmedName || !trimmedAddress) {
+  if (!shopId || !trimmedAddress) {
     throw fail(
       'invalid-argument',
       'queue-not-found',
-      'shopId, name and address are required.',
+      'shopId and address are required.',
     );
   }
   if (!QUEUE_CATEGORIES.includes(category)) {
@@ -107,17 +107,27 @@ export async function performCreateQueue(
       );
     }
 
-    if (shop.plan === 'free') {
-      const existing = await tx.get(
-        queuesRef.limit(FREE_TIER_LIMITS.maxQueues + 1),
+    // One fetch answers two questions: whether a free-tier shop is already
+    // at its limit, and whether this shop will have more than one queue
+    // once this one exists — a name only tells two queues apart, so it is
+    // only required once there is a second one to tell apart. limit(2) is
+    // enough for both: the free tier's own limit is 1.
+    const existingQueues = await tx.get(
+      queuesRef.limit(FREE_TIER_LIMITS.maxQueues + 1),
+    );
+    if (shop.plan === 'free' && existingQueues.size >= FREE_TIER_LIMITS.maxQueues) {
+      throw fail(
+        'resource-exhausted',
+        'free-tier-waiting-limit',
+        'The free plan includes one queue.',
       );
-      if (existing.size >= FREE_TIER_LIMITS.maxQueues) {
-        throw fail(
-          'resource-exhausted',
-          'free-tier-waiting-limit',
-          'The free plan includes one queue.',
-        );
-      }
+    }
+    if (existingQueues.size > 0 && !trimmedName) {
+      throw fail(
+        'invalid-argument',
+        'queue-not-found',
+        'Queue name is required once a shop has more than one queue.',
+      );
     }
 
     const queue: Queue = {

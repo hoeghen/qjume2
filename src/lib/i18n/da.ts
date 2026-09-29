@@ -239,6 +239,7 @@ export const da: DeepPartial<typeof en> = {
       titleNew: 'Ny kø',
       titleSettings: 'Køindstillinger',
       nameLabel: 'Kø-navn',
+      nameOptionalHint: 'Valgfrit, så længe dette er din eneste kø — et navn betyder først noget, når der er en anden at skelne den fra.',
       addressLabel: 'Adresse',
       addressHint: 'En fast adresse, ikke din enheds placering — det er den, kunder ser og søger efter.',
       categoryLabel: 'Kategori',

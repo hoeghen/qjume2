@@ -677,7 +677,7 @@ export const mockApi = {
         action: 'queue.update',
         shopId,
         queueId,
-        summary: `Edited ${existing.name} at ${existing.shopName}`,
+        summary: `Edited ${existing.name || existing.shopName} at ${existing.shopName}`,
         changes,
       });
     }
