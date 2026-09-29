@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { performCreateQueue } from './createQueue.js';
 import { performUpdateQueue } from './updateQueue.js';
+import { performDeleteQueue } from './deleteQueue.js';
 import { performClaimStation } from './claimStation.js';
 import { performCloseQueue } from './closeQueue.js';
 import { performAddWalkIn } from '../queue/addWalkIn.js';
@@ -497,5 +498,41 @@ describe('updateQueue', () => {
         name: '   ',
       }),
     ).rejects.toThrow(/name is required/i);
+  });
+});
+
+describe('deleteQueue', () => {
+  it('removes the queue and everyone waiting in it', async () => {
+    const fx = await seedQueue();
+    await performJoinQueue(
+      testDb,
+      { uid: 'customer-1', isAnonymous: true },
+      { shopId: fx.shopId, queueId: fx.queueId, displayName: 'Waiting customer' },
+    );
+
+    await performDeleteQueue(testDb, OWNER_UID, fx);
+
+    const queueSnap = await testDb
+      .doc(`shops/${fx.shopId}/queues/${fx.queueId}`)
+      .get();
+    expect(queueSnap.exists).toBe(false);
+    const tickets = await testDb
+      .collection(`shops/${fx.shopId}/queues/${fx.queueId}/tickets`)
+      .get();
+    expect(tickets.empty).toBe(true);
+  });
+
+  it('rejects a non-owner', async () => {
+    const fx = await seedQueue();
+    await expect(
+      performDeleteQueue(testDb, 'someone-else', fx),
+    ).rejects.toThrow(/shop owner/i);
+  });
+
+  it('rejects an unknown queue', async () => {
+    const shopId = await seedShop();
+    await expect(
+      performDeleteQueue(testDb, OWNER_UID, { shopId, queueId: 'nonexistent' }),
+    ).rejects.toThrow(/not found/i);
   });
 });

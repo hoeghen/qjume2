@@ -17,6 +17,7 @@ import {
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { AddressField } from '../../components/AddressField.js';
+import { DeleteQueueDialog } from './components/DeleteQueueDialog.js';
 
 const PENALTIES: NoShowPenalty[] = ['back', 'back3', 'back5'];
 
@@ -61,6 +62,7 @@ export function QueueForm({
   const [notice, setNotice] = useState<{ text: string; warn: boolean } | null>(
     null,
   );
+  const [showDelete, setShowDelete] = useState(false);
 
   if (queueId && existing.loading) return <p className="panel">{t('common.loading')}</p>;
 
@@ -220,6 +222,28 @@ export function QueueForm({
         <p className="error" role="alert">
           {error}
         </p>
+      )}
+
+      {queueId && q && (
+        <button
+          type="button"
+          className="danger"
+          disabled={busy}
+          onClick={() => setShowDelete(true)}
+        >
+          {t('shop.deleteQueue.button')}
+        </button>
+      )}
+
+      {showDelete && queueId && q && (
+        <DeleteQueueDialog
+          shopId={shopId}
+          queueId={queueId}
+          queueName={q.name || q.shopName}
+          admin={admin}
+          onClose={() => setShowDelete(false)}
+          onDeleted={done}
+        />
       )}
     </main>
   );

@@ -268,6 +268,15 @@ export const en = {
       noticeCreated: 'Queue created. {detail}',
     },
 
+    deleteQueue: {
+      button: 'Delete this queue',
+      ariaLabel: 'Delete queue',
+      title: 'Delete {name}',
+      body: 'Permanently removes this queue and everyone currently waiting in it. There is no undo.',
+      confirmLabel: 'Type the queue’s name to confirm',
+      deletePermanently: 'Delete permanently',
+    },
+
     serving: {
       queueNotFound: 'Queue not found.',
       noConnectionTitle: 'No connection',

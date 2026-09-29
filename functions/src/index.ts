@@ -22,6 +22,7 @@ export { registerPushToken } from './queue/registerPushToken.js';
  */
 export { createQueue } from './shop/createQueue.js';
 export { updateQueue } from './shop/updateQueue.js';
+export { deleteQueue } from './shop/deleteQueue.js';
 export { claimStation } from './shop/claimStation.js';
 export { closeQueue } from './shop/closeQueue.js';
 export { addStaff, removeStaff } from './shop/staff.js';
@@ -49,4 +50,5 @@ export { mirrorPresence } from './presence/mirror.js';
 export { suspendShop, reinstateShop } from './admin/suspendShop.js';
 export { adminUpdateShop } from './admin/updateShop.js';
 export { adminUpdateQueue } from './admin/updateQueue.js';
+export { adminDeleteQueue } from './admin/deleteQueue.js';
 export { adminDeleteShop } from './admin/deleteShop.js';

@@ -10,7 +10,8 @@ export type AdminAction =
   | 'shop.reinstate'
   | 'shop.update'
   | 'shop.delete'
-  | 'queue.update';
+  | 'queue.update'
+  | 'queue.delete';
 
 /** One field's value before and after an edit, for the entries that changed. */
 export interface AdminFieldChange {
