@@ -9,6 +9,7 @@ export type {
 export { QUEUE_CATEGORIES } from './queue.js';
 export type {
   NotificationMilestone,
+  NotificationPositionMilestone,
   Ticket,
   TicketContact,
   TicketState,
@@ -16,6 +17,7 @@ export type {
 export {
   NO_SHOW_REMOVAL_THRESHOLD,
   NOTIFICATION_MILESTONES_MINUTES,
+  NOTIFICATION_POSITIONS_AHEAD,
   TICKET_CONTACT_DOC,
 } from './ticket.js';
 export type { Station } from './station.js';

@@ -604,6 +604,7 @@ export function seedMockBackend(): void {
           phone: null,
           fcmTokens: [],
           dispatchedMilestones: [],
+          dispatchedPositions: [],
         };
         mockStore.set(
           `${queuePath}/tickets/${ticketId}/private/contact`,

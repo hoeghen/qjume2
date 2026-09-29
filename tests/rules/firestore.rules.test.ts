@@ -83,6 +83,7 @@ beforeEach(async () => {
       phone: null,
       fcmTokens: [],
       dispatchedMilestones: [],
+      dispatchedPositions: [],
     });
   });
 });

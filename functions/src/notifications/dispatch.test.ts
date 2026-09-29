@@ -142,6 +142,68 @@ describe('milestone alerts', () => {
   });
 });
 
+describe('position alerts', () => {
+  it('tells the third and second in line, by count rather than estimate', async () => {
+    const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
+    await join(fx, 1, 'one@example.com');
+    await join(fx, 2, 'two@example.com');
+    await join(fx, 3, 'three@example.com');
+    await join(fx, 4, 'four@example.com');
+    const station = await seedStation(fx, 'Till 1');
+
+    // Calls customer 1, leaving 2, 3 and 4 waiting with two, one and zero
+    // people ahead of them respectively.
+    await call(fx, station);
+
+    const third = sent.find((n) => /3rd in line/i.test(n.title));
+    expect(third?.to).toBe('four@example.com');
+    expect(third?.body).toMatch(/2 people/);
+
+    const second = sent.find((n) => /2nd in line/i.test(n.title));
+    expect(second?.to).toBe('three@example.com');
+    expect(second?.body).toMatch(/1 person/);
+
+    // Customer 2 has nobody ahead — that is the existing "You're next"
+    // minute milestone's job, not a third notice on top of it.
+    const next = sent.filter((n) => n.to === 'two@example.com');
+    expect(next).toHaveLength(1);
+    expect(next[0]?.title).toMatch(/you're next/i);
+  });
+
+  it('never sends the same position milestone twice', async () => {
+    const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
+    await join(fx, 1);
+    await join(fx, 2);
+    await join(fx, 3);
+    await join(fx, 4, 'four@example.com');
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+    const thirdInLine = sent.filter((n) => /3rd in line/i.test(n.title));
+    expect(thirdInLine).toHaveLength(1);
+
+    // A second advance recalculates every position; "3rd in line" must stay
+    // quiet the second time even though it is still within range.
+    sent.length = 0;
+    await call(fx, station);
+
+    expect(sent.filter((n) => /3rd in line/i.test(n.title))).toHaveLength(0);
+  });
+
+  it('records which position milestones were dispatched', async () => {
+    const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
+    await join(fx, 1);
+    await join(fx, 2);
+    const third = await join(fx, 3, 'three@example.com');
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+
+    const contact = await ticketContact(fx, third.ticketId);
+    expect(contact.dispatchedPositions).toEqual([2, 1]);
+  });
+});
+
 describe('notices about a place changing', () => {
   it('tells a bumped customer, and how many strikes remain', async () => {
     const fx = await seedQueue({}, { noShowPenalty: 'back' });

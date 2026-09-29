@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { decideMilestone, waitMinutesFor } from './milestones.js';
+import {
+  decideMilestone,
+  decidePositionMilestone,
+  waitMinutesFor,
+} from './milestones.js';
 
 describe('milestone selection', () => {
   it('says nothing while the turn is still far off', () => {
@@ -44,6 +48,56 @@ describe('milestone selection', () => {
 
   it('says nothing once every milestone has been sent', () => {
     expect(decideMilestone(0, [15, 10, 5, 1])).toEqual({
+      send: null,
+      dispatched: [],
+    });
+  });
+});
+
+describe('position milestone selection', () => {
+  it('says nothing with more than two people ahead', () => {
+    expect(decidePositionMilestone(5, [])).toEqual({ send: null, dispatched: [] });
+  });
+
+  it('announces third in line', () => {
+    expect(decidePositionMilestone(2, [])).toEqual({ send: 2, dispatched: [2] });
+  });
+
+  it('announces second in line once third has already been sent', () => {
+    expect(decidePositionMilestone(1, [2])).toEqual({ send: 1, dispatched: [1] });
+  });
+
+  it('never repeats a position milestone already sent', () => {
+    expect(decidePositionMilestone(1, [2, 1])).toEqual({
+      send: null,
+      dispatched: [],
+    });
+  });
+
+  it('sends only the most urgent when a queue jumps forward', () => {
+    // A run of no-shows can drop someone from fifth straight to second,
+    // crossing third and second together — one alert, not two.
+    expect(decidePositionMilestone(1, [])).toEqual({
+      send: 1,
+      dispatched: [2, 1],
+    });
+  });
+
+  it('does not fire a leapfrogged position milestone late', () => {
+    const jumped = decidePositionMilestone(1, []);
+    expect(decidePositionMilestone(1, jumped.dispatched)).toEqual({
+      send: null,
+      dispatched: [],
+    });
+  });
+
+  it("says nothing once nobody is ahead — that is the minute-1 milestone's job", () => {
+    // waitMinutesFor(0, ...) is always 0, so the existing "1 minute" milestone
+    // already fires reliably at this exact moment, whether or not third/second
+    // ever got the chance to fire on the way there. A position alert here
+    // would either duplicate that or mislabel someone who is actually next.
+    expect(decidePositionMilestone(0, [])).toEqual({ send: null, dispatched: [] });
+    expect(decidePositionMilestone(0, [2, 1])).toEqual({
       send: null,
       dispatched: [],
     });

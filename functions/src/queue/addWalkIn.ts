@@ -126,6 +126,7 @@ export async function performAddWalkIn(
       phone: null,
       fcmTokens: [],
       dispatchedMilestones: [],
+      dispatchedPositions: [],
     };
 
     tx.set(ticketRef, ticket);
