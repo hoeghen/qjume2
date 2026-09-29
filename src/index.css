@@ -505,6 +505,13 @@ button.link.danger { color: var(--danger); }
 .queue-card-title .badge { margin-left: 0; }
 .queue-card-main p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; }
 .queue-card .muted, .dialog-body .muted { color: var(--card-muted); }
+/* .code is styled for the dark ink page (white text on a barely-there white
+   overlay) — every dialog is a white card, so left as-is this was white text
+   on a near-white background. Same trap CLAUDE.md's design system calls out
+   by name: a background needs its matching foreground, or it inherits white
+   onto white. Affects the resume code shown after joining, the walk-in
+   ticket code, and a re-linked ticket's new code — all rendered in dialogs. */
+.dialog-body .code { background: var(--cream-tint); color: var(--card-fg); }
 
 .queue-card-meta {
   display: flex;
