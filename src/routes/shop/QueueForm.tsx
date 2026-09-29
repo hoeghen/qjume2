@@ -237,14 +237,16 @@ export function QueueForm({
       )}
 
       {queueId && q && (
-        <button
-          type="button"
-          className="danger"
-          disabled={busy}
-          onClick={() => setShowDelete(true)}
-        >
-          {t('shop.deleteQueue.button')}
-        </button>
+        <div className="danger-zone">
+          <button
+            type="button"
+            className="link danger"
+            disabled={busy}
+            onClick={() => setShowDelete(true)}
+          >
+            {t('shop.deleteQueue.button')}
+          </button>
+        </div>
       )}
 
       {showDelete && queueId && q && (

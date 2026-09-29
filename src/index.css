@@ -256,6 +256,14 @@ button.link, .link {
 }
 button.link.danger { color: var(--danger); }
 
+/* A destructive action set apart from the controls above it, so a tap
+   meant for "New queue" or "Save" can't land on it by proximity. */
+.danger-zone {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
 .divider {
   text-align: center;
   color: var(--muted);

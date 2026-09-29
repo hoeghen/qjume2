@@ -81,11 +81,13 @@ export function QueueList({
       </ul>
 
       {isOwner && (
-        <>
-          <LocalizedLink className="button" to="/shop/q/new">
-            {t('shop.queueList.newQueue')}
-          </LocalizedLink>
+        <LocalizedLink className="button" to="/shop/q/new">
+          {t('shop.queueList.newQueue')}
+        </LocalizedLink>
+      )}
 
+      {isOwner && (
+        <div className="danger-zone">
           <button
             type="button"
             className="link danger"
@@ -93,7 +95,7 @@ export function QueueList({
           >
             {t('shop.deleteShop.button')}
           </button>
-        </>
+        </div>
       )}
 
       {showDelete && (
