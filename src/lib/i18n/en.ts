@@ -185,6 +185,8 @@ export const en = {
     helpBefore: 'Open this with a queue, for example ',
     helpAfter: '. The Show QR button on the serving screen has the ids.',
     notFound: 'Queue not found.',
+    waitingCount: '{count} waiting',
+    avgServiceTime: 'Avg. service {time}',
     nowServing: 'Now serving',
     nobodyServed: 'Nobody is being served right now.',
     comingUp: 'Coming up',
