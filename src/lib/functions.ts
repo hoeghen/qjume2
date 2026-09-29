@@ -162,6 +162,8 @@ export const deleteQueue = callable<
   void
 >('deleteQueue');
 
+export const deleteShop = callable<{ shopId: string }, void>('deleteShop');
+
 /**
  * Platform admin. Every one of these requires the `platformAdmin` custom
  * claim server-side — see CLAUDE.md decision 9 — not anything checked here.

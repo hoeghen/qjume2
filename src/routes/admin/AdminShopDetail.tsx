@@ -187,6 +187,7 @@ export function AdminShopDetail() {
         <DeleteShopDialog
           shopId={shopId}
           shopName={s.name}
+          admin
           onClose={() => setShowDelete(false)}
           onDeleted={() => navigate('/admin')}
         />

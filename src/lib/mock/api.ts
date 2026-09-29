@@ -503,6 +503,12 @@ export const mockApi = {
     mockStore.deletePrefix(qPath(shopId, queueId));
   },
 
+  deleteShop({ shopId }: { shopId: string }) {
+    const shop = mockStore.get<Shop>(`shops/${shopId}`);
+    if (!shop) throw new MockError('Shop not found.');
+    mockStore.deletePrefix(`shops/${shopId}`);
+  },
+
   claimStation({ shopId, queueId, stationId, label }: {
     shopId: string;
     queueId: string;

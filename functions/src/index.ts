@@ -23,6 +23,7 @@ export { registerPushToken } from './queue/registerPushToken.js';
 export { createQueue } from './shop/createQueue.js';
 export { updateQueue } from './shop/updateQueue.js';
 export { deleteQueue } from './shop/deleteQueue.js';
+export { deleteShop } from './shop/deleteShop.js';
 export { claimStation } from './shop/claimStation.js';
 export { closeQueue } from './shop/closeQueue.js';
 export { addStaff, removeStaff } from './shop/staff.js';

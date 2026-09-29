@@ -277,6 +277,15 @@ export const en = {
       deletePermanently: 'Delete permanently',
     },
 
+    deleteShop: {
+      button: 'Delete this shop',
+      ariaLabel: 'Delete shop',
+      title: 'Delete {name}',
+      body: 'Permanently removes this shop, every one of its queues, and everyone waiting in them. There is no undo.',
+      confirmLabel: 'Type the shop’s name to confirm',
+      deletePermanently: 'Delete permanently',
+    },
+
     serving: {
       queueNotFound: 'Queue not found.',
       noConnectionTitle: 'No connection',
@@ -395,14 +404,6 @@ export const en = {
   },
 
   admin: {
-    deleteShop: {
-      ariaLabel: 'Delete shop',
-      title: 'Delete {name}',
-      body: 'Permanently removes this shop, every one of its queues, and everyone waiting in them. There is no undo.',
-      confirmLabel: 'Type the shop’s name to confirm',
-      deletePermanently: 'Delete permanently',
-    },
-
     planLabel: {
       free: 'Free',
       paid: 'Paid',
