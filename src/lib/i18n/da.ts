@@ -264,6 +264,15 @@ export const da: DeepPartial<typeof en> = {
       noticeCreated: 'Kø oprettet. {detail}',
     },
 
+    deleteQueue: {
+      button: 'Slet denne kø',
+      ariaLabel: 'Slet kø',
+      title: 'Slet {name}',
+      body: 'Fjerner denne kø permanent, og alle der venter i den lige nu. Der er ingen fortrydelse.',
+      confirmLabel: 'Skriv køens navn for at bekræfte',
+      deletePermanently: 'Slet permanent',
+    },
+
     serving: {
       queueNotFound: 'Køen blev ikke fundet.',
       noConnectionTitle: 'Ingen forbindelse',

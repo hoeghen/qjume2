@@ -496,6 +496,13 @@ export const mockApi = {
     };
   },
 
+  deleteQueue({ shopId, queueId }: { shopId: string; queueId: string }) {
+    readQueue(shopId, queueId);
+    // The mock has no subcollections to walk, only path prefixes to match —
+    // see mockStore.deletePrefix, the same one adminDeleteShop uses.
+    mockStore.deletePrefix(qPath(shopId, queueId));
+  },
+
   claimStation({ shopId, queueId, stationId, label }: {
     shopId: string;
     queueId: string;
@@ -687,6 +694,18 @@ export const mockApi = {
           ? { lat: existing.lat, lng: existing.lng, formatted: address }
           : null,
     };
+  },
+
+  adminDeleteQueue({ shopId, queueId }: { shopId: string; queueId: string }) {
+    const queue = readQueue(shopId, queueId);
+    mockStore.deletePrefix(qPath(shopId, queueId));
+
+    logAdminAction({
+      action: 'queue.delete',
+      shopId,
+      queueId,
+      summary: `Deleted ${queue.name || queue.shopName} at ${queue.shopName}`,
+    });
   },
 
   adminDeleteShop({ shopId }: { shopId: string }) {

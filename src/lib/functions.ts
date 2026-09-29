@@ -157,6 +157,11 @@ export const closeQueue = callable<
   { clearedCount: number }
 >('closeQueue');
 
+export const deleteQueue = callable<
+  { shopId: string; queueId: string },
+  void
+>('deleteQueue');
+
 /**
  * Platform admin. Every one of these requires the `platformAdmin` custom
  * claim server-side — see CLAUDE.md decision 9 — not anything checked here.
@@ -200,6 +205,11 @@ export const adminUpdateQueue = callable<
 export const adminDeleteShop = callable<{ shopId: string }, void>(
   'adminDeleteShop',
 );
+
+export const adminDeleteQueue = callable<
+  { shopId: string; queueId: string },
+  void
+>('adminDeleteQueue');
 
 /** The machine-readable reason a call was refused, when there is one. */
 export function reasonOf(error: unknown): QueueErrorReason | null {
