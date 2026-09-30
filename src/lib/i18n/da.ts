@@ -303,8 +303,6 @@ export const da: DeepPartial<typeof en> = {
       catchingUpBody: 'Sender {count} gemt fra dengang du var offline.',
       allQueues: 'Alle køer',
       youAreServing: 'Du betjener — kunder kan se og tilslutte sig denne kø.',
-      youAreNotServing: 'Du betjener ikke — ingen nye kan tilslutte sig, før du starter.',
-      startServing: 'Start betjening',
       stopServing: 'Stop betjening',
       servingLabel: 'Betjener',
       waitingCount: '{count} venter',
@@ -350,7 +348,7 @@ export const da: DeepPartial<typeof en> = {
       },
       unavailable: {
         label: 'Offline',
-        detail: 'Ingen betjener lige nu. Tryk "Start betjening" for at åbne for nye igen.',
+        detail: 'Ingen betjener lige nu. At åbne denne skærm starter betjeningen og åbner igen.',
       },
       closed: { label: 'Lukket', detail: 'Åbn køen for at begynde at tage imod nye.' },
     },

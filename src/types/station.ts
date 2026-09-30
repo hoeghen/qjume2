@@ -8,12 +8,15 @@ export interface Station {
   activeStaffUid: string | null;
   currentTicketId: string | null;
   /**
-   * Whether staff have explicitly said this station is serving right now.
-   * Set only by `startServing`/`stopServing` — never announced implicitly by
-   * the Serve screen being open, and never assumed from a device's connection
-   * state. Closing the tab or locking the phone leaves it untouched; only an
-   * explicit tap, or the abandoned-queue sweep giving up on it after a long
-   * silence, changes it. See `nextStatusForServing` in `src/lib/queue/presence.ts`.
+   * Whether this station is serving right now. Set only by
+   * `startServing`/`stopServing` — never assumed from a device's connection
+   * state. Starting is triggered by arriving at the Serve screen with a
+   * station chosen (ServingScreen.tsx), which is a deliberate action, not
+   * ambient presence; but the asymmetry that matters is on the other side:
+   * closing the tab or locking the phone never stops it. Only an explicit
+   * "Stop serving" tap, or the abandoned-queue sweep giving up on it after a
+   * long silence, does. See `nextStatusForServing` in
+   * `src/lib/queue/presence.ts`.
    */
   serving: boolean;
 }

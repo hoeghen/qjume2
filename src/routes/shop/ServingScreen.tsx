@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { setQueueStatus } from '../../lib/firestore/writes.js';
@@ -75,7 +75,7 @@ export function ServingScreen({
     `${shopId}/${queueId}/serving`,
   );
 
-  const { data: stations } = useCollection(
+  const { data: stations, loading: stationsLoading } = useCollection(
     stationsOf(shopId, queueId),
     `${shopId}/${queueId}/serving-stations`,
   );
@@ -83,6 +83,9 @@ export function ServingScreen({
   const manyTills = (stations?.length ?? 1) > 1;
   const tillName = (id: string | null) =>
     stations?.find((s) => s.id === id)?.label ?? '';
+
+  const myStation = stations?.find((s) => s.id === station?.id);
+  const iAmServing = myStation?.serving ?? false;
 
   const onPick = useCallback(
     (id: string, label: string) => {
@@ -92,12 +95,30 @@ export function ServingScreen({
     [queueId],
   );
 
+  // Arriving here with a station already picked is the "serving" signal
+  // itself — there is no separate confirmation to tap. Resolved once per
+  // mount, the moment the station's current state is known, whichever way
+  // it goes: the ref is set even when it was already serving, or an
+  // explicit "Stop serving" right after would see `iAmServing` flip to
+  // false and — since that is this same effect's own trigger to start —
+  // immediately undo the stop. A failure surfaces through the existing
+  // error banner and a reload (which remounts) is the retry, rather than a
+  // dedicated button for a case that should be rare.
+  const startAttempted = useRef(false);
+  useEffect(() => {
+    if (!station || stationsLoading || startAttempted.current) return;
+    startAttempted.current = true;
+    if (iAmServing) return;
+    void startServing({ shopId, queueId, stationId: station.id }).catch((e) => {
+      setError(messageOf(e));
+      startAttempted.current = false;
+    });
+  }, [station, stationsLoading, iAmServing, shopId, queueId]);
+
   if (queue.loading) return <p className="panel">{t('common.loading')}</p>;
   if (!queue.data) return <p className="panel">{t('shop.serving.queueNotFound')}</p>;
 
   const q = queue.data;
-  const myStation = stations?.find((s) => s.id === station?.id);
-  const iAmServing = myStation?.serving ?? false;
   const mine = serving?.find((ticket) => ticket.station === station?.id) ?? null;
   const others = serving?.filter((ticket) => ticket.station !== station?.id) ?? [];
   // Offline, the server's idea of who is being served is frozen, so the till
@@ -160,19 +181,17 @@ export function ServingScreen({
     }
   }
 
-  // Explicit, not tied to this tab being open or connected — see
-  // src/lib/queue/presence.ts. Closing the phone or losing signal leaves
-  // this untouched; only this tap, or hours of silence, changes it.
-  async function toggleServing() {
+  // Starting is automatic (see the effect above); stopping stays a
+  // deliberate tap — explicit, and not tied to this tab being open or
+  // connected. See src/lib/queue/presence.ts. Closing the phone or losing
+  // signal leaves this untouched; only this tap, or hours of silence,
+  // changes it.
+  async function stopServingNow() {
     if (!station) return;
     setServingBusy(true);
     setError(null);
     try {
-      if (iAmServing) {
-        await stopServing({ shopId, queueId, stationId: station.id });
-      } else {
-        await startServing({ shopId, queueId, stationId: station.id });
-      }
+      await stopServing({ shopId, queueId, stationId: station.id });
     } catch (e) {
       setError(messageOf(e));
     } finally {
@@ -200,19 +219,19 @@ export function ServingScreen({
       )}
       <PauseBanner status={q.status} />
 
-      <div className="serving-toggle">
-        <span className="muted">
-          {iAmServing ? t('shop.serving.youAreServing') : t('shop.serving.youAreNotServing')}
-        </span>
-        <button
-          type="button"
-          className={iAmServing ? 'secondary' : 'primary'}
-          disabled={servingBusy}
-          onClick={() => void toggleServing()}
-        >
-          {iAmServing ? t('shop.serving.stopServing') : t('shop.serving.startServing')}
-        </button>
-      </div>
+      {iAmServing && (
+        <div className="serving-toggle">
+          <span className="muted">{t('shop.serving.youAreServing')}</span>
+          <button
+            type="button"
+            className="secondary"
+            disabled={servingBusy}
+            onClick={() => void stopServingNow()}
+          >
+            {t('shop.serving.stopServing')}
+          </button>
+        </div>
+      )}
 
       <header className="serving-header">
         <div>
