@@ -76,8 +76,19 @@ jobs:
         # Rules and indexes first: a function that relies on an index Firestore
         # hasn't built yet, or a rule the client side already assumes, should
         # never be the thing that goes out first.
+        #
+        # --force: --non-interactive alone stops short of actually answering
+        # the one prompt that still comes up — deleting a Cloud Function that
+        # no longer exists in source. Without it, removing a function here
+        # (as happened when mirrorPresence was replaced by the explicit
+        # serving toggle) aborts the *entire* functions deploy with nothing
+        # applied, leaving whatever the client already expects unbuilt on the
+        # server. Every other prompt --non-interactive already answers safely
+        # by refusing rather than guessing; this is the one Firebase gates
+        # behind a separate flag regardless.
         run: |
           npx firebase-tools deploy \
             --project "${{ vars.FIREBASE_PROJECT_ID }}" \
             --only firestore:rules,firestore:indexes,database,functions,hosting \
-            --non-interactive
+            --non-interactive \
+            --force
