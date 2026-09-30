@@ -46,6 +46,20 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
             <span className="name">{ticket.displayName}</span>
             {ticket.noShowCount > 0 && (
               <span className="strikes" title={t('shop.upcomingList.noShowTitle')}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 4 21 19 3 19Z" />
+                  <path d="M12 10v4M12 16.5h.01" />
+                </svg>
                 {t('shop.upcomingList.noShowCount', { count: ticket.noShowCount })}
               </span>
             )}
