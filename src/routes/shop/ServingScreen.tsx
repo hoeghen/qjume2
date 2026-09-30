@@ -8,7 +8,7 @@ import {
   stationsOf,
   waitingTickets,
 } from '../../lib/firestore/queries.js';
-import { callNext, messageOf } from '../../lib/functions.js';
+import { callNext, messageOf, startServing, stopServing } from '../../lib/functions.js';
 import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
@@ -58,6 +58,7 @@ export function ServingScreen({
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [servingBusy, setServingBusy] = useState(false);
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [showClose, setShowClose] = useState(false);
   const [showQr, setShowQr] = useState(false);
@@ -95,6 +96,8 @@ export function ServingScreen({
   if (!queue.data) return <p className="panel">{t('shop.serving.queueNotFound')}</p>;
 
   const q = queue.data;
+  const myStation = stations?.find((s) => s.id === station?.id);
+  const iAmServing = myStation?.serving ?? false;
   const mine = serving?.find((ticket) => ticket.station === station?.id) ?? null;
   const others = serving?.filter((ticket) => ticket.station !== station?.id) ?? [];
   // Offline, the server's idea of who is being served is frozen, so the till
@@ -157,6 +160,26 @@ export function ServingScreen({
     }
   }
 
+  // Explicit, not tied to this tab being open or connected — see
+  // src/lib/queue/presence.ts. Closing the phone or losing signal leaves
+  // this untouched; only this tap, or hours of silence, changes it.
+  async function toggleServing() {
+    if (!station) return;
+    setServingBusy(true);
+    setError(null);
+    try {
+      if (iAmServing) {
+        await stopServing({ shopId, queueId, stationId: station.id });
+      } else {
+        await startServing({ shopId, queueId, stationId: station.id });
+      }
+    } catch (e) {
+      setError(messageOf(e));
+    } finally {
+      setServingBusy(false);
+    }
+  }
+
   return (
     <main className="serving">
       {!offline.online && (
@@ -176,6 +199,20 @@ export function ServingScreen({
         </div>
       )}
       <PauseBanner status={q.status} />
+
+      <div className="serving-toggle">
+        <span className="muted">
+          {iAmServing ? t('shop.serving.youAreServing') : t('shop.serving.youAreNotServing')}
+        </span>
+        <button
+          type="button"
+          className={iAmServing ? 'secondary' : 'primary'}
+          disabled={servingBusy}
+          onClick={() => void toggleServing()}
+        >
+          {iAmServing ? t('shop.serving.stopServing') : t('shop.serving.startServing')}
+        </button>
+      </div>
 
       <header className="serving-header">
         <div>
@@ -308,6 +345,11 @@ export function ServingScreen({
             type="button"
             className="link"
             onClick={() => {
+              // Best-effort: the station identity is changing regardless, and
+              // this is exactly what the abandoned-queue sweep exists to
+              // catch if it fails — but a working call now beats staff having
+              // to remember to do it themselves.
+              if (iAmServing) void stopServing({ shopId, queueId, stationId: station.id });
               rememberStation(queueId, null);
               setStation(null);
             }}

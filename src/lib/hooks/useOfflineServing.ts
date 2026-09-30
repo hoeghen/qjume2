@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { announcePresence, watchConnection } from '../presence.js';
+import { watchConnection } from '../presence.js';
 import {
   pendingFor,
   recordAdvance,
@@ -36,13 +36,6 @@ export function useOfflineServing(
   );
   const [localOffset, setLocalOffset] = useState(0);
   const replaying = useRef(false);
-
-  // Announce this device while it is serving, so the server can mark the queue
-  // unavailable the moment it vanishes.
-  useEffect(() => {
-    if (!shopId || !queueId || !stationId) return;
-    return announcePresence(shopId, queueId, stationId);
-  }, [shopId, queueId, stationId]);
 
   useEffect(() => watchConnection(setOnline), []);
 

@@ -157,6 +157,16 @@ export const claimStation = callable<
   { stationId: string; label: string }
 >('claimStation');
 
+export const startServing = callable<
+  { shopId: string; queueId: string; stationId: string },
+  void
+>('startServing');
+
+export const stopServing = callable<
+  { shopId: string; queueId: string; stationId: string },
+  void
+>('stopServing');
+
 export const closeQueue = callable<
   { shopId: string; queueId: string; mode: 'drain' | 'hard' },
   { clearedCount: number }

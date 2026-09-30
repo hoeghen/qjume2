@@ -336,6 +336,14 @@ button.link.danger { color: var(--danger); }
   margin-bottom: 12px;
 }
 
+.serving-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
 .now-serving {
   background: var(--dark-inset);
   color: var(--fg);

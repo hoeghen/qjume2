@@ -70,8 +70,19 @@ export function makeStation(overrides: Partial<Station> = {}): Station {
     label: 'Till 1',
     activeStaffUid: OWNER_UID,
     currentTicketId: null,
+    serving: false,
     ...overrides,
   };
+}
+
+export async function getStation(
+  fx: Fixture,
+  stationId: string,
+): Promise<Station> {
+  const snap = await testDb
+    .doc(`shops/${fx.shopId}/queues/${fx.queueId}/stations/${stationId}`)
+    .get();
+  return snap.data() as Station;
 }
 
 export interface Fixture {
@@ -93,12 +104,13 @@ export async function seedQueue(
 export async function seedStation(
   fx: Fixture,
   label: string,
+  overrides: Partial<Station> = {},
 ): Promise<string> {
   const ref = testDb
     .doc(`shops/${fx.shopId}/queues/${fx.queueId}`)
     .collection('stations')
     .doc();
-  await ref.set(makeStation({ label }));
+  await ref.set(makeStation({ label, ...overrides }));
   return ref.id;
 }
 
