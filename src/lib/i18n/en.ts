@@ -307,8 +307,6 @@ export const en = {
       catchingUpBody: 'Sending {count} saved from while you were offline.',
       allQueues: 'All queues',
       youAreServing: "You're serving — customers can see and join this queue.",
-      youAreNotServing: "You're not serving — nobody new can join until you start.",
-      startServing: 'Start serving',
       stopServing: 'Stop serving',
       servingLabel: 'Serving',
       waitingCount: '{count} waiting',
@@ -354,7 +352,7 @@ export const en = {
       },
       unavailable: {
         label: 'Offline',
-        detail: 'Nobody has started serving. Tap "Start serving" to reopen to new joiners.',
+        detail: 'Nobody is serving right now. Opening this screen starts serving and reopens it.',
       },
       closed: { label: 'Closed', detail: 'Open the queue to start taking joiners.' },
     },

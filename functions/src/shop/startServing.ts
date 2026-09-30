@@ -18,11 +18,13 @@ export interface StartServingRequest {
  *
  * Replaces the old connection-based heartbeat (RTDB `onDisconnect`): that
  * flipped a queue offline the instant a socket dropped, which punished a
- * locked phone or a brief backgrounding as harshly as a dead device. Staff
- * now say explicitly when they start; nothing about closing a tab or losing
- * a connection changes this on its own. The abandoned-queue sweep
- * (`sweepAbandonedQueues`) is the only automatic fallback, and it only acts
- * after hours of silence, not seconds.
+ * locked phone or a brief backgrounding as harshly as a dead device. This is
+ * a deliberate signal instead — the client calls it once, automatically, the
+ * moment a station is known on the Serve screen (ServingScreen.tsx), rather
+ * than requiring a second tap on top of navigating there. Nothing about
+ * closing a tab or losing a connection changes it after that: only this
+ * call, `stopServing`, or hours of silence caught by `sweepAbandonedQueues`
+ * change a station's serving state.
  *
  * Reopens the queue if it was `unavailable` and nothing else has claimed it
  * shut in the meantime; leaves `paused`, `drainMode` and `closed` exactly as
