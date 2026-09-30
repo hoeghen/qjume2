@@ -182,6 +182,7 @@ export const da: DeepPartial<typeof en> = {
     needsInstallHint: 'Spring det over, hvis du vil — denne side virker stadig, og vi sender dig en e-mail, hvis du gav os en adresse.',
     turnOnQuestion: 'Giv mig besked, når min tur nærmer sig',
     turningOn: 'Slår til…',
+    turnOnError: 'Kunne ikke slå notifikationer til. Tryk for detaljer.',
   },
 
   monitor: {
