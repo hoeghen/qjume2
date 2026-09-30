@@ -183,6 +183,9 @@ export const da: DeepPartial<typeof en> = {
     turnOnQuestion: 'Giv mig besked, når min tur nærmer sig',
     turningOn: 'Slår til…',
     turnOnError: 'Kunne ikke slå notifikationer til. Tryk for detaljer.',
+    disableNotifications: 'Slå notifikationer fra',
+    disabling: 'Slår fra…',
+    turnOffError: 'Kunne ikke slå notifikationer fra. Tryk for detaljer.',
   },
 
   monitor: {

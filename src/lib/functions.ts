@@ -86,6 +86,11 @@ export const registerPushToken = callable<
   { ok: true }
 >('registerPushToken');
 
+export const unregisterPushToken = callable<
+  { shopId: string; queueId: string; ticketId: string; token: string },
+  { ok: true }
+>('unregisterPushToken');
+
 export const relinkTicket = callable<
   { shopId: string; queueId: string; ticketId: string },
   { resumeCode: string; displayName: string }

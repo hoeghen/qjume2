@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { enablePush, pushAvailability, type PushAvailability } from '../../../lib/push.js';
-import { messageOf, registerPushToken } from '../../../lib/functions.js';
+import {
+  messageOf,
+  registerPushToken,
+  unregisterPushToken,
+} from '../../../lib/functions.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
@@ -25,6 +29,9 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   const { t } = useT();
   const [availability, setAvailability] = useState<PushAvailability | null>(null);
   const [enabled, setEnabled] = useState(false);
+  // Kept so "Disable notifications" can remove the same token it added —
+  // `unregisterPushToken` only ever touches this one ticket's copy of it.
+  const [pushToken, setPushToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +45,25 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
     };
   }, []);
 
-  if (availability === null || enabled) return null;
+  if (availability === null) return null;
+
+  if (enabled) {
+    return (
+      <div className="notice">
+        <button type="button" className="secondary" disabled={busy} onClick={turnOff}>
+          {busy
+            ? t('enableNotifications.disabling')
+            : t('enableNotifications.disableNotifications')}
+        </button>
+        {error && (
+          <details className="error-details">
+            <summary role="alert">{t('enableNotifications.turnOffError')}</summary>
+            <p className="hint">{error}</p>
+          </details>
+        )}
+      </div>
+    );
+  }
 
   if (availability === 'unsupported') return null;
 
@@ -75,7 +100,29 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
           return;
         }
         await registerPushToken({ shopId, queueId, ticketId, token });
+        setPushToken(token);
         setEnabled(true);
+      } catch (e) {
+        setError(messageOf(e));
+      } finally {
+        setBusy(false);
+      }
+    })();
+  }
+
+  function turnOff() {
+    if (!pushToken) {
+      // Nothing server-side to remove — the state itself is enough to fix.
+      setEnabled(false);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    void (async () => {
+      try {
+        await unregisterPushToken({ shopId, queueId, ticketId, token: pushToken });
+        setPushToken(null);
+        setEnabled(false);
       } catch (e) {
         setError(messageOf(e));
       } finally {
