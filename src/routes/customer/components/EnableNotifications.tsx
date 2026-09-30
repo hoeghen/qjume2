@@ -90,9 +90,10 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
         {busy ? t('enableNotifications.turningOn') : t('enableNotifications.turnOnQuestion')}
       </button>
       {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
+        <details className="error-details">
+          <summary role="alert">{t('enableNotifications.turnOnError')}</summary>
+          <p className="hint">{error}</p>
+        </details>
       )}
     </div>
   );

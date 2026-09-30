@@ -185,6 +185,7 @@ export const en = {
     needsInstallHint: 'Skip it if you like — this page keeps working, and we’ll email you if you gave us an address.',
     turnOnQuestion: 'Notify me when my turn is close',
     turningOn: 'Turning on…',
+    turnOnError: 'Couldn’t turn on notifications. Tap for details.',
   },
 
   monitor: {
