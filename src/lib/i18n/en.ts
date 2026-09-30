@@ -186,6 +186,9 @@ export const en = {
     turnOnQuestion: 'Notify me when my turn is close',
     turningOn: 'Turning on…',
     turnOnError: 'Couldn’t turn on notifications. Tap for details.',
+    disableNotifications: 'Disable notifications',
+    disabling: 'Turning off…',
+    turnOffError: 'Couldn’t turn off notifications. Tap for details.',
   },
 
   monitor: {

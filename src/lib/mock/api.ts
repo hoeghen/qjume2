@@ -654,6 +654,10 @@ export const mockApi = {
     return { ok: true } as const;
   },
 
+  unregisterPushToken() {
+    return { ok: true } as const;
+  },
+
   suspendShop({ shopId }: { shopId: string }) {
     return setShopSuspension(shopId, true);
   },

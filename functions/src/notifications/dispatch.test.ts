@@ -3,6 +3,7 @@ import { performJoinQueue } from '../queue/joinQueue.js';
 import { performCallNext } from '../queue/callNext.js';
 import { performCloseQueue } from '../shop/closeQueue.js';
 import { performRegisterPushToken } from '../queue/registerPushToken.js';
+import { performUnregisterPushToken } from '../queue/unregisterPushToken.js';
 import { recordingChannels, type RecordedNotice } from './channels.js';
 import {
   OWNER_UID,
@@ -303,5 +304,69 @@ describe('push token registration', () => {
 
     const contact = await ticketContact(fx, first.ticketId);
     expect(contact.fcmTokens).toEqual(['token-abc']);
+  });
+});
+
+describe('push token unregistration', () => {
+  it('removes just the one token, not the whole list', async () => {
+    const fx = await seedQueue();
+    const first = await join(fx, 1);
+    await performRegisterPushToken(testDb, phone(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: first.ticketId,
+      token: 'token-abc',
+    });
+    await performRegisterPushToken(testDb, phone(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: first.ticketId,
+      token: 'token-def',
+    });
+
+    await performUnregisterPushToken(testDb, phone(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: first.ticketId,
+      token: 'token-abc',
+    });
+
+    const contact = await ticketContact(fx, first.ticketId);
+    expect(contact.fcmTokens).toEqual(['token-def']);
+  });
+
+  it('refuses to remove a token from somebody else’s ticket', async () => {
+    const fx = await seedQueue();
+    const first = await join(fx, 1);
+    await performRegisterPushToken(testDb, phone(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: first.ticketId,
+      token: 'token-abc',
+    });
+
+    await expect(
+      performUnregisterPushToken(testDb, phone(2), {
+        shopId: fx.shopId,
+        queueId: fx.queueId,
+        ticketId: first.ticketId,
+        token: 'token-abc',
+      }),
+    ).rejects.toThrow(/not your ticket/i);
+  });
+
+  it('is a no-op when the token was never registered', async () => {
+    const fx = await seedQueue();
+    const first = await join(fx, 1);
+
+    await performUnregisterPushToken(testDb, phone(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: first.ticketId,
+      token: 'never-registered',
+    });
+
+    const contact = await ticketContact(fx, first.ticketId);
+    expect(contact.fcmTokens).toEqual([]);
   });
 });
