@@ -84,6 +84,7 @@ export async function performClaimStation(
       label,
       activeStaffUid: callerUid,
       currentTicketId: null,
+      serving: false,
     };
     tx.set(ref, station);
     return { stationId: ref.id, label };

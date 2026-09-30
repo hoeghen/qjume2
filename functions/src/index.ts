@@ -25,6 +25,8 @@ export { updateQueue } from './shop/updateQueue.js';
 export { deleteQueue } from './shop/deleteQueue.js';
 export { deleteShop } from './shop/deleteShop.js';
 export { claimStation } from './shop/claimStation.js';
+export { startServing } from './shop/startServing.js';
+export { stopServing } from './shop/stopServing.js';
 export { closeQueue } from './shop/closeQueue.js';
 export { addStaff, removeStaff } from './shop/staff.js';
 export { suggestAddresses } from './geocoding/suggest.js';
@@ -38,10 +40,13 @@ export { startCheckout, completeCheckout } from './billing/checkout.js';
 export { stripeWebhook } from './billing/webhook.js';
 
 /**
- * Presence. Realtime Database is used for this and nothing else — Firestore
- * cannot tell a closed tab from a dead network, and RTDB's onDisconnect can.
+ * The abandoned-queue backstop. Whether a queue is available is now driven
+ * entirely by explicit `startServing`/`stopServing` calls above — this is
+ * only for the case where neither is ever called again because the device
+ * serving it is simply gone. See `sweepAbandonedQueues` for why it needs a
+ * schedule rather than a trigger.
  */
-export { mirrorPresence } from './presence/mirror.js';
+export { sweepAbandonedQueues } from './presence/sweepAbandonedQueues.js';
 
 /**
  * Platform admin. Every one of these requires the `platformAdmin` custom

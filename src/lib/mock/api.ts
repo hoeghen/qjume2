@@ -1,5 +1,6 @@
 import { mockStore, mockId } from './store.js';
 import { placesToMoveBack } from '../queue/penalties.js';
+import { nextStatusForServing } from '../queue/presence.js';
 import { nextPosition, positionAtBack, positionBetween } from '../queue/positions.js';
 import { foldSample, isUsableSample } from '../queue/serviceTime.js';
 import {
@@ -539,9 +540,44 @@ export const mockApi = {
       label: resolved,
       activeStaffUid: 'local-owner',
       currentTicketId: null,
+      serving: false,
     };
     mockStore.set(`${collection}/${id}`, station as unknown as Record<string, unknown>);
     return { stationId: id, label: resolved };
+  },
+
+  startServing({ shopId, queueId, stationId }: {
+    shopId: string;
+    queueId: string;
+    stationId: string;
+  }) {
+    const collection = `${qPath(shopId, queueId)}/stations`;
+    const station = mockStore.get<Station>(`${collection}/${stationId}`);
+    if (!station) throw new MockError('Station not found.');
+    mockStore.update(`${collection}/${stationId}`, { serving: true });
+
+    const queue = readQueue(shopId, queueId);
+    const update: Record<string, unknown> = { lastServedAt: Date.now() };
+    const next = nextStatusForServing(queue.status, true);
+    if (next) update['status'] = next;
+    mockStore.update(qPath(shopId, queueId), update);
+  },
+
+  stopServing({ shopId, queueId, stationId }: {
+    shopId: string;
+    queueId: string;
+    stationId: string;
+  }) {
+    const collection = `${qPath(shopId, queueId)}/stations`;
+    const station = mockStore.get<Station>(`${collection}/${stationId}`);
+    if (!station) throw new MockError('Station not found.');
+    mockStore.update(`${collection}/${stationId}`, { serving: false });
+
+    const others = mockStore.list<Station>(collection);
+    const stillServing = others.some((s) => s.id !== stationId && s.serving);
+    const queue = readQueue(shopId, queueId);
+    const next = nextStatusForServing(queue.status, stillServing);
+    if (next) mockStore.update(qPath(shopId, queueId), { status: next });
   },
 
   closeQueue({ shopId, queueId, mode }: {

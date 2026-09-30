@@ -643,6 +643,8 @@ export function seedMockBackend(): void {
           label: `Till ${till}`,
           activeStaffUid: entry.yours ? 'local-owner' : `other-${shopId}`,
           currentTicketId: null,
+          // The seed represents an already-running shop, not a fresh sign-up.
+          serving: true,
         };
         mockStore.set(
           `${queuePath}/stations/till-${till}`,
