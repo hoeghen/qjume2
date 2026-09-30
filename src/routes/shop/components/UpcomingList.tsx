@@ -53,8 +53,8 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
                 )}`}
               >
                 <svg
-                  width="22"
-                  height="22"
+                  width="32"
+                  height="32"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
