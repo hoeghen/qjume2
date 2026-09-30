@@ -45,22 +45,36 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
             <span className="place">{i + 1}</span>
             <span className="name">{ticket.displayName}</span>
             {ticket.noShowCount > 0 && (
-              <span className="strikes" title={t('shop.upcomingList.noShowTitle')}>
+              <span
+                className="strikes"
+                title={`${t('shop.upcomingList.noShowTitle')}: ${t(
+                  'shop.upcomingList.noShowCount',
+                  { count: ticket.noShowCount },
+                )}`}
+              >
                 <svg
-                  width="14"
-                  height="14"
+                  width="22"
+                  height="22"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
+                  strokeWidth="1.6"
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <path d="M12 4 21 19 3 19Z" />
-                  <path d="M12 10v4M12 16.5h.01" />
+                  <path d="M12 3 21 20 3 20Z" />
+                  <text
+                    x="12"
+                    y="17.5"
+                    textAnchor="middle"
+                    stroke="none"
+                    fill="currentColor"
+                    fontSize="9"
+                    fontWeight="700"
+                  >
+                    {ticket.noShowCount}
+                  </text>
                 </svg>
-                {t('shop.upcomingList.noShowCount', { count: ticket.noShowCount })}
               </span>
             )}
             <span className="row tight">
