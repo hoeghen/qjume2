@@ -353,6 +353,22 @@ export async function performCallNext(
   const activeStations = Math.max(1, stations.data().count);
   const shopName = result.queue.shopName;
 
+  logger.info('callNext advanced', {
+    shopId,
+    queueId,
+    stationId,
+    called: result.ticketId,
+    resolved: result.resolved,
+    bumped: result.bumped
+      ? {
+          ticketId: result.bumped.ticketId,
+          removed: result.bumped.removed,
+          noShowCount: result.bumped.noShowCount,
+        }
+      : null,
+    activeStations,
+  });
+
   try {
     if (result.bumped) {
       const target = {

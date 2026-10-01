@@ -24,15 +24,19 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// A message with a `notification` payload — every one the server sends — is
+// already shown by the Firebase SDK itself before this runs; showing it here
+// too put two of every alert on screen. This only covers data-only messages.
 messaging.onBackgroundMessage((payload) => {
-  const { title, body } = payload.notification ?? {};
+  if (payload.notification) return;
+  const { title, body } = payload.data ?? {};
   if (!title) return;
   self.registration.showNotification(title, {
     body,
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     vibrate: [200, 100, 200],
-    data: { url: payload.fcmOptions?.link ?? '/' },
+    data: { url: payload.fcmOptions?.link ?? payload.data?.url ?? '/' },
   });
 });
 

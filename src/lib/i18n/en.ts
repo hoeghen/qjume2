@@ -189,6 +189,14 @@ export const en = {
     disableNotifications: 'Disable notifications',
     disabling: 'Turning off…',
     turnOffError: 'Couldn’t turn off notifications. Tap for details.',
+    sendTest: 'Send a test notification',
+    sendingTest: 'Sending in {seconds} s — lock your phone or switch apps…',
+    testHint: 'Waits {seconds} seconds first, so you can see it arrive the way a real alert would.',
+    testSent: 'Sent. If nothing showed up, the phone or browser is holding it back — check notification settings for this site.',
+    testNoTokens: 'This ticket has no notification token. Turn notifications off and on again.',
+    testStale: 'This device’s notification token has expired. Turn notifications off and on again.',
+    testFailed: 'The notification service refused it: {code}',
+    testError: 'Couldn’t send a test notification. Tap for details.',
   },
 
   monitor: {

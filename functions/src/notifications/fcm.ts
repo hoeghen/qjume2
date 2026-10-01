@@ -1,6 +1,11 @@
 import { getMessaging } from 'firebase-admin/messaging';
 import { logger } from 'firebase-functions';
-import type { Notice, PushChannel } from './channels.js';
+import {
+  tokenTail,
+  type Notice,
+  type PushChannel,
+  type PushTokenResult,
+} from './channels.js';
 
 /**
  * Web push through Firebase Cloud Messaging.
@@ -15,11 +20,15 @@ import type { Notice, PushChannel } from './channels.js';
  * stale, not thrown, not caught. Anything else is logged explicitly now, so
  * a real send failure (a permission problem, quota, a malformed payload) is
  * visible instead of looking identical to "delivered successfully".
+ *
+ * Every send also logs one summary line, success included. FCM accepting a
+ * message is the last thing the server can see; without a line for it, "sent
+ * and the phone dropped it" and "never sent at all" look the same in the log.
  */
 export const fcmPush: PushChannel = {
   name: 'fcm',
   async send(tokens: string[], notice: Notice) {
-    if (tokens.length === 0) return { staleTokens: [] };
+    if (tokens.length === 0) return { staleTokens: [], results: [] };
 
     const response = await getMessaging().sendEachForMulticast({
       tokens,
@@ -35,25 +44,47 @@ export const fcmPush: PushChannel = {
     });
 
     const staleTokens: string[] = [];
-    response.responses.forEach((result, i) => {
-      if (result.success) return;
+    const results: PushTokenResult[] = response.responses.map((result, i) => {
+      const token = tokens[i] ?? '';
+      if (result.success) {
+        return {
+          token: tokenTail(token),
+          outcome: 'sent',
+          ...(result.messageId ? { messageId: result.messageId } : {}),
+        };
+      }
 
       const code = result.error?.code;
+      const message = result.error?.message;
+      const error = {
+        ...(code ? { code } : {}),
+        ...(message ? { message } : {}),
+      };
       if (
         code === 'messaging/registration-token-not-registered' ||
         code === 'messaging/invalid-registration-token'
       ) {
-        const token = tokens[i];
         if (token) staleTokens.push(token);
-        return;
+        return { token: tokenTail(token), outcome: 'stale', ...error };
       }
 
       logger.warn('FCM send failed for a token', {
+        token: tokenTail(token),
         code,
-        message: result.error?.message,
+        message,
       });
+      return { token: tokenTail(token), outcome: 'failed', ...error };
     });
 
-    return { staleTokens };
+    logger.info('FCM send result', {
+      title: notice.title,
+      tokenCount: tokens.length,
+      sent: results.filter((r) => r.outcome === 'sent').length,
+      stale: staleTokens.length,
+      failed: results.filter((r) => r.outcome === 'failed').length,
+      results,
+    });
+
+    return { staleTokens, results };
   },
 };

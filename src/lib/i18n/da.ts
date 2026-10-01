@@ -186,6 +186,14 @@ export const da: DeepPartial<typeof en> = {
     disableNotifications: 'Slå notifikationer fra',
     disabling: 'Slår fra…',
     turnOffError: 'Kunne ikke slå notifikationer fra. Tryk for detaljer.',
+    sendTest: 'Send en testnotifikation',
+    sendingTest: 'Sender om {seconds} s — lås telefonen eller skift app…',
+    testHint: 'Venter {seconds} sekunder først, så du kan se den ankomme som en rigtig besked.',
+    testSent: 'Sendt. Hvis intet dukkede op, holder telefonen eller browseren den tilbage — tjek notifikationsindstillingerne for dette websted.',
+    testNoTokens: 'Denne billet har ingen notifikationsnøgle. Slå notifikationer fra og til igen.',
+    testStale: 'Denne enheds notifikationsnøgle er udløbet. Slå notifikationer fra og til igen.',
+    testFailed: 'Notifikationstjenesten afviste den: {code}',
+    testError: 'Kunne ikke sende en testnotifikation. Tryk for detaljer.',
   },
 
   monitor: {
