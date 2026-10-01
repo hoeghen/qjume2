@@ -51,6 +51,7 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   // Set by the tap that turned push on, so the install suggestion appears at
   // that moment rather than nagging on every return visit.
   const [justEnabled, setJustEnabled] = useState(false);
+  const [showInstallSteps, setShowInstallSteps] = useState(false);
   const [installed, setInstalled] = useState<boolean | null>(null);
   const [canInstall, setCanInstall] = useState(canPromptInstall());
 
@@ -145,8 +146,20 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   }
 
   if (availability === 'needs-install') {
+    // iPhone in Safari: web push only exists in an app added to the Home
+    // Screen. Offer the same button as everywhere else, and answer the tap
+    // with how to install — the nudge lands at the moment they asked.
+    if (!showInstallSteps) {
+      return (
+        <div className="notice">
+          <button type="button" className="secondary" onClick={() => setShowInstallSteps(true)}>
+            {t('enableNotifications.turnOnQuestion')}
+          </button>
+        </div>
+      );
+    }
     return (
-      <div className="notice">
+      <div className="notice" role="status">
         <p>
           <strong>{t('enableNotifications.needsInstallTitle')}</strong>
         </p>
@@ -157,6 +170,9 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
           <strong>{t('enableNotifications.addToHomeScreen')}</strong>
           {t('enableNotifications.needsInstallAfter')}
         </p>
+        {/* The Home Screen app has its own storage, separate from Safari,
+            so it starts without this ticket — the resume code is the bridge. */}
+        <p>{t('enableNotifications.needsInstallCode')}</p>
         <p className="hint">{t('enableNotifications.needsInstallHint')}</p>
       </div>
     );

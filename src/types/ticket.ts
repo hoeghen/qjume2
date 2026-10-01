@@ -12,23 +12,15 @@ export type TicketState =
   | 'removed'
   | 'left';
 
-/** Milestones dispatched ahead of the estimated turn, in minutes. PRD 9.6. */
-export const NOTIFICATION_MILESTONES_MINUTES = [15, 10, 5, 1] as const;
-
-export type NotificationMilestone =
-  (typeof NOTIFICATION_MILESTONES_MINUTES)[number];
-
 /**
- * Position milestones, by how many people are still ahead rather than an
- * estimate of minutes — 2 is "third in line", 1 is "second in line". A count
- * cannot drift the way a service-time estimate can, so these land reliably
- * right at the front regardless of how accurate the queue's average is.
- * "Next" is deliberately not a third entry here: `waitMinutesFor` always
- * returns 0 once nobody is ahead, so the existing minute milestone `1`
- * already fires at exactly that moment — a separate position milestone for
- * it would just be the same alert twice.
+ * When a waiting customer is told how close they are: by how many people are
+ * still ahead, never by minutes. A count cannot drift the way a service-time
+ * estimate can, so these land at the same real moments however good or bad
+ * the queue's average is — 3, 2 and 1 people ahead, then 0, "you're next".
+ * Each carries the estimated wait, labelled as only an estimate. Being called
+ * itself is a separate, urgent notice (`notifyCalled`).
  */
-export const NOTIFICATION_POSITIONS_AHEAD = [2, 1] as const;
+export const NOTIFICATION_POSITIONS_AHEAD = [3, 2, 1, 0] as const;
 
 export type NotificationPositionMilestone =
   (typeof NOTIFICATION_POSITIONS_AHEAD)[number];
@@ -91,10 +83,7 @@ export interface TicketContact {
   phone: string | null;
   fcmTokens: string[];
 
-  /** Milestones already dispatched, so an advance cannot duplicate one. */
-  dispatchedMilestones: NotificationMilestone[];
-  /** Position milestones already dispatched — tracked separately from the
-   *  minute-based ones above since the two are independent scales. */
+  /** Position alerts already sent, so an advance cannot duplicate one. */
   dispatchedPositions: NotificationPositionMilestone[];
 }
 
