@@ -3,6 +3,7 @@ import { Logo } from '../components/Logo.js';
 import { LocalizedLink, useLocalizedNavigate } from '../lib/i18n/LocalizedLink.js';
 import { useT } from '../lib/i18n/LanguageContext.js';
 import { YourQueues } from './customer/components/YourQueues.js';
+import { ContinueFromSafari } from './customer/components/ContinueFromSafari.js';
 import { forgetTicket, heldTickets } from '../lib/myTickets.js';
 import { fetchTicket } from '../lib/firestore/queries.js';
 import { isStandalone } from '../lib/platform.js';
@@ -66,6 +67,7 @@ export function Splash() {
   return (
     <section className="splash">
       <YourQueues />
+      <ContinueFromSafari />
 
       <Logo size={44} />
 

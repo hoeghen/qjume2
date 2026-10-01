@@ -85,6 +85,15 @@ export interface TicketContact {
 
   /** Position alerts already sent, so an advance cannot duplicate one. */
   dispatchedPositions: NotificationPositionMilestone[];
+  /**
+   * A pending handover to another app on the same phone (iPhone's Home
+   * Screen app cannot see Safari's storage). Hash of a long single-use token
+   * the device put on its own clipboard; cleared when claimed. Absent on
+   * tickets that never started one.
+   */
+  transferTokenHash?: string | null;
+  /** Epoch ms after which `transferTokenHash` no longer works. */
+  transferExpiresAt?: number | null;
 }
 
 /** Document id of the private half, under a ticket's `private` subcollection. */

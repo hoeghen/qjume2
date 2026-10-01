@@ -171,6 +171,15 @@ export const da: DeepPartial<typeof en> = {
     leaveQueue: 'Forlad køen',
   },
 
+  continueFromSafari: {
+    button: 'Fortsæt min plads fra Safari',
+    moving: 'Flytter din plads…',
+    hint: 'Stillede du dig i kø i Safari, før du installerede? Det her flytter din plads over. Hvis det ikke virker, så stil dig bare i kø igen her.',
+    nothingCopied: 'Der er ingen kopieret plads at fortsætte. Stil dig i kø igen her i stedet.',
+    couldNotMove: 'Vi kunne ikke flytte den plads. Stil dig i kø igen her i stedet.',
+    alreadyHere: 'Du står allerede i denne kø her, så vi beholdt den plads.',
+  },
+
   yourQueues: {
     title: 'Dine køer',
     next: 'Næste',
@@ -185,6 +194,8 @@ export const da: DeepPartial<typeof en> = {
     addToHomeScreen: 'Føj til hjemmeskærm',
     needsInstallAfter: ', og åbn derefter Qjume fra din hjemmeskærm.',
     needsInstallCode: 'Stil dig derefter i kø igen i appen, og slå notifikationer til dér. Din plads her i Safari følger ikke med, så forlad denne kø først for at frigive din plads.',
+    needsInstallTransfer: 'Vi har kopieret din plads. Tryk på “Fortsæt min plads fra Safari” i appen, og tillad indsættelse.',
+    needsInstallFallback: 'Hvis det ikke virker, så stil dig i kø igen i appen — og forlad denne kø i Safari først for at frigive din plads.',
     needsInstallHint: 'Spring det over, hvis du vil — denne side virker stadig, og vi sender dig en e-mail, hvis du gav os en adresse.',
     turnOnQuestion: 'Giv mig besked, når min tur nærmer sig',
     turningOn: 'Slår til…',

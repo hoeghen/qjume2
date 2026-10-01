@@ -72,6 +72,16 @@ export const claimTicket = callable<
   { ticketId: string; displayName: string; number: number }
 >('claimTicket');
 
+export const startTransfer = callable<
+  { shopId: string; queueId: string; ticketId: string; token: string },
+  { expiresAt: number }
+>('startTransfer');
+
+export const claimTransfer = callable<
+  { shopId: string; queueId: string; ticketId: string; token: string },
+  { ticketId: string; displayName: string }
+>('claimTransfer');
+
 export const registerPushToken = callable<
   { shopId: string; queueId: string; ticketId: string; token: string },
   { ok: true }

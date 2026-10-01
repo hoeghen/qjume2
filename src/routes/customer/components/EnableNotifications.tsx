@@ -17,8 +17,10 @@ import {
 import {
   messageOf,
   registerPushToken,
+  startTransfer,
   unregisterPushToken,
 } from '../../../lib/functions.js';
+import { newTransferToken, transferText } from '../../../lib/transfer.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 
 interface Props {
@@ -52,6 +54,9 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   // that moment rather than nagging on every return visit.
   const [justEnabled, setJustEnabled] = useState(false);
   const [showInstallSteps, setShowInstallSteps] = useState(false);
+  // Whether this place was copied for the Home Screen app to pick up. Even
+  // when it was, the steps still say to join again if that doesn't work.
+  const [transferReady, setTransferReady] = useState(false);
   const [installed, setInstalled] = useState<boolean | null>(null);
   const [canInstall, setCanInstall] = useState(canPromptInstall());
 
@@ -152,7 +157,7 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
     if (!showInstallSteps) {
       return (
         <div className="notice">
-          <button type="button" className="secondary" onClick={() => setShowInstallSteps(true)}>
+          <button type="button" className="secondary" onClick={prepareInstall}>
             {t('enableNotifications.turnOnQuestion')}
           </button>
         </div>
@@ -170,14 +175,33 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
           <strong>{t('enableNotifications.addToHomeScreen')}</strong>
           {t('enableNotifications.needsInstallAfter')}
         </p>
-        {/* The Home Screen app has its own storage, separate from Safari,
-            so it starts without this ticket: they join again there. Leaving
-            here first matters — an abandoned ticket still gets called, and
-            its no-shows hold up everyone behind it. */}
-        <p>{t('enableNotifications.needsInstallCode')}</p>
+        {/* The Home Screen app has its own storage, separate from Safari, so
+            it starts without this ticket. The copied link usually carries the
+            place across; joining again is the fallback, and leaving here first
+            matters then — an abandoned ticket still gets called, and its
+            no-shows hold up everyone behind it. */}
+        {transferReady && <p>{t('enableNotifications.needsInstallTransfer')}</p>}
+        <p>
+          {transferReady
+            ? t('enableNotifications.needsInstallFallback')
+            : t('enableNotifications.needsInstallCode')}
+        </p>
         <p className="hint">{t('enableNotifications.needsInstallHint')}</p>
       </div>
     );
+  }
+
+  function prepareInstall() {
+    setShowInstallSteps(true);
+    const token = newTransferToken();
+    // Written before anything is awaited: iOS only allows a clipboard write
+    // while the tap that asked for it is still being handled.
+    const copied =
+      navigator.clipboard?.writeText(transferText({ shopId, queueId, ticketId, token })) ??
+      Promise.reject(new Error('no clipboard'));
+    void Promise.all([copied, startTransfer({ shopId, queueId, ticketId, token })])
+      .then(() => setTransferReady(true))
+      .catch(() => setTransferReady(false));
   }
 
   function turnOn() {

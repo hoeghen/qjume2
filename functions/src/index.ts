@@ -13,6 +13,7 @@ export { removeTicket } from './queue/removeTicket.js';
 export { addWalkIn } from './queue/addWalkIn.js';
 export { relinkTicket } from './queue/relinkTicket.js';
 export { claimTicket } from './queue/claimTicket.js';
+export { startTransfer, claimTransfer } from './queue/transferTicket.js';
 export { registerPushToken } from './queue/registerPushToken.js';
 export { unregisterPushToken } from './queue/unregisterPushToken.js';
 

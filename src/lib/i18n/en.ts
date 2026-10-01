@@ -174,6 +174,15 @@ export const en = {
     leaveQueue: 'Leave the queue',
   },
 
+  continueFromSafari: {
+    button: 'Continue my place from Safari',
+    moving: 'Moving your place…',
+    hint: 'Joined a queue in Safari before installing? This brings your place across. If it doesn’t work, just join the queue again here.',
+    nothingCopied: 'There’s no copied place to continue. Join the queue again here instead.',
+    couldNotMove: 'We couldn’t move that place. Join the queue again here instead.',
+    alreadyHere: 'You’ve already joined this queue here, so we kept that place.',
+  },
+
   yourQueues: {
     title: 'Your queues',
     next: 'Next',
@@ -188,6 +197,8 @@ export const en = {
     addToHomeScreen: 'Add to Home Screen',
     needsInstallAfter: ', then open Qjume from your Home Screen.',
     needsInstallCode: 'Then join the queue again in the app and turn on notifications there. Your place here in Safari doesn’t carry over, so leave this queue first to free up your spot.',
+    needsInstallTransfer: 'We’ve copied your place. In the app, tap “Continue my place from Safari” and allow pasting.',
+    needsInstallFallback: 'If that doesn’t work, join the queue again in the app — and leave this queue in Safari first to free up your spot.',
     needsInstallHint: 'Skip it if you like — this page keeps working, and we’ll email you if you gave us an address.',
     turnOnQuestion: 'Notify me when my turn is close',
     turningOn: 'Turning on…',
