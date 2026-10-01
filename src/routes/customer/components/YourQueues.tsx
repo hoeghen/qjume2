@@ -10,7 +10,6 @@ import {
 import { formatOrdinalSuffix, formatWaitCompact } from '../../../lib/format.js';
 import { LocalizedLink } from '../../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
-import { CategoryIcon } from '../../../components/CategoryIcon.js';
 
 /**
  * The queues this device is standing in, at the top of the screen.
@@ -39,7 +38,7 @@ export function YourQueues() {
       <h2 id="your-queues-title" className="eyebrow">
         {t('yourQueues.title')}
       </h2>
-      <ul className="queue-cards">
+      <ul className="your-queue-list">
         {live.map((h) => (
           <HeldQueueRow
             key={h.ticketId}
@@ -113,23 +112,16 @@ function HeldQueueRow({
   }
 
   return (
-    <li className="queue-card your-queue">
-      <LocalizedLink to={`/q/${shopId}/${queueId}`}>
-        <CategoryIcon category={q.category} />
-        <div className="queue-card-main">
-          <div className="queue-card-title">
-            <strong>{q.shopName}</strong>
-          </div>
-          {q.name && (
-            <p className="queue-card-line">
-              <span className="queue-card-queue">{q.name}</span>
-            </p>
-          )}
-        </div>
-        <div className="queue-card-meta">
-          <span className="wait">{headline}</span>
-          <span className="queue-card-stats">{detail}</span>
-        </div>
+    <li>
+      <LocalizedLink className="your-queue" to={`/q/${shopId}/${queueId}`}>
+        <span className="your-queue-names">
+          <strong>{q.shopName}</strong>
+          {q.name && <span>{q.name}</span>}
+        </span>
+        <span className="your-queue-place">
+          <span className="your-queue-headline">{headline}</span>
+          {detail && <span className="your-queue-detail">{detail}</span>}
+        </span>
       </LocalizedLink>
     </li>
   );
