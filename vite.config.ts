@@ -59,6 +59,12 @@ export default defineConfig({
         short_name: 'Qjume',
         description: 'Join and run queues.',
         display: 'standalone',
+        // Lets a browser tab ask whether this app is already installed
+        // (getInstalledRelatedApps, src/lib/install.ts), so the install
+        // suggestion is shown only to people who don't have it.
+        related_applications: [
+          { platform: 'webapp', url: 'https://qjume.dk/manifest.webmanifest' },
+        ],
         start_url: base,
         scope: base,
         background_color: '#3d3b47',

@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 import {
+  currentPushToken,
   enablePush,
   pushAvailability,
+  pushRemembered,
+  rememberPush,
   resumeForegroundPush,
   type PushAvailability,
 } from '../../../lib/push.js';
+import {
+  canPromptInstall,
+  isInstalled,
+  onInstallChange,
+  promptInstall,
+} from '../../../lib/install.js';
 import {
   messageOf,
   registerPushToken,
@@ -49,6 +58,27 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [testError, setTestError] = useState<string | null>(null);
+  // Set by the tap that turned push on, so the install suggestion appears at
+  // that moment rather than nagging on every return visit.
+  const [justEnabled, setJustEnabled] = useState(false);
+  const [installed, setInstalled] = useState<boolean | null>(null);
+  const [canInstall, setCanInstall] = useState(canPromptInstall());
+
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      setCanInstall(canPromptInstall());
+      void isInstalled().then((i) => {
+        if (!cancelled) setInstalled(i);
+      });
+    };
+    refresh();
+    const unsubscribe = onInstallChange(refresh);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     void resumeForegroundPush();
@@ -57,18 +87,52 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   useEffect(() => {
     let cancelled = false;
     void pushAvailability().then((a) => {
-      if (!cancelled) setAvailability(a);
+      if (cancelled) return;
+      setAvailability(a);
+      if (!pushRemembered(ticketId)) return;
+      if (a !== 'ready' || Notification.permission !== 'granted') {
+        // Permission was withdrawn in the browser since; forget, don't pretend.
+        rememberPush(ticketId, false);
+        return;
+      }
+      // Turned on here before: show it as on straight away, then re-read the
+      // token — they rotate — and re-register it, which is a no-op when
+      // unchanged. A failure leaves it shown as on: the last token registered
+      // is still on the ticket, so alerts are still going somewhere.
+      setEnabled(true);
+      void currentPushToken()
+        .then(async (token) => {
+          if (!token || cancelled) return;
+          await registerPushToken({ shopId, queueId, ticketId, token });
+          if (!cancelled) setPushToken(token);
+        })
+        .catch(() => undefined);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [shopId, queueId, ticketId]);
 
   if (availability === null) return null;
 
   if (enabled) {
     return (
       <div className="notice">
+        {justEnabled && installed === false && (
+          <div className="install-hint">
+            <p>
+              <strong>{t('enableNotifications.installTitle')}</strong>
+            </p>
+            <p>{t('enableNotifications.installBody')}</p>
+            {canInstall ? (
+              <button type="button" onClick={install}>
+                {t('enableNotifications.installButton')}
+              </button>
+            ) : (
+              <p className="hint">{t('enableNotifications.installManual')}</p>
+            )}
+          </div>
+        )}
         <button type="button" className="secondary" disabled={busy} onClick={turnOff}>
           {busy
             ? t('enableNotifications.disabling')
@@ -136,8 +200,10 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
           return;
         }
         await registerPushToken({ shopId, queueId, ticketId, token });
+        rememberPush(ticketId, true);
         setPushToken(token);
         setEnabled(true);
+        setJustEnabled(true);
       } catch (e) {
         setError(messageOf(e));
       } finally {
@@ -180,19 +246,28 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
     })();
   }
 
+  function install() {
+    void promptInstall().then((accepted) => {
+      if (accepted) setInstalled(true);
+    });
+  }
+
   function turnOff() {
-    if (!pushToken) {
-      // Nothing server-side to remove — the state itself is enough to fix.
-      setEnabled(false);
-      return;
-    }
     setBusy(true);
     setError(null);
     void (async () => {
       try {
-        await unregisterPushToken({ shopId, queueId, ticketId, token: pushToken });
+        // On a return visit the token is re-read in the background, so it
+        // may not be here yet — look it up rather than hiding the button
+        // while the server goes on sending to it.
+        const token = pushToken ?? (await currentPushToken());
+        if (token) {
+          await unregisterPushToken({ shopId, queueId, ticketId, token });
+        }
+        rememberPush(ticketId, false);
         setPushToken(null);
         setEnabled(false);
+        setJustEnabled(false);
       } catch (e) {
         setError(messageOf(e));
       } finally {
@@ -200,6 +275,7 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
       }
     })();
   }
+
 
   return (
     <div className="notice">

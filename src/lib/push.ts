@@ -89,6 +89,48 @@ export async function resumeForegroundPush(): Promise<void> {
 }
 
 /**
+ * Per ticket, whether this device turned push on — so coming back to the
+ * ticket shows "Disable notifications" rather than asking again. Kept on the
+ * device because the token list is server-only, and per ticket because one
+ * phone can hold tickets in two queues and turn alerts off for just one.
+ */
+const pushKey = (ticketId: string) => `qjume.push.${ticketId}`;
+
+export function rememberPush(ticketId: string, on: boolean): void {
+  try {
+    if (on) window.localStorage.setItem(pushKey(ticketId), 'on');
+    else window.localStorage.removeItem(pushKey(ticketId));
+  } catch {
+    // Storage blocked: the button just asks again next visit.
+  }
+}
+
+export function pushRemembered(ticketId: string): boolean {
+  try {
+    return window.localStorage.getItem(pushKey(ticketId)) === 'on';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * This device's current token, without prompting — only once permission is
+ * already granted. Tokens rotate, so a returning visit re-reads it rather than
+ * trusting the one it registered last time.
+ */
+export async function currentPushToken(): Promise<string | null> {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return null;
+  if (!(await isSupported().catch(() => false))) return null;
+  const registration = await registerPushWorker();
+  const token = await getToken(getMessaging(app), {
+    vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+    serviceWorkerRegistration: registration,
+  });
+  listenInForeground(registration);
+  return token || null;
+}
+
+/**
  * Ask for permission and return a token.
  *
  * Must be called from a user gesture — iOS requires it, and every other
