@@ -764,11 +764,59 @@ button.link.danger { color: var(--danger); }
    for someone already in line it is the reason they opened the app. */
 .your-queues { margin: 0 0 20px; }
 .your-queues .eyebrow { margin-bottom: 8px; text-transform: uppercase; }
-/* The detail here is a sentence ("2 people ahead of you · 8 min"), not the
-   discovery row's short figures, so it may wrap; the headline never does. */
-.your-queue .wait { white-space: nowrap; }
-.your-queue .queue-card-meta { gap: 12px; }
-.your-queue .queue-card-stats { white-space: normal; text-align: right; }
+/* Kept quiet on purpose: one faintly tinted panel on the ink page rather
+   than the discovery list's white cards, so it reads as a reminder of where
+   you stand and not as the main event. Lines are split by a hairline. */
+.your-queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 14px;
+  background: var(--dark-inset);
+  border-radius: var(--r-panel);
+}
+.your-queue-list li + li { border-top: 1px solid var(--line); }
+.your-queue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  color: var(--on-dark);
+  text-decoration: none;
+}
+.your-queue:hover { opacity: 0.85; }
+.your-queue-names { display: flex; flex-direction: column; min-width: 0; }
+.your-queue-names strong,
+.your-queue-names span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.your-queue-names strong { font-size: 13px; font-weight: 600; }
+.your-queue-names span { font-size: 12px; color: var(--on-dark-muted); }
+/* The place is the one hot colour; the detail under it is a sentence
+   ("2 people ahead of you · 8 min"), so it may wrap where the place never does. */
+.your-queue-place {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  max-width: 48%;
+  flex: none;
+}
+.your-queue-headline {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--orange-on-dark);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.your-queue-detail {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--on-dark-faint);
+  font-variant-numeric: tabular-nums;
+}
 /* The splash centres everything; a list of rows reads left-aligned. */
 .splash .your-queues { width: min(100%, 560px); text-align: left; margin: 0; }
 
