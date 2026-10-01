@@ -82,6 +82,20 @@ export const unregisterPushToken = callable<
   { ok: true }
 >('unregisterPushToken');
 
+export interface PushTokenResult {
+  /** Last few characters of the token only. */
+  token: string;
+  outcome: 'sent' | 'stale' | 'failed';
+  messageId?: string;
+  code?: string;
+  message?: string;
+}
+
+export const sendTestPush = callable<
+  { shopId: string; queueId: string; ticketId: string; delaySeconds?: number },
+  { results: PushTokenResult[] }
+>('sendTestPush');
+
 export const relinkTicket = callable<
   { shopId: string; queueId: string; ticketId: string },
   { resumeCode: string; displayName: string }

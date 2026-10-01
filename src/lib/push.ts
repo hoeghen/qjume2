@@ -1,4 +1,4 @@
-import { getMessaging, getToken, isSupported } from 'firebase/messaging';
+import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
 import { app } from './firebase.js';
 import { isIos, isStandalone } from './platform.js';
 
@@ -25,6 +25,69 @@ export async function pushAvailability(): Promise<PushAvailability> {
 }
 
 /**
+ * Where the push worker lives — deliberately not `/`.
+ *
+ * The PWA's own Workbox worker (`sw.js`, vite-plugin-pwa) is registered at `/`
+ * on every page load. A second worker registered at the same scope is not a
+ * second worker: it replaces the first, and the next page load puts `sw.js`
+ * back. The push subscription belongs to the registration, not the script, so
+ * the token stayed valid and FCM kept accepting sends — but the push event
+ * then landed in a worker with no push handler, and nothing appeared. This is
+ * the scope the Firebase SDK itself uses when it registers its own worker.
+ */
+const PUSH_SCOPE = '/firebase-cloud-messaging-push-scope';
+
+function registerPushWorker(): Promise<ServiceWorkerRegistration> {
+  return navigator.serviceWorker.register(
+    `/firebase-messaging-sw.js?${new URLSearchParams({
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    }).toString()}`,
+    { scope: PUSH_SCOPE },
+  );
+}
+
+let foregroundListening = false;
+
+/**
+ * Show pushes that arrive while the app is open and visible.
+ *
+ * FCM hands a message to the open page instead of to the service worker when
+ * a page is in the foreground, and shows nothing itself — so a customer
+ * watching their place in line, which is exactly who is about to be called,
+ * got no alert at all. Shown through the worker's registration because Chrome
+ * on Android does not allow `new Notification()` from a page.
+ */
+function listenInForeground(registration: ServiceWorkerRegistration): void {
+  if (foregroundListening) return;
+  foregroundListening = true;
+  onMessage(getMessaging(app), (payload) => {
+    const { title, body } = payload.notification ?? {};
+    if (!title) return;
+    void registration.showNotification(title, {
+      body: body ?? '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url: payload.fcmOptions?.link ?? '/' },
+    });
+  });
+}
+
+/**
+ * Re-attach the foreground listener after a reload, when permission was
+ * already granted. Safe to call on every mount; does nothing otherwise.
+ */
+export async function resumeForegroundPush(): Promise<void> {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!(await isSupported().catch(() => false))) return;
+  const registration = await navigator.serviceWorker.getRegistration(PUSH_SCOPE);
+  if (registration) listenInForeground(registration);
+}
+
+/**
  * Ask for permission and return a token.
  *
  * Must be called from a user gesture — iOS requires it, and every other
@@ -34,20 +97,13 @@ export async function enablePush(): Promise<string | null> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return null;
 
-  const registration = await navigator.serviceWorker.register(
-    `/firebase-messaging-sw.js?${new URLSearchParams({
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-      appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    }).toString()}`,
-  );
+  const registration = await registerPushWorker();
 
   const token = await getToken(getMessaging(app), {
     vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
     serviceWorkerRegistration: registration,
   });
 
+  listenInForeground(registration);
   return token || null;
 }

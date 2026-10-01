@@ -29,7 +29,7 @@ describe('fcmPush', () => {
   it('does nothing with an empty token list, and never calls FCM', async () => {
     const result = await fcmPush.send([], notice);
 
-    expect(result).toEqual({ staleTokens: [] });
+    expect(result).toEqual({ staleTokens: [], results: [] });
     expect(sendEachForMulticast).not.toHaveBeenCalled();
   });
 
@@ -125,5 +125,44 @@ describe('fcmPush', () => {
       'FCM send failed for a token',
       expect.objectContaining({ code: 'messaging/quota-exceeded' }),
     );
+  });
+
+  it('logs every send, success included, with a per-token outcome but never a whole token', async () => {
+    // Without a line for a successful send, "FCM accepted it and the phone
+    // dropped it" looks identical to "nothing was ever sent".
+    const info = vi.spyOn(logger, 'info').mockImplementation(() => undefined);
+    vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    sendEachForMulticast.mockResolvedValue({
+      responses: [
+        { success: true, messageId: 'projects/p/messages/1' },
+        { success: false, error: { code: 'messaging/registration-token-not-registered' } },
+        { success: false, error: { code: 'messaging/quota-exceeded', message: 'slow down' } },
+      ],
+    });
+
+    const result = await fcmPush.send(
+      ['good-token-0001', 'stale-token-0002', 'quota-token-0003'],
+      notice,
+    );
+
+    expect(result.results).toEqual([
+      { token: '…ken-0001', outcome: 'sent', messageId: 'projects/p/messages/1' },
+      {
+        token: '…ken-0002',
+        outcome: 'stale',
+        code: 'messaging/registration-token-not-registered',
+      },
+      {
+        token: '…ken-0003',
+        outcome: 'failed',
+        code: 'messaging/quota-exceeded',
+        message: 'slow down',
+      },
+    ]);
+    expect(info).toHaveBeenCalledWith(
+      'FCM send result',
+      expect.objectContaining({ tokenCount: 3, sent: 1, stale: 1, failed: 1 }),
+    );
+    expect(JSON.stringify(info.mock.calls)).not.toContain('good-token-0001');
   });
 });

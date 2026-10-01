@@ -16,10 +16,31 @@ export interface Notice {
   url: string;
 }
 
+/** What happened to one token in one send — enough to diagnose without the token itself. */
+export interface PushTokenResult {
+  /** The last few characters only: enough to tell two devices apart in a log. */
+  token: string;
+  outcome: 'sent' | 'stale' | 'failed';
+  messageId?: string;
+  code?: string;
+  message?: string;
+}
+
+export interface PushSendResult {
+  /** The tokens that are no longer valid and should be forgotten. */
+  staleTokens: string[];
+  /** One entry per token sent to, in order. */
+  results: PushTokenResult[];
+}
+
 export interface PushChannel {
   readonly name: string;
-  /** Returns the tokens that are no longer valid and should be forgotten. */
-  send(tokens: string[], notice: Notice): Promise<{ staleTokens: string[] }>;
+  send(tokens: string[], notice: Notice): Promise<PushSendResult>;
+}
+
+/** Enough of a push token to recognise it in a log, and nothing that can be used to send to it. */
+export function tokenTail(token: string): string {
+  return `…${token.slice(-8)}`;
 }
 
 export interface EmailChannel {
@@ -44,7 +65,13 @@ export function recordingChannels(sink: RecordedNotice[]): Channels {
       name: 'recording',
       async send(tokens, notice) {
         for (const to of tokens) sink.push({ ...notice, channel: 'push', to });
-        return { staleTokens: [] };
+        return {
+          staleTokens: [],
+          results: tokens.map((t) => ({
+            token: tokenTail(t),
+            outcome: 'sent' as const,
+          })),
+        };
       },
     },
     email: {

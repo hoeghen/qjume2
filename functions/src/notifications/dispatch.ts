@@ -4,7 +4,12 @@ import { contactRef } from '../queue/tickets.js';
 import { decideMilestone, decidePositionMilestone, waitMinutesFor } from './milestones.js';
 import { fcmPush } from './fcm.js';
 import { resendEmail } from './email.js';
-import { recordingChannels, type Channels, type Notice } from './channels.js';
+import {
+  recordingChannels,
+  tokenTail,
+  type Channels,
+  type Notice,
+} from './channels.js';
 import type {
   Queue,
   Ticket,
@@ -68,7 +73,22 @@ export async function notifyTicket(
     target.ticketId,
   );
   const contact = (await ref.get()).data() as TicketContact | undefined;
-  if (!contact) return;
+  if (!contact) {
+    logger.warn('Notification skipped: ticket has no contact record', {
+      ...target,
+      title: notice.title,
+    });
+    return;
+  }
+
+  // One line per notice, before anything is sent, so a notice that reached
+  // no channel at all is visible as exactly that rather than as silence.
+  logger.info('Notifying ticket', {
+    ...target,
+    title: notice.title,
+    pushTokens: contact.fcmTokens.map(tokenTail),
+    hasEmail: Boolean(contact.email),
+  });
 
   const jobs: Promise<unknown>[] = [];
 
@@ -78,6 +98,10 @@ export async function notifyTicket(
         .send(contact.fcmTokens, notice)
         .then(async ({ staleTokens }) => {
           if (staleTokens.length > 0) {
+            logger.info('Forgetting stale push tokens', {
+              ...target,
+              tokens: staleTokens.map(tokenTail),
+            });
             await ref.update({
               fcmTokens: FieldValue.arrayRemove(...staleTokens),
             });
@@ -139,13 +163,20 @@ export async function sweepMilestones(
     queue.observedServiceTimeSeconds ?? queue.avgServiceTimeSeconds;
 
   let sent = 0;
+  // Every waiting ticket's decision, logged once at the end: "why didn't I get
+  // an alert" is almost always answered by one of these rows (no tokens, the
+  // milestone was already dispatched, or the estimate hadn't crossed one).
+  const decisions: Record<string, unknown>[] = [];
 
   await Promise.all(
     waiting.docs.map(async (doc, index) => {
       const ticket = doc.data() as Ticket;
       const ref = contactRef(firestore, shopId, queueId, doc.id);
       const contact = (await ref.get()).data() as TicketContact | undefined;
-      if (!contact) return;
+      if (!contact) {
+        decisions.push({ ticketId: doc.id, peopleAhead: index, contact: false });
+        return;
+      }
 
       const url = ticketUrl(baseUrl, { shopId, queueId, ticketId: doc.id });
       const target = { shopId, queueId, ticketId: doc.id };
@@ -156,6 +187,17 @@ export async function sweepMilestones(
         index,
         contact.dispatchedPositions,
       );
+      decisions.push({
+        ticketId: doc.id,
+        peopleAhead: index,
+        waitMinutes: minutes,
+        pushTokens: contact.fcmTokens.length,
+        hasEmail: Boolean(contact.email),
+        alreadyDispatched: contact.dispatchedMilestones,
+        alreadyDispatchedPositions: contact.dispatchedPositions,
+        minuteMilestone: decision.send,
+        positionMilestone: positionDecision.send,
+      });
 
       // Both scales are independent: a bulk no-show removal can cross a
       // minute milestone and a position milestone in the same advance, and
@@ -212,6 +254,16 @@ export async function sweepMilestones(
       }
     }),
   );
+
+  logger.info('Milestone sweep', {
+    shopId,
+    queueId,
+    serviceTimeSeconds: serviceTime,
+    activeStations,
+    waiting: waiting.size,
+    sent,
+    decisions,
+  });
 
   return sent;
 }

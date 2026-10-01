@@ -1,9 +1,11 @@
 import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions';
 import { FieldValue, type Firestore } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { contactRef } from './tickets.js';
+import { tokenTail } from '../notifications/channels.js';
 import type { TicketContact } from '../../../src/types/index.js';
 
 export interface RegisterPushTokenRequest {
@@ -52,6 +54,13 @@ export async function performRegisterPushToken(
   // arrayUnion so re-registering on the same device is a no-op rather than a
   // second copy of every alert.
   await ref.update({ fcmTokens: FieldValue.arrayUnion(token) });
+  logger.info('Push token registered', {
+    shopId,
+    queueId,
+    ticketId,
+    token: tokenTail(token),
+    tokensBefore: contact.fcmTokens.length,
+  });
   return { ok: true } as const;
 }
 
