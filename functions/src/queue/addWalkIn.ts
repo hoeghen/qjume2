@@ -125,7 +125,6 @@ export async function performAddWalkIn(
       email: null,
       phone: null,
       fcmTokens: [],
-      dispatchedMilestones: [],
       dispatchedPositions: [],
     };
 

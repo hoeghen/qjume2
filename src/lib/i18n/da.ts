@@ -178,12 +178,13 @@ export const da: DeepPartial<typeof en> = {
 
   enableNotifications: {
     off: 'Notifikationer er slået fra for dette websted. Din plads er på denne skærm alligevel, og vi sender dig en e-mail, hvis du gav os en adresse.',
-    needsInstallTitle: 'Vil du have et praj, når din tur nærmer sig?',
-    needsInstallBefore: 'På iPhone kræver det, at Qjume er på din hjemmeskærm først. Tryk på ',
+    needsInstallTitle: 'På iPhone kræver notifikationer, at Qjume er på din hjemmeskærm',
+    needsInstallBefore: 'Tryk på ',
     share: 'Del',
     needsInstallMiddle: ', derefter ',
     addToHomeScreen: 'Føj til hjemmeskærm',
-    needsInstallAfter: ', og åbn den derfra.',
+    needsInstallAfter: ', og åbn derefter Qjume fra din hjemmeskærm.',
+    needsInstallCode: 'Appen på hjemmeskærmen starter forfra, så find denne kø dér, tryk på “Allerede i denne kø? Indtast din kode”, og indtast koden, du fik, da du stillede dig i kø. Slå derefter notifikationer til.',
     needsInstallHint: 'Spring det over, hvis du vil — denne side virker stadig, og vi sender dig en e-mail, hvis du gav os en adresse.',
     turnOnQuestion: 'Giv mig besked, når min tur nærmer sig',
     turningOn: 'Slår til…',

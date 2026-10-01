@@ -181,12 +181,13 @@ export const en = {
 
   enableNotifications: {
     off: 'Notifications are switched off for this site. Your place is on this screen either way, and we’ll email you if you gave us an address.',
-    needsInstallTitle: 'Want a nudge when your turn is close?',
-    needsInstallBefore: 'On iPhone that needs Qjume on your Home Screen first. Tap ',
+    needsInstallTitle: 'On iPhone, notifications need Qjume on your Home Screen',
+    needsInstallBefore: 'Tap ',
     share: 'Share',
     needsInstallMiddle: ', then ',
     addToHomeScreen: 'Add to Home Screen',
-    needsInstallAfter: ', and open it from there.',
+    needsInstallAfter: ', then open Qjume from your Home Screen.',
+    needsInstallCode: 'The Home Screen app starts fresh, so find this queue there, tap “Already in this queue? Enter your code” and enter the code you got when you joined. Then turn on notifications.',
     needsInstallHint: 'Skip it if you like — this page keeps working, and we’ll email you if you gave us an address.',
     turnOnQuestion: 'Notify me when my turn is close',
     turningOn: 'Turning on…',

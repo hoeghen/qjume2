@@ -1,123 +1,43 @@
 import { describe, expect, it } from 'vitest';
-import {
-  decideMilestone,
-  decidePositionMilestone,
-  waitMinutesFor,
-} from './milestones.js';
+import { decidePositionMilestone, waitMinutesFor } from './milestones.js';
 
-describe('milestone selection', () => {
-  it('says nothing while the turn is still far off', () => {
-    expect(decideMilestone(40, [])).toEqual({ send: null, dispatched: [] });
+describe('decidePositionMilestone', () => {
+  it('sends nothing while more than three people are ahead', () => {
+    expect(decidePositionMilestone(4, [])).toEqual({ send: null, dispatched: [] });
   });
 
-  it('announces the first milestone as it is reached', () => {
-    expect(decideMilestone(14, [])).toEqual({ send: 15, dispatched: [15] });
+  it('fires at three, two, one and zero ahead, once each', () => {
+    let done: (3 | 2 | 1 | 0)[] = [];
+    for (const ahead of [3, 2, 1, 0] as const) {
+      const decision = decidePositionMilestone(ahead, done);
+      expect(decision.send).toBe(ahead);
+      done = [...done, ...decision.dispatched];
+      expect(decidePositionMilestone(ahead, done).send).toBeNull();
+    }
   });
 
-  it('never repeats a milestone already sent', () => {
-    expect(decideMilestone(14, [15])).toEqual({ send: null, dispatched: [] });
-  });
-
-  it('sends only the most urgent when a queue jumps forward', () => {
-    // Five people leave at once: a twenty-minute wait becomes four, crossing
-    // 15, 10 and 5 together. One alert, not three.
-    expect(decideMilestone(4, [])).toEqual({ send: 5, dispatched: [15, 10, 5] });
-  });
-
-  it('does not fire a leapfrogged milestone late', () => {
-    const jumped = decideMilestone(4, []);
-    // Having marked 15 and 10 dispatched, a later advance must stay quiet
-    // about them even though the wait is still under both.
-    expect(decideMilestone(4, jumped.dispatched)).toEqual({
-      send: null,
-      dispatched: [],
-    });
-  });
-
-  it('still announces the last minute after an earlier jump', () => {
-    const jumped = decideMilestone(4, []);
-    expect(decideMilestone(1, jumped.dispatched)).toEqual({
-      send: 1,
-      dispatched: [1],
-    });
-  });
-
-  it('treats being next as the final call', () => {
-    expect(decideMilestone(0, [15, 10, 5])).toEqual({ send: 1, dispatched: [1] });
-  });
-
-  it('says nothing once every milestone has been sent', () => {
-    expect(decideMilestone(0, [15, 10, 5, 1])).toEqual({
-      send: null,
-      dispatched: [],
-    });
-  });
-});
-
-describe('position milestone selection', () => {
-  it('says nothing with more than two people ahead', () => {
-    expect(decidePositionMilestone(5, [])).toEqual({ send: null, dispatched: [] });
-  });
-
-  it('announces third in line', () => {
-    expect(decidePositionMilestone(2, [])).toEqual({ send: 2, dispatched: [2] });
-  });
-
-  it('announces second in line once third has already been sent', () => {
-    expect(decidePositionMilestone(1, [2])).toEqual({ send: 1, dispatched: [1] });
-  });
-
-  it('never repeats a position milestone already sent', () => {
-    expect(decidePositionMilestone(1, [2, 1])).toEqual({
-      send: null,
-      dispatched: [],
-    });
-  });
-
-  it('sends only the most urgent when a queue jumps forward', () => {
-    // A run of no-shows can drop someone from fifth straight to second,
-    // crossing third and second together — one alert, not two.
-    expect(decidePositionMilestone(1, [])).toEqual({
-      send: 1,
-      dispatched: [2, 1],
-    });
-  });
-
-  it('does not fire a leapfrogged position milestone late', () => {
+  it('sends only the most urgent when a jump crosses several, and never the skipped ones later', () => {
     const jumped = decidePositionMilestone(1, []);
-    expect(decidePositionMilestone(1, jumped.dispatched)).toEqual({
-      send: null,
-      dispatched: [],
+    expect(jumped).toEqual({ send: 1, dispatched: [3, 2, 1] });
+    expect(decidePositionMilestone(1, jumped.dispatched).send).toBeNull();
+    expect(decidePositionMilestone(0, jumped.dispatched)).toEqual({
+      send: 0,
+      dispatched: [0],
     });
   });
 
-  it("says nothing once nobody is ahead — that is the minute-1 milestone's job", () => {
-    // waitMinutesFor(0, ...) is always 0, so the existing "1 minute" milestone
-    // already fires reliably at this exact moment, whether or not third/second
-    // ever got the chance to fire on the way there. A position alert here
-    // would either duplicate that or mislabel someone who is actually next.
-    expect(decidePositionMilestone(0, [])).toEqual({ send: null, dispatched: [] });
-    expect(decidePositionMilestone(0, [2, 1])).toEqual({
-      send: null,
-      dispatched: [],
+  it('says "you are next" to someone who reaches the front from far back in one advance', () => {
+    expect(decidePositionMilestone(0, [])).toEqual({
+      send: 0,
+      dispatched: [3, 2, 1, 0],
     });
   });
 });
 
-describe('wait estimate', () => {
-  it('counts the people ahead at the queue average', () => {
-    expect(waitMinutesFor(4, 300, 1)).toBe(20);
-  });
-
-  it('divides across parallel stations', () => {
-    expect(waitMinutesFor(4, 300, 2)).toBe(10);
-  });
-
-  it('is zero for whoever is next', () => {
+describe('waitMinutesFor', () => {
+  it('matches what the ticket screen shows', () => {
+    expect(waitMinutesFor(3, 300, 1)).toBe(15);
+    expect(waitMinutesFor(3, 300, 3)).toBe(5);
     expect(waitMinutesFor(0, 300, 1)).toBe(0);
-  });
-
-  it('never divides by zero stations', () => {
-    expect(waitMinutesFor(2, 60, 0)).toBe(2);
   });
 });

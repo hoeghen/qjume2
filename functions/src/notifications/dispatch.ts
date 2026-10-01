@@ -1,7 +1,7 @@
 import { FieldValue, type Firestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';
 import { contactRef } from '../queue/tickets.js';
-import { decideMilestone, decidePositionMilestone, waitMinutesFor } from './milestones.js';
+import { decidePositionMilestone, waitMinutesFor } from './milestones.js';
 import { fcmPush } from './fcm.js';
 import { resendEmail } from './email.js';
 import {
@@ -126,6 +126,43 @@ export async function notifyTicket(
   }
 }
 
+/**
+ * "3 people ahead of you", down to "You're next", with the estimated wait.
+ *
+ * The wait is the same figure the ticket screen shows, so the two never
+ * disagree — and it is always called an estimate, because it is one: it
+ * comes from the queue's average service time and moves the moment someone
+ * takes longer, leaves, or doesn't turn up. The count of people ahead is
+ * the part that can be relied on.
+ */
+export function positionNotice(
+  displayName: string,
+  shopName: string,
+  peopleAhead: number,
+  waitMinutes: number,
+  url: string,
+): Notice {
+  const caveat = 'This is only an estimate and can change.';
+  if (peopleAhead === 0) {
+    return {
+      title: 'You’re next',
+      body:
+        `${displayName}, you’re next in line at ${shopName}. ` +
+        `Estimated wait: any moment now. ${caveat}`,
+      url,
+    };
+  }
+  const wait =
+    waitMinutes < 1 ? 'under a minute' : `about ${waitMinutes} min`;
+  return {
+    title: `${peopleAhead} ${peopleAhead === 1 ? 'person' : 'people'} ahead of you`,
+    body:
+      `${displayName}, ${peopleAhead} ${peopleAhead === 1 ? 'person is' : 'people are'} ` +
+      `ahead of you at ${shopName}. Estimated wait: ${wait}. ${caveat}`,
+    url,
+  };
+}
+
 export interface MilestoneSweepOptions {
   shopId: string;
   queueId: string;
@@ -182,76 +219,33 @@ export async function sweepMilestones(
       const target = { shopId, queueId, ticketId: doc.id };
 
       const minutes = waitMinutesFor(index, serviceTime, activeStations);
-      const decision = decideMilestone(minutes, contact.dispatchedMilestones);
-      const positionDecision = decidePositionMilestone(
-        index,
-        contact.dispatchedPositions,
-      );
+      const decision = decidePositionMilestone(index, contact.dispatchedPositions);
       decisions.push({
         ticketId: doc.id,
         peopleAhead: index,
         waitMinutes: minutes,
         pushTokens: contact.fcmTokens.length,
         hasEmail: Boolean(contact.email),
-        alreadyDispatched: contact.dispatchedMilestones,
-        alreadyDispatchedPositions: contact.dispatchedPositions,
-        minuteMilestone: decision.send,
-        positionMilestone: positionDecision.send,
+        alreadyDispatched: contact.dispatchedPositions,
+        send: decision.send,
       });
 
-      // Both scales are independent: a bulk no-show removal can cross a
-      // minute milestone and a position milestone in the same advance, and
-      // each is telling the customer something the other doesn't (an
-      // estimate vs. a firm count), so both go out.
-      if (!decision.send && !positionDecision.send) return;
+      if (decision.send === null) return;
 
       // Marked before sending: a duplicate alert is a nuisance, but a crash
       // mid-send that leaves it unmarked would fire the same one again on the
       // next advance, and again after that.
-      const update: Record<string, unknown> = {};
-      if (decision.send) {
-        update['dispatchedMilestones'] = FieldValue.arrayUnion(
-          ...decision.dispatched,
-        );
-      }
-      if (positionDecision.send) {
-        update['dispatchedPositions'] = FieldValue.arrayUnion(
-          ...positionDecision.dispatched,
-        );
-      }
-      await ref.update(update);
+      await ref.update({
+        dispatchedPositions: FieldValue.arrayUnion(...decision.dispatched),
+      });
 
-      if (decision.send) {
-        const notice: Notice =
-          decision.send === 1
-            ? {
-                title: "You're next",
-                body: `${ticket.displayName}, you're about to be called at ${queue.shopName}.`,
-                url,
-              }
-            : {
-                title: `About ${decision.send} minutes`,
-                body: `${ticket.displayName}, your turn at ${queue.shopName} is roughly ${decision.send} minutes away.`,
-                url,
-              };
-        await notifyTicket(firestore, target, notice, channels);
-        sent += 1;
-      }
-
-      if (positionDecision.send) {
-        // peopleAhead 2 -> third in line, 1 -> second in line.
-        const place = positionDecision.send + 1;
-        const ordinal = place === 3 ? '3rd' : '2nd';
-        const notice: Notice = {
-          title: `You're ${ordinal} in line`,
-          body: `${ticket.displayName}, ${positionDecision.send} ${
-            positionDecision.send === 1 ? 'person is' : 'people are'
-          } ahead of you at ${queue.shopName}.`,
-          url,
-        };
-        await notifyTicket(firestore, target, notice, channels);
-        sent += 1;
-      }
+      await notifyTicket(
+        firestore,
+        target,
+        positionNotice(ticket.displayName, queue.shopName, index, minutes, url),
+        channels,
+      );
+      sent += 1;
     }),
   );
 

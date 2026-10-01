@@ -82,7 +82,6 @@ beforeEach(async () => {
       email: 'marta@example.com',
       phone: null,
       fcmTokens: [],
-      dispatchedMilestones: [],
       dispatchedPositions: [],
     });
   });

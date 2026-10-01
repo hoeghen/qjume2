@@ -17,9 +17,12 @@ export type PushAvailability =
  * So an uninstalled iOS browser is told to install first, not asked.
  */
 export async function pushAvailability(): Promise<PushAvailability> {
+  // Checked first: Safari on iOS has no Notification API at all outside an
+  // installed app, so the checks below would call it "unsupported" and the
+  // customer would never be told that installing is what makes it work.
+  if (isIos() && !isStandalone()) return 'needs-install';
   if (!('Notification' in window)) return 'unsupported';
   if (!(await isSupported().catch(() => false))) return 'unsupported';
-  if (isIos() && !isStandalone()) return 'needs-install';
   if (Notification.permission === 'denied') return 'denied';
   return 'ready';
 }

@@ -176,7 +176,6 @@ export async function performJoinQueue(
         email: email?.trim() || null,
         phone: phone?.trim() || null,
         fcmTokens: [],
-        dispatchedMilestones: [],
         dispatchedPositions: [],
       };
 
