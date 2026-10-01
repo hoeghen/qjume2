@@ -1,7 +1,5 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase.js';
-import { isMock } from './mock/mode.js';
-import { mockApi } from './mock/api.js';
 import type {
   NoShowPenalty,
   QueueCategory,
@@ -22,13 +20,6 @@ export interface Geocoded {
 
 function callable<Req, Res>(name: string) {
   return async (data: Req): Promise<Res> => {
-    if (isMock) {
-      const handler = (mockApi as Record<string, unknown>)[name];
-      if (typeof handler !== 'function') {
-        throw new Error(`${name} is not implemented by the mock backend.`);
-      }
-      return (handler as (d: Req) => Res)(data);
-    }
     const fn = httpsCallable<Req, Res>(functions, name);
     return (await fn(data)).data;
   };

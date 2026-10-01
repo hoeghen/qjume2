@@ -227,8 +227,6 @@ export const da: DeepPartial<typeof en> = {
       and: ' og ',
       privacy: 'privatlivspolitik',
       period: '.',
-      mockStaffNotice: 'Tilføjet som ansat et sted? Mock-udgaven har ingen kontoliste at genkende din e-mail i — dette erstatter at logge ind som den konto.',
-      continueAsStaff: 'Fortsæt som ansat',
     },
 
     createShop: {
@@ -425,8 +423,6 @@ export const da: DeepPartial<typeof en> = {
 
     gate: {
       title: 'Platformsadministrator',
-      mockNotice: 'Dette er mock-udgavens erstatning for platformsadministrator-krav — intet her er en rigtig legitimation.',
-      continueAsAdmin: 'Fortsæt som platformsadministrator',
       noAccess: 'Denne konto har ikke platformsadministrator-adgang.',
       signInPrompt: 'Log ind med platformsadministrator-kontoen for at fortsætte.',
     },

@@ -11,9 +11,8 @@ spec and `CLAUDE.md` for conventions and the decisions made during implementatio
 - Realtime Database — shop heartbeat/presence only
 - `geofire-common` for geohash queries
 
-Two backends share one app: Firebase for the real deployment, and a `localStorage`-backed
-mock (`src/lib/mock/`) with the same surface, used for the GitHub Pages build and local
-development without the emulator suite.
+Firebase is the only backend; local development runs against the Firebase Emulator
+Suite rather than a live project (see CLAUDE.md and `.env.example`).
 
 ## Services in use — real backend (`qjume-d483a`)
 
@@ -26,7 +25,7 @@ identity — noted per service so access/recovery isn't a guessing game later.
 | OpenCage | Geocoding for discovery/geohash queries | Google email — `carverdk@gmail.com` |
 | Resend | Transactional email (queue notifications), sending domain `bitwork.dk` (verified) | Google email — `carverdk@gmail.com` |
 | Stripe | Subscription billing for the paid plan | Google email — `carverdk@gmail.com` |
-| GitHub (`hoeghen/qjume2`) | Source control, CI/CD (`deploy.yml` for the mock build on GitHub Pages, `deploy-firebase.yml` for the real backend) | Google email — `carverdk@gmail.com` |
+| GitHub (`hoeghen/qjume2`) | Source control, CI/CD (`deploy-firebase.yml`) | Google email — `carverdk@gmail.com` |
 
 Not in use: **Google Play Billing** — considered and rejected in favour of Stripe, since
 Play Billing only works from a native/TWA Android app on the Play Store and wouldn't

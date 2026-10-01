@@ -231,8 +231,6 @@ export const en = {
       and: ' and ',
       privacy: 'Privacy Policy',
       period: '.',
-      mockStaffNotice: 'Added as staff somewhere? The mock has no account directory to recognise your email by — this stands in for signing in as that account instead.',
-      continueAsStaff: 'Continue as staff',
     },
 
     createShop: {
@@ -429,8 +427,6 @@ export const en = {
 
     gate: {
       title: 'Platform admin',
-      mockNotice: 'This is the mock’s stand-in for the platform admin claim — nothing here is a real credential.',
-      continueAsAdmin: 'Continue as platform admin',
       noAccess: 'This account doesn’t have platform admin access.',
       signInPrompt: 'Sign in with the platform admin account to continue.',
     },

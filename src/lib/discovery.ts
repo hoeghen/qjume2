@@ -10,9 +10,6 @@ import {
 import { distanceBetween, geohashQueryBounds } from 'geofire-common';
 import { db } from './firebase.js';
 import { queueConverter } from './firestore/converters.js';
-import { isMock } from './mock/mode.js';
-import { placeMockShopsNear } from './mock/seed.js';
-import { mockStore } from './mock/store.js';
 import type { Queue, QueueCategory, QueueStatus } from '../types/index.js';
 
 export interface DiscoveredQueue extends Queue {
@@ -84,36 +81,6 @@ export async function findNearest(
   center: Coordinates,
   limit: number,
 ): Promise<DiscoveredQueue[]> {
-  if (isMock) {
-    // The seeded shops are invented, so they belong around whoever is asking
-    // rather than at fixed coordinates in one city.
-    placeMockShopsNear(center);
-
-    // Everything is already in memory, so there is no radius to impose: take
-    // the closest, however far away they happen to be.
-    return byDistance(
-      mockStore.listGroup<Queue>('queues').flatMap((queue) => {
-        if (queue.lat === null || queue.lng === null) return [];
-        // A platform suspension takes a shop out of discovery entirely — not
-        // a status a customer chose to see past, the way closed or paused
-        // are. See CLAUDE.md decision 9.
-        if (queue.shopSuspended) return [];
-        const shopId = queue.path.split('/')[1];
-        if (!shopId) return [];
-        return [
-          {
-            ...queue,
-            shopId,
-            distanceKm: distanceBetween(
-              [queue.lat, queue.lng],
-              [center.lat, center.lng],
-            ),
-          },
-        ];
-      }),
-    ).slice(0, limit);
-  }
-
   let found: DiscoveredQueue[] = [];
   for (const radiusKm of SEARCH_RINGS_KM) {
     found = await queryRing(center, radiusKm);
@@ -191,19 +158,6 @@ function byDistance(queues: DiscoveredQueue[]): DiscoveredQueue[] {
  * for a location before showing it (`QueueCard`'s `showDistance` prop).
  */
 export async function findAllByName(count: number): Promise<DiscoveredQueue[]> {
-  if (isMock) {
-    const named = mockStore
-      .listGroup<Queue>('queues')
-      .flatMap((queue) => {
-        if (queue.shopSuspended) return [];
-        const shopId = queue.path.split('/')[1];
-        if (!shopId) return [];
-        return [{ ...queue, shopId, distanceKm: 0 }];
-      })
-      .sort((a, b) => a.shopName.localeCompare(b.shopName));
-    return named.slice(0, count);
-  }
-
   const snapshot = await getDocs(
     query(
       collectionGroup(db, 'queues').withConverter(queueConverter),

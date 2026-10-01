@@ -3,11 +3,8 @@ name: Deploy to Firebase
 # Publishes the app running on the real backend — Firestore, Auth, Cloud
 # Functions — plus the security rules, indexes, and RTDB rules it depends on.
 #
-# Separate from deploy.yml, which ships the mock backend to GitHub Pages and
-# needs no secrets at all: that workflow keeps working whether or not this
-# one is ever configured. This one skips itself cleanly rather than failing
-# until FIREBASE_PROJECT_ID is set — see CLAUDE.md decision 10's rollout
-# checklist for what that setup involves.
+# Skips itself cleanly rather than failing until FIREBASE_PROJECT_ID is set —
+# see CLAUDE.md decision 10's rollout checklist for what that setup involves.
 on:
   push:
     branches:
@@ -48,10 +45,6 @@ jobs:
           # Firebase emulators at 127.0.0.1, which on a real user's device
           # is their own device, not this build server.
           VITE_USE_EMULATORS: 'false'
-          # Setting VITE_FIREBASE_API_KEY (rather than VITE_BACKEND=firebase
-          # directly) is what src/lib/mock/mode.ts infers the backend from —
-          # stating the backend explicitly here would risk the two disagreeing
-          # if one is ever changed without the other.
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
