@@ -11,6 +11,7 @@ import { messageOf } from '../../lib/functions.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { Spinner } from '../../components/Spinner.js';
 import { Filters } from './components/Filters.js';
+import { YourQueues } from './components/YourQueues.js';
 import { QueueCard } from './components/QueueCard.js';
 
 const DEFAULTS: FilterState = {
@@ -148,6 +149,8 @@ export function CustomerHome() {
 
   return (
     <main className="screen">
+      <YourQueues />
+
       <div className="eyebrow-row">
         <p className="eyebrow">{t('discovery.eyebrow')}</p>
         <span className="screen-count">

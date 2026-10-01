@@ -45,3 +45,17 @@ export function forgetTicket(shopId: string, queueId: string): void {
   delete held[keyOf(shopId, queueId)];
   write(held);
 }
+
+export interface HeldTicket {
+  shopId: string;
+  queueId: string;
+  ticketId: string;
+}
+
+/** Every ticket this device holds, in the order they were joined. */
+export function heldTickets(): HeldTicket[] {
+  return Object.entries(read()).flatMap(([key, ticketId]) => {
+    const [shopId, queueId] = key.split('/');
+    return shopId && queueId ? [{ shopId, queueId, ticketId }] : [];
+  });
+}

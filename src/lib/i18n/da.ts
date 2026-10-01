@@ -171,6 +171,11 @@ export const da: DeepPartial<typeof en> = {
     leaveQueue: 'Forlad køen',
   },
 
+  yourQueues: {
+    title: 'Dine køer',
+    next: 'Næste',
+  },
+
   enableNotifications: {
     off: 'Notifikationer er slået fra for dette websted. Din plads er på denne skærm alligevel, og vi sender dig en e-mail, hvis du gav os en adresse.',
     needsInstallTitle: 'Vil du have et praj, når din tur nærmer sig?',

@@ -1,12 +1,13 @@
 import {
   endBefore,
+  getDoc,
   limit,
   orderBy,
   query,
   where,
   type Query,
 } from 'firebase/firestore';
-import { auditLog, shops, staff, stations, tickets } from './paths.js';
+import { auditLog, shops, staff, stations, ticketDoc, tickets } from './paths.js';
 import type { AdminAuditEntry, Queue, Shop, Ticket } from '../../types/index.js';
 import { queues } from './paths.js';
 
@@ -68,4 +69,14 @@ export function ticketsAhead(
 
 export function staffOf(shopId: string) {
   return staff(shopId);
+}
+
+/** One read of a ticket, for decisions made once rather than watched. */
+export async function fetchTicket(
+  shopId: string,
+  queueId: string,
+  ticketId: string,
+): Promise<Ticket | null> {
+  const snap = await getDoc(ticketDoc(shopId, queueId, ticketId));
+  return snap.data() ?? null;
 }
