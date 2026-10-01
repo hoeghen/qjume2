@@ -197,6 +197,10 @@ export const en = {
     testStale: 'This device’s notification token has expired. Turn notifications off and on again.',
     testFailed: 'The notification service refused it: {code}',
     testError: 'Couldn’t send a test notification. Tap for details.',
+    installTitle: 'For reliable notifications, install Qjume',
+    installBody: 'Notifications from a website can be delayed, grouped under your browser, or hidden as possible spam. Installed, Qjume’s alerts arrive as its own.',
+    installButton: 'Install Qjume',
+    installManual: 'Open your browser’s menu and choose “Install app” or “Add to Home screen”.',
   },
 
   monitor: {

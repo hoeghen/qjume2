@@ -277,6 +277,14 @@ button.link.danger { color: var(--danger); }
   border-radius: var(--r-panel);
 }
 .notice.warn { background: var(--warn-bg); color: var(--warn-fg); }
+/* The install suggestion sits above the notification controls it is about,
+   ruled off so it reads as advice rather than another button row. */
+.install-hint {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.install-hint p { margin: 0 0 8px; }
 .error { color: var(--danger); font-weight: 600; }
 .error-details summary {
   color: var(--danger);

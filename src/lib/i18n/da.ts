@@ -194,6 +194,10 @@ export const da: DeepPartial<typeof en> = {
     testStale: 'Denne enheds notifikationsnøgle er udløbet. Slå notifikationer fra og til igen.',
     testFailed: 'Notifikationstjenesten afviste den: {code}',
     testError: 'Kunne ikke sende en testnotifikation. Tryk for detaljer.',
+    installTitle: 'Installér Qjume for pålidelige notifikationer',
+    installBody: 'Notifikationer fra et websted kan blive forsinket, samlet under din browser eller skjult som mulig spam. Installeret kommer Qjumes beskeder som dens egne.',
+    installButton: 'Installér Qjume',
+    installManual: 'Åbn browserens menu og vælg “Installér app” eller “Føj til startskærm”.',
   },
 
   monitor: {
