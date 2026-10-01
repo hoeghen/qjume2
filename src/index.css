@@ -819,6 +819,9 @@ button.link.danger { color: var(--danger); }
 }
 /* The splash centres everything; a list of rows reads left-aligned. */
 .splash .your-queues { width: min(100%, 560px); text-align: left; margin: 0; }
+.continue-from-safari { margin: 0 0 20px; }
+.continue-from-safari .hint { margin: 8px 0 0; }
+.splash .continue-from-safari { width: min(100%, 560px); margin: 0; }
 
 /* Deliberately quiet: a shop owner needs to find this once, a customer never. */
 .splash-secondary {
