@@ -17,16 +17,9 @@ import {
 import {
   messageOf,
   registerPushToken,
-  sendTestPush,
   unregisterPushToken,
 } from '../../../lib/functions.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
-
-/**
- * Long enough to lock the phone or switch apps: a push to a page that is open
- * takes a different path from one to a phone in a pocket.
- */
-const TEST_DELAY_SECONDS = 10;
 
 interface Props {
   shopId: string;
@@ -55,9 +48,6 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   const [pushToken, setPushToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<string | null>(null);
-  const [testError, setTestError] = useState<string | null>(null);
   // Set by the tap that turned push on, so the install suggestion appears at
   // that moment rather than nagging on every return visit.
   const [justEnabled, setJustEnabled] = useState(false);
@@ -138,23 +128,6 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
             ? t('enableNotifications.disabling')
             : t('enableNotifications.disableNotifications')}
         </button>
-        <button type="button" className="secondary" disabled={testing} onClick={sendTest}>
-          {testing
-            ? t('enableNotifications.sendingTest', { seconds: TEST_DELAY_SECONDS })
-            : t('enableNotifications.sendTest')}
-        </button>
-        {!testing && !testResult && !testError && (
-          <p className="hint">
-            {t('enableNotifications.testHint', { seconds: TEST_DELAY_SECONDS })}
-          </p>
-        )}
-        {testResult && <p className="hint" role="status">{testResult}</p>}
-        {testError && (
-          <details className="error-details">
-            <summary role="alert">{t('enableNotifications.testError')}</summary>
-            <p className="hint">{testError}</p>
-          </details>
-        )}
         {error && (
           <details className="error-details">
             <summary role="alert">{t('enableNotifications.turnOffError')}</summary>
@@ -208,40 +181,6 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
         setError(messageOf(e));
       } finally {
         setBusy(false);
-      }
-    })();
-  }
-
-  function sendTest() {
-    setTesting(true);
-    setTestResult(null);
-    setTestError(null);
-    void (async () => {
-      try {
-        const { results } = await sendTestPush({
-          shopId,
-          queueId,
-          ticketId,
-          delaySeconds: TEST_DELAY_SECONDS,
-        });
-        const failed = results.find((r) => r.outcome === 'failed');
-        if (results.length === 0) {
-          setTestResult(t('enableNotifications.testNoTokens'));
-        } else if (results.some((r) => r.outcome === 'sent')) {
-          setTestResult(t('enableNotifications.testSent'));
-        } else if (failed) {
-          setTestResult(
-            t('enableNotifications.testFailed', {
-              code: `${failed.code ?? 'unknown'} ${failed.message ?? ''}`.trim(),
-            }),
-          );
-        } else {
-          setTestResult(t('enableNotifications.testStale'));
-        }
-      } catch (e) {
-        setTestError(messageOf(e));
-      } finally {
-        setTesting(false);
       }
     })();
   }

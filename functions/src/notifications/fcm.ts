@@ -33,6 +33,9 @@ export const fcmPush: PushChannel = {
     const response = await getMessaging().sendEachForMulticast({
       tokens,
       notification: { title: notice.title, body: notice.body },
+      // An open page gets only title and body from `notification`, so the
+      // urgency rides along as data for the app's own foreground display.
+      ...(notice.urgent ? { data: { urgent: '1' } } : {}),
       webpush: {
         fcmOptions: { link: notice.url },
         notification: {
@@ -47,9 +50,10 @@ export const fcmPush: PushChannel = {
           // "Chrome": each update replaces the last, and still buzzes.
           tag: notice.url,
           renotify: true,
-          // A turn coming up is worth a buzz in a pocket.
-          vibrate: [200, 100, 200],
-          requireInteraction: false,
+          // A turn coming up is worth a buzz in a pocket; being called is
+          // worth a longer one, and an alert that waits to be dismissed.
+          vibrate: notice.urgent ? [300, 100, 300, 100, 300] : [200, 100, 200],
+          requireInteraction: notice.urgent === true,
         },
       },
     });

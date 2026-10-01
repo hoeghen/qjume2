@@ -72,7 +72,14 @@ function listenInForeground(registration: ServiceWorkerRegistration): void {
       icon: '/icon-192.png',
       badge: '/badge-96.png',
       data: { url: payload.fcmOptions?.link ?? '/' },
-      ...(payload.fcmOptions?.link ? { tag: payload.fcmOptions.link } : {}),
+      // Same tag as the server-shown alerts, so each replaces the last — and
+      // renotify, so a replacement still buzzes instead of arriving silently.
+      ...(payload.fcmOptions?.link
+        ? { tag: payload.fcmOptions.link, renotify: true }
+        : {}),
+      // Being called: keep it up until dismissed, even with the app open —
+      // the screen saying so is no help to someone not looking at it.
+      requireInteraction: payload.data?.['urgent'] === '1',
     });
   });
 }

@@ -15,7 +15,6 @@ export { relinkTicket } from './queue/relinkTicket.js';
 export { claimTicket } from './queue/claimTicket.js';
 export { registerPushToken } from './queue/registerPushToken.js';
 export { unregisterPushToken } from './queue/unregisterPushToken.js';
-export { sendTestPush } from './queue/sendTestPush.js';
 
 /**
  * Shop administration. Queue and station creation run here rather than as

@@ -14,7 +14,11 @@ import { assertServeAccessInTransaction } from '../lib/access.js';
 import { placesToMoveBack } from '../../../src/lib/queue/penalties.js';
 import { foldSample, isUsableSample } from '../../../src/lib/queue/serviceTime.js';
 import { channelsFromEnv, sweepMilestones } from '../notifications/dispatch.js';
-import { notifyBumped, notifyRemoved } from '../notifications/events.js';
+import {
+  notifyBumped,
+  notifyCalled,
+  notifyRemoved,
+} from '../notifications/events.js';
 import { baseUrl } from '../lib/config.js';
 import type { Channels } from '../notifications/channels.js';
 import {
@@ -370,6 +374,24 @@ export async function performCallNext(
   });
 
   try {
+    // First, and before any milestone: of everything this advance can send,
+    // "it's your turn" is the one that must not wait behind the others.
+    if (result.ticketId && result.displayName !== null) {
+      const tillLabel =
+        activeStations > 1
+          ? ((await stationRef.get()).data() as Station | undefined)?.label ?? null
+          : null;
+      await notifyCalled(
+        firestore,
+        { shopId, queueId, ticketId: result.ticketId },
+        result.displayName,
+        shopName,
+        tillLabel,
+        baseUrl(),
+        channels,
+      );
+    }
+
     if (result.bumped) {
       const target = {
         shopId,

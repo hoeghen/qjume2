@@ -14,6 +14,12 @@ export interface Notice {
   body: string;
   /** Deep link to the ticket this is about. */
   url: string;
+  /**
+   * Stays on screen until dismissed and buzzes harder. Only for being
+   * called: someone who glanced away must not miss the one alert that
+   * means "walk to the counter now".
+   */
+  urgent?: boolean;
 }
 
 /** What happened to one token in one send — enough to diagnose without the token itself. */

@@ -370,3 +370,50 @@ describe('push token unregistration', () => {
     expect(contact.fcmTokens).toEqual([]);
   });
 });
+
+describe('being called', () => {
+  it('tells the called customer it is their turn, urgently, on every channel', async () => {
+    // Sent even though the ticket screen already shows it: they may not be
+    // looking at the phone, and this is the one alert that cannot be missed.
+    const fx = await seedQueue();
+    const first = await join(fx, 1, 'one@example.com');
+    await performRegisterPushToken(testDb, phone(1), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: first.ticketId,
+      token: 'token-one',
+    });
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+
+    const called = sent.filter((n) => n.title === 'It’s your turn');
+    expect(called.map((n) => n.channel).sort()).toEqual(['email', 'push']);
+    expect(called[0]).toMatchObject({
+      urgent: true,
+      body: 'Customer 1, you’re being called at Test Shop.',
+    });
+  });
+
+  it('names the till only when the queue has more than one', async () => {
+    const fx = await seedQueue();
+    await join(fx, 1, 'one@example.com');
+    await seedStation(fx, 'Till 1');
+    const second = await seedStation(fx, 'Till 2');
+
+    await call(fx, second);
+
+    expect(sent.find((n) => n.title === 'It’s your turn')?.body).toBe(
+      'Customer 1, please go to Till 2 at Test Shop.',
+    );
+  });
+
+  it('sends nothing for being called when nobody was waiting', async () => {
+    const fx = await seedQueue();
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+
+    expect(sent).toEqual([]);
+  });
+});
