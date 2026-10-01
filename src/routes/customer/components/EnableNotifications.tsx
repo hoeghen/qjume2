@@ -171,7 +171,9 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
           {t('enableNotifications.needsInstallAfter')}
         </p>
         {/* The Home Screen app has its own storage, separate from Safari,
-            so it starts without this ticket — the resume code is the bridge. */}
+            so it starts without this ticket: they join again there. Leaving
+            here first matters — an abandoned ticket still gets called, and
+            its no-shows hold up everyone behind it. */}
         <p>{t('enableNotifications.needsInstallCode')}</p>
         <p className="hint">{t('enableNotifications.needsInstallHint')}</p>
       </div>

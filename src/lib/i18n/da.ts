@@ -184,7 +184,7 @@ export const da: DeepPartial<typeof en> = {
     needsInstallMiddle: ', derefter ',
     addToHomeScreen: 'Føj til hjemmeskærm',
     needsInstallAfter: ', og åbn derefter Qjume fra din hjemmeskærm.',
-    needsInstallCode: 'Appen på hjemmeskærmen starter forfra, så find denne kø dér, tryk på “Allerede i denne kø? Indtast din kode”, og indtast koden, du fik, da du stillede dig i kø. Slå derefter notifikationer til.',
+    needsInstallCode: 'Stil dig derefter i kø igen i appen, og slå notifikationer til dér. Din plads her i Safari følger ikke med, så forlad denne kø først for at frigive din plads.',
     needsInstallHint: 'Spring det over, hvis du vil — denne side virker stadig, og vi sender dig en e-mail, hvis du gav os en adresse.',
     turnOnQuestion: 'Giv mig besked, når min tur nærmer sig',
     turningOn: 'Slår til…',
