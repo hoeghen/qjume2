@@ -187,7 +187,7 @@ export const en = {
     needsInstallMiddle: ', then ',
     addToHomeScreen: 'Add to Home Screen',
     needsInstallAfter: ', then open Qjume from your Home Screen.',
-    needsInstallCode: 'The Home Screen app starts fresh, so find this queue there, tap “Already in this queue? Enter your code” and enter the code you got when you joined. Then turn on notifications.',
+    needsInstallCode: 'Then join the queue again in the app and turn on notifications there. Your place here in Safari doesn’t carry over, so leave this queue first to free up your spot.',
     needsInstallHint: 'Skip it if you like — this page keeps working, and we’ll email you if you gave us an address.',
     turnOnQuestion: 'Notify me when my turn is close',
     turningOn: 'Turning on…',
