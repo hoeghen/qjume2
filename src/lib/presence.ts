@@ -1,6 +1,5 @@
 import { onValue, ref } from 'firebase/database';
 import { presenceDb } from './firebase.js';
-import { isMock } from './mock/mode.js';
 
 /**
  * Whether this device currently has a connection to the backend.
@@ -16,11 +15,6 @@ import { isMock } from './mock/mode.js';
  * just whether the network adapter is up.
  */
 export function watchConnection(fn: (online: boolean) => void): () => void {
-  if (isMock) {
-    // The mock backend is always "online": everything it needs is on this device.
-    fn(true);
-    return () => undefined;
-  }
   return onValue(ref(presenceDb, '.info/connected'), (snapshot) => {
     fn(snapshot.val() === true);
   });

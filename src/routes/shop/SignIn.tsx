@@ -1,12 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import {
   sendEmailLink,
-  signInAsStaff,
   signInWithApple,
   signInWithGoogle,
 } from '../../lib/auth.js';
 import { messageOf } from '../../lib/functions.js';
-import { isMock } from '../../lib/mock/mode.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 
@@ -91,21 +89,6 @@ export function SignIn() {
         <p className="error" role="alert">
           {error}
         </p>
-      )}
-
-      {isMock && (
-        <>
-          <div className="divider">{t('shop.signIn.or')}</div>
-          <p className="muted">{t('shop.signIn.mockStaffNotice')}</p>
-          <button
-            type="button"
-            className="secondary"
-            disabled={busy}
-            onClick={() => void run(signInAsStaff)}
-          >
-            {t('shop.signIn.continueAsStaff')}
-          </button>
-        </>
       )}
 
       <p className="hint">

@@ -53,8 +53,8 @@ kept unedited.
 
 5. **Discovery is always ordered by distance, closest twenty, and nothing is
    bounded by distance.** `findNearest(centre, limit)` takes a count, not a
-   radius. The mock reads every queue and takes the closest; Firestore widens
-   through `SEARCH_RINGS_KM` only while it still needs results, because
+   radius. Firestore widens through `SEARCH_RINGS_KM` only while it still
+   needs results, because
    `geohashQueryBounds` has to be given *some* radius and one fixed radius
    would be an invisible distance filter. Cut by count, never by distance: a
    count cannot produce an empty list when queues exist. `Filters.radiusKm` is
@@ -112,7 +112,7 @@ kept unedited.
    the PRD at all — added on request, scoped by an interview rather than
    guessed at. One admin for now, recognised by a `platformAdmin` custom
    claim set once by hand against the Admin SDK (there is no self-serve grant
-   path, on either backend). Full control, not read-only: browse every shop
+   path). Full control, not read-only: browse every shop
    and its queues, edit either directly (bypassing the owner check — see
    `applyQueueUpdate` in `functions/src/shop/updateQueue.ts`, shared by the
    owner's own `updateQueue` and the admin's `adminUpdateQueue` so the two
@@ -146,13 +146,8 @@ kept unedited.
    close. Kept top-level, not nested under the shop, so deleting a shop can
    never delete the record that it happened.
 
-   **The mock gets a third identity, `local-admin`**, alongside
-   `local-owner`/`local-guest` — see `signInAsPlatformAdmin` in
-   `src/lib/auth.ts`. The mock has no Firebase to set a custom claim on, so
-   this stands in for already holding one; there is deliberately no
-   equivalent affordance on the real backend, where the claim is set by hand
-   against one account and nothing in the app grants it. `/admin` is reached
-   only by URL, the same as `/monitor` — nothing in the app links to it.
+   `/admin` is reached only by URL, the same as `/monitor` — nothing in the
+   app links to it.
 
 10. **There is a real Terms of Service and Privacy Policy**, at `/terms` and
     `/privacy` (`src/routes/legal/`) — a first draft, not lawyer-reviewed,
@@ -198,78 +193,39 @@ kept unedited.
     functions:secrets:set`) *before* the first deploy that references them,
     or that deploy fails.
 
-    **A second GitHub Actions workflow**, `.github/workflows/deploy-firebase.yml`,
-    ships the real backend to Firebase Hosting/Functions/rules — separate
-    from `deploy.yml`, which ships the mock backend to GitHub Pages and needs
-    no secrets at all. It skips itself cleanly (`if: vars.FIREBASE_PROJECT_ID
-    != ''`) until that repo variable and the `VITE_FIREBASE_*`/
-    `FIREBASE_SERVICE_ACCOUNT` secrets are set, rather than failing on every
-    push in the meantime.
+    **`.github/workflows/deploy-firebase.yml`** ships the app to Firebase
+    Hosting/Functions/rules on every push to `main`. It skips itself cleanly
+    (`if: vars.FIREBASE_PROJECT_ID != ''`) until that repo variable and the
+    `VITE_FIREBASE_*`/`FIREBASE_SERVICE_ACCOUNT` secrets are set, rather than
+    failing on every push in the meantime.
 
-## Two backends, one app
+11. **Firebase is the only backend.** The app used to ship with a second,
+    complete implementation of the data layer in `src/lib/mock/` — every
+    callable reimplemented against `localStorage`, picked at build time by
+    `VITE_BACKEND`/`VITE_FIREBASE_API_KEY`, and deployed to GitHub Pages by
+    its own workflow (`deploy.yml`). That stopped earning its keep once the
+    real backend covered every feature: it was a second copy of the data
+    layer to keep in sync, not a safety net. Both the mock and `deploy.yml`
+    are gone; `src/lib/firestore/`, `src/lib/functions.ts`, `src/lib/auth.ts`
+    and friends talk to Firebase unconditionally now, and local development
+    runs against the Firebase Emulator Suite instead (`.env.example`,
+    `VITE_USE_EMULATORS`). **`functions/src/billing/stub.ts` is the one
+    exception** — it stays, because it is not a UI-layer mock of this app but
+    a `PaymentProvider` the emulator tests exercise instead of hitting Stripe,
+    selected by `PAYMENTS_PROVIDER` the same way `stripeProvider` is.
 
-The data layer sits behind `src/lib/firestore/` and `src/lib/functions.ts`, and
-two implementations plug into it:
-
-- **Firebase** — Firestore, Auth, and the twenty-three Cloud Functions.
-- **`src/lib/mock/`** — the same surface implemented in the browser, storing to
-  `localStorage`. Not a cut-down preview: every callable is implemented, and
-  ordering comes from `src/lib/queue/`, the same modules the Cloud Functions
-  import, so the two cannot disagree about who is next.
-
-`src/lib/mock/mode.ts` picks one **at build time**, so the unused one is
-tree-shaken away. Firebase is chosen when `VITE_FIREBASE_API_KEY` is set,
-because a build with no credentials cannot reach a project — that was a blank
-page on deploy once. `VITE_BACKEND=mock|firebase` overrides the inference.
-
-What the mock does not do is *enforce*. Every invariant above is a trust
-boundary, and with the whole database on one device there is nobody to defend
-it from. Enforcement lives in the rules and functions, which is why they still
-carry the tests.
+## Architecture notes
 
 **`/s/:shopId` is the public shop page**, listing every queue at one shop. It
 is reached from the shop's name on a queue detail page and from "N other
 queues". Deliberately not under `/shop`, which is the owner's area.
 
-**A shop runs several queues, and a queue has one or more tills.** The seed
-exercises both: the pharmacy has three lines and two counters, the town hall
-five counters across three lines. A discovery row names the queue as well as
-the shop, or a shop with three lines is three identical rows. Station labels
-("Till 1") are hidden wherever the queue has a single station — a name only
-tells you something when there is another one to tell it apart from — and
-`ticket.station` is an **id**, so anything showing it to a person must look up
-the label.
-
-**The mock's guest and owner are different identities.** `signInAsGuest` gives
-an anonymous `local-guest`; only the email link makes you `local-owner`. The
-session persists, so sharing one identity would hand any customer who joined a
-queue the shop's admin screens. `ShopHome` also refuses an anonymous user,
-which is right for both backends.
-
-**Seeded ids are slugs, and must stay stable.** `mockId` ends in a timestamp,
-which is right for anything minted while the app runs and wrong for the seed:
-a join code is scanned by a phone that has never run this build, and
-`shop3-mubxsbkw` means nothing there. So the seed ids come from the names —
-`/q/riverside-pharmacy/prescriptions` — and the same document has the same id
-on every device. Change the seed's shape and the stored copy cannot be read
-back: bump `STORAGE_KEY` in `src/lib/mock/store.ts` rather than leaving one
-device on ids another does not have.
-
-What a scan cannot do in the mock is cross devices: the whole database is one
-browser's `localStorage`, so a scanning phone joins its own copy of the queue.
-The URL, the routing and the server rule are the real thing; the shared
-database is what only Firestore provides.
-
-**The seeded shops follow the viewer.** They are defined in `src/lib/mock/seed.ts`
-as offsets in kilometres, and `placeMockShopsNear` resolves them against the
-position discovery is querying from. Hardcoded coordinates meant an empty list
-for everyone outside one city, and every browser check pinned to that city so
-nothing caught it. Any test that exercises discovery should use a location that
-is *not* the seed's fallback centre.
-
-Do not reintroduce "demo" framing. The mock build is the product running on a
-local backend, not a preview of it — no banners, and no copy telling people
-their data is fake.
+**A shop runs several queues, and a queue has one or more tills.** A
+discovery row names the queue as well as the shop, or a shop with three lines
+is three identical rows. Station labels ("Till 1") are hidden wherever the
+queue has a single station — a name only tells you something when there is
+another one to tell it apart from — and `ticket.station` is an **id**, so
+anything showing it to a person must look up the label.
 
 ## Design system
 
