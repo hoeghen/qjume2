@@ -36,6 +36,14 @@ export const fcmPush: PushChannel = {
       webpush: {
         fcmOptions: { link: notice.url },
         notification: {
+          // Without an icon, a site that isn't installed shows up on Android
+          // as a bare "Chrome" alert with nothing saying who sent it — which
+          // reads as spam. Resolved against the push worker's origin.
+          icon: '/icon-192.png',
+          // One live alert per queue rather than a growing pile from
+          // "Chrome": each update replaces the last, and still buzzes.
+          tag: notice.url,
+          renotify: true,
           // A turn coming up is worth a buzz in a pocket.
           vibrate: [200, 100, 200],
           requireInteraction: false,
