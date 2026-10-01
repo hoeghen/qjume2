@@ -4,9 +4,8 @@ import { ticketDoc } from '../../lib/firestore/paths.js';
 import { ticketsAhead } from '../../lib/firestore/queries.js';
 import { leaveQueue, messageOf } from '../../lib/functions.js';
 import { forgetTicket } from '../../lib/myTickets.js';
-import { formatWait } from '../../lib/format.js';
+import { formatOrdinalSuffix, formatWait } from '../../lib/format.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
-import type { Locale } from '../../lib/i18n/locale.js';
 import { EnableNotifications } from './components/EnableNotifications.js';
 import type { Queue } from '../../types/index.js';
 
@@ -173,23 +172,4 @@ export function TicketView({
       )}
     </>
   );
-}
-
-/**
- * English reads "2nd", "3rd"; Danish just appends a period ("2.", "3."),
- * the standard written form for a numeral ordinal.
- */
-function formatOrdinalSuffix(n: number, locale: Locale): string {
-  if (locale === 'da') return '.';
-  if (n % 100 >= 11 && n % 100 <= 13) return 'th';
-  switch (n % 10) {
-    case 1:
-      return 'st';
-    case 2:
-      return 'nd';
-    case 3:
-      return 'rd';
-    default:
-      return 'th';
-  }
 }

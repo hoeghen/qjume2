@@ -174,6 +174,11 @@ export const en = {
     leaveQueue: 'Leave the queue',
   },
 
+  yourQueues: {
+    title: 'Your queues',
+    next: 'Next',
+  },
+
   enableNotifications: {
     off: 'Notifications are switched off for this site. Your place is on this screen either way, and we’ll email you if you gave us an address.',
     needsInstallTitle: 'Want a nudge when your turn is close?',

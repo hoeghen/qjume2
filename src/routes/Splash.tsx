@@ -1,6 +1,55 @@
+import { useEffect } from 'react';
 import { Logo } from '../components/Logo.js';
-import { LocalizedLink } from '../lib/i18n/LocalizedLink.js';
+import { LocalizedLink, useLocalizedNavigate } from '../lib/i18n/LocalizedLink.js';
 import { useT } from '../lib/i18n/LanguageContext.js';
+import { YourQueues } from './customer/components/YourQueues.js';
+import { forgetTicket, heldTickets } from '../lib/myTickets.js';
+import { fetchTicket } from '../lib/firestore/queries.js';
+import { isStandalone } from '../lib/platform.js';
+
+/** Once per launch: coming back here via the logo must not bounce. */
+let triedOpeningOnlyQueue = false;
+
+/**
+ * The installed app opens on this page. Someone who is in exactly one queue
+ * opened it to see their place, not a search page — so take them there.
+ *
+ * Only in the installed app: in a browser tab, landing on `/` is something
+ * someone chose. And only if they are still here when the answer comes back,
+ * rather than yanking them off whatever they tapped in the meantime.
+ */
+function useOpenOnlyQueue(): void {
+  const navigate = useLocalizedNavigate();
+
+  useEffect(() => {
+    if (triedOpeningOnlyQueue || !isStandalone()) return;
+    triedOpeningOnlyQueue = true;
+    const startedAt = window.location.pathname;
+    void (async () => {
+      const held = heldTickets();
+      if (held.length === 0) return;
+      const states = await Promise.all(
+        held.map((h) =>
+          fetchTicket(h.shopId, h.queueId, h.ticketId).catch(() => undefined),
+        ),
+      );
+      const active = held.filter((h, i) => {
+        const ticket = states[i];
+        // A read that failed is unknown, not finished: leave it remembered.
+        if (ticket === undefined) return false;
+        const live = ticket?.state === 'waiting' || ticket?.state === 'serving';
+        if (!live) forgetTicket(h.shopId, h.queueId);
+        return live;
+      });
+      const only = active.length === 1 ? active[0] : undefined;
+      if (only && window.location.pathname === startedAt) {
+        navigate(`/q/${only.shopId}/${only.queueId}`, { replace: true });
+      }
+    })();
+    // Runs once on arrival; `navigate` is a fresh function every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
 
 /**
  * The front door, built to the design canvas.
@@ -12,9 +61,12 @@ import { useT } from '../lib/i18n/LanguageContext.js';
  */
 export function Splash() {
   const { t } = useT();
+  useOpenOnlyQueue();
 
   return (
     <section className="splash">
+      <YourQueues />
+
       <Logo size={44} />
 
       <h1 className="splash-wordmark">QjuMe</h1>

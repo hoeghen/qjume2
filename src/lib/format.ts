@@ -1,3 +1,4 @@
+import type { Locale } from './i18n/locale.js';
 import type { TFunction } from './i18n/LanguageContext.js';
 
 /** "about 25 min", "about 1 hr 10 min", "no wait". */
@@ -36,4 +37,24 @@ export function formatWaitCompact(seconds: number, t: TFunction): string {
 export function formatDistance(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)} m`;
   return `${km.toFixed(km < 10 ? 1 : 0)} km`;
+}
+
+
+/**
+ * English reads "2nd", "3rd"; Danish just appends a period ("2.", "3."),
+ * the standard written form for a numeral ordinal.
+ */
+export function formatOrdinalSuffix(n: number, locale: Locale): string {
+  if (locale === 'da') return '.';
+  if (n % 100 >= 11 && n % 100 <= 13) return 'th';
+  switch (n % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
 }

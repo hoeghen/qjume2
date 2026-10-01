@@ -760,6 +760,18 @@ button.link.danger { color: var(--danger); }
 
 .splash-primary { padding: 15px 40px; font-size: 15.5px; }
 
+/* The queues this device is standing in. Leads the screen when present —
+   for someone already in line it is the reason they opened the app. */
+.your-queues { margin: 0 0 20px; }
+.your-queues .eyebrow { margin-bottom: 8px; text-transform: uppercase; }
+/* The detail here is a sentence ("2 people ahead of you · 8 min"), not the
+   discovery row's short figures, so it may wrap; the headline never does. */
+.your-queue .wait { white-space: nowrap; }
+.your-queue .queue-card-meta { gap: 12px; }
+.your-queue .queue-card-stats { white-space: normal; text-align: right; }
+/* The splash centres everything; a list of rows reads left-aligned. */
+.splash .your-queues { width: min(100%, 560px); text-align: left; margin: 0; }
+
 /* Deliberately quiet: a shop owner needs to find this once, a customer never. */
 .splash-secondary {
   font-size: 13px;
