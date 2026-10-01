@@ -30,6 +30,38 @@ export async function notifyBumped(
   );
 }
 
+/**
+ * The ticket has just been called to a counter.
+ *
+ * Sent even though the ticket screen already says so: the person may well be
+ * holding a phone they haven't looked at, and this is the one moment that
+ * matters. The till is named only when the queue has more than one — with a
+ * single counter there is nowhere else to go.
+ */
+export async function notifyCalled(
+  firestore: Firestore,
+  target: DispatchTarget,
+  displayName: string,
+  shopName: string,
+  tillLabel: string | null,
+  baseUrl: string,
+  channels: Channels,
+): Promise<void> {
+  await notifyTicket(
+    firestore,
+    target,
+    {
+      title: 'It’s your turn',
+      body: tillLabel
+        ? `${displayName}, please go to ${tillLabel} at ${shopName}.`
+        : `${displayName}, you’re being called at ${shopName}.`,
+      url: `${baseUrl}/q/${target.shopId}/${target.queueId}`,
+      urgent: true,
+    },
+    channels,
+  );
+}
+
 export async function notifyRemoved(
   firestore: Firestore,
   target: DispatchTarget,
