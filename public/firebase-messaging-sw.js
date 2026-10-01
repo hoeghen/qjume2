@@ -34,6 +34,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(title, {
     body,
     icon: '/icon-192.png',
+    badge: '/badge-96.png',
     vibrate: [200, 100, 200],
     data: { url: payload.fcmOptions?.link ?? payload.data?.url ?? '/' },
   });

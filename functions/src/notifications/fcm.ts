@@ -40,6 +40,9 @@ export const fcmPush: PushChannel = {
           // as a bare "Chrome" alert with nothing saying who sent it — which
           // reads as spam. Resolved against the push worker's origin.
           icon: '/icon-192.png',
+          // Status-bar glyph: Android uses only its alpha, so it is a white
+          // Q on clear — a full-colour icon here renders as a solid square.
+          badge: '/badge-96.png',
           // One live alert per queue rather than a growing pile from
           // "Chrome": each update replaces the last, and still buzzes.
           tag: notice.url,

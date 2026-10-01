@@ -70,6 +70,7 @@ function listenInForeground(registration: ServiceWorkerRegistration): void {
     void registration.showNotification(title, {
       body: body ?? '',
       icon: '/icon-192.png',
+      badge: '/badge-96.png',
       data: { url: payload.fcmOptions?.link ?? '/' },
       ...(payload.fcmOptions?.link ? { tag: payload.fcmOptions.link } : {}),
     });
