@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useCollection } from '../../lib/hooks/useFirestore.js';
+import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
 import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { DeleteShopDialog } from './components/DeleteShopDialog.js';
 import { RenameShop } from './components/RenameShop.js';
+import { FreeServicesBar } from './components/FreeServicesBar.js';
+import { shopDoc } from '../../lib/firestore/paths.js';
 
 export function QueueList({
   shopId,
@@ -23,6 +25,7 @@ export function QueueList({
     `${shopId}/queues`,
   );
   const [showDelete, setShowDelete] = useState(false);
+  const shop = useDoc(shopDoc(shopId));
 
   return (
     <main className="panel">
@@ -39,6 +42,8 @@ export function QueueList({
           </button>
         </span>
       </header>
+
+      {shop.data && <FreeServicesBar shop={shop.data} isOwner={isOwner} />}
 
       {loading && <p>{t('common.loading')}</p>}
 

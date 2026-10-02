@@ -10,16 +10,26 @@ import { useT } from '../../../lib/i18n/LanguageContext.js';
 /**
  * The free-services counter, where it is spent: on the serve screen.
  *
- * Quiet while there are plenty left, a warning once they are gone. Only the
- * owner gets the subscribe link — billing is theirs alone, and staff cannot
- * open that page. Nothing at all on a subscription, where the count no
- * longer limits anything. Never on the monitor screen, which customers see.
+ * Shown on the shop's own pages only — the shop overview and the serve
+ * screen — never on anything a customer sees, the monitor included. Always
+ * "156 of 1000 left", on a subscription too (with a note that the count is
+ * not limiting it), so an owner can always see where they stand. A warning
+ * once a free shop has used them all. Only the owner gets the subscribe
+ * link: billing is theirs alone, and staff cannot open that page.
  */
 export function FreeServicesBar({ shop, isOwner }: { shop: Shop; isOwner: boolean }) {
   const { t } = useT();
-  if (shop.plan === 'paid') return null;
-
   const left = freeServicesRemaining(shop);
+  const counter = t('shop.freeServices.left', { left, of: freeServicesGranted(shop) });
+
+  if (shop.plan === 'paid') {
+    return (
+      <p className="free-services hint">
+        {counter} · {t('shop.freeServices.subscribed')}
+      </p>
+    );
+  }
+
   const subscribe = isOwner ? (
     <LocalizedLink to="/shop/billing" className="link">
       {t('shop.freeServices.subscribe', { price: SUBSCRIPTION_PRICE_DKK })}
@@ -37,7 +47,7 @@ export function FreeServicesBar({ shop, isOwner }: { shop: Shop; isOwner: boolea
 
   return (
     <p className="free-services hint">
-      {t('shop.freeServices.left', { left, of: freeServicesGranted(shop) })}
+      {counter}
       {subscribe && <> · {subscribe}</>}
     </p>
   );

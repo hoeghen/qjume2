@@ -427,7 +427,8 @@ export const da: DeepPartial<typeof en> = {
     },
 
     freeServices: {
-      left: 'Gratis betjeninger tilbage: {left} af {of}',
+      left: '{left} af {of} gratis betjeninger tilbage',
+      subscribed: 'abonnement aktivt',
       subscribe: 'Start abonnement — {price} kr/md',
       usedUpOwner: 'Dine gratis betjeninger er brugt op, så dine køer tager ikke nye kunder ind. Du kan stadig betjene alle, der allerede venter.',
       usedUpStaff: 'Butikkens gratis betjeninger er brugt op, så køerne tager ikke nye kunder ind. Du kan stadig betjene alle, der allerede venter.',

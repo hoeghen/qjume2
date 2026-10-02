@@ -431,7 +431,8 @@ export const en = {
     },
 
     freeServices: {
-      left: 'Free services left: {left} of {of}',
+      left: '{left} of {of} free services left',
+      subscribed: 'subscription active',
       subscribe: 'Start subscription — {price} kr/month',
       usedUpOwner: 'Your free services are used up, so your queues take no new customers. You can still serve everyone already waiting.',
       usedUpStaff: 'The shop’s free services are used up, so the queues take no new customers. You can still serve everyone already waiting.',
