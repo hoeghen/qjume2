@@ -5,6 +5,7 @@ import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { DeleteShopDialog } from './components/DeleteShopDialog.js';
+import { RenameShop } from './components/RenameShop.js';
 
 export function QueueList({
   shopId,
@@ -26,7 +27,7 @@ export function QueueList({
   return (
     <main className="panel">
       <header className="serving-header">
-        <h1>{shopName}</h1>
+        {isOwner ? <RenameShop shopId={shopId} shopName={shopName} /> : <h1>{shopName}</h1>}
         <span className="row tight">
           {isOwner && (
             <LocalizedLink className="link" to="/shop/billing">

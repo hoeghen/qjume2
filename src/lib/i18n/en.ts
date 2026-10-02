@@ -64,10 +64,24 @@ export const en = {
     denied: 'Could not get your location.',
   },
 
+  intro: {
+    title: 'How Qjume works',
+    noVideoYet: 'The introduction video is on its way. Here it is in three steps.',
+    step1Title: 'Create your shop and a queue.',
+    step1: 'Give it a name and an address, and print the QR code for your counter.',
+    step2Title: 'Customers join from anywhere.',
+    step2: 'They see the wait before they leave home, join with just a name, and follow their place on their phone — no app or account needed.',
+    step3Title: 'Tap “Call next”.',
+    step3: 'The next customer is told it’s their turn, and everyone behind them moves up. Notifications tell them when they’re close.',
+    price: 'Free for your first 1000 customers served, then 100 kr a month excluding VAT.',
+    create: 'Create a shop',
+  },
+
   splash: {
     lede: 'See the wait before you go. Join any queue from anywhere — no login required.',
     join: 'Join a queue',
     createLink: 'I am a business',
+    admin: 'Admin',
   },
 
   discovery: {
@@ -248,6 +262,21 @@ export const en = {
       and: ' and ',
       privacy: 'Privacy Policy',
       period: '.',
+    },
+
+    welcome: {
+      title: 'Run your queue with Qjume',
+      body: 'Customers see the wait, join from anywhere and get a nudge when it’s their turn. Free for your first 1000 customers served.',
+      create: 'Create a shop',
+      video: 'See the introduction',
+      signIn: 'Already have a shop? Sign in',
+    },
+
+    renameShop: {
+      rename: 'Rename',
+      label: 'Shop name',
+      save: 'Save',
+      cancel: 'Cancel',
     },
 
     createShop: {

@@ -4,6 +4,7 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requirePlatformAdmin, type AdminCaller } from '../lib/auth.js';
 import { diffFields, logAdminAction } from './auditLog.js';
+import { renameShopInTransaction } from '../shop/renameShop.js';
 import type { Shop, ShopProfile } from '../../../src/types/index.js';
 
 export interface AdminUpdateShopRequest {
@@ -54,6 +55,9 @@ export async function performAdminUpdateShop(
       profile: input.profile ?? null,
     };
 
+    // The name lives on every queue too (discovery reads it from there), so
+    // a rename goes through the shared helper that changes them together.
+    if (name !== shop.name) await renameShopInTransaction(tx, shopRef, name);
     tx.update(shopRef, after);
 
     const changes = diffFields(before, after);

@@ -85,6 +85,13 @@ export function Splash() {
           {t('splash.createLink')}
         </LocalizedLink>
       </div>
+
+      {/* For the one platform admin, who would otherwise have to type the
+          URL. Deliberately the faintest thing on the page: everyone else
+          should look straight past it, and /admin refuses them anyway. */}
+      <LocalizedLink className="splash-admin" to="/admin">
+        {t('splash.admin')}
+      </LocalizedLink>
     </section>
   );
 }

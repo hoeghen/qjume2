@@ -11,6 +11,7 @@ import { ServingRoute } from './routes/shop/ServingRoute.js';
 import { Billing } from './routes/shop/Billing.js';
 import { MonitorHome } from './routes/monitor/MonitorHome.js';
 import { Terms } from './routes/legal/Terms.js';
+import { Intro } from './routes/Intro.js';
 import { Privacy } from './routes/legal/Privacy.js';
 import { AdminHome } from './routes/admin/AdminHome.js';
 import { AdminShopList } from './routes/admin/AdminShopList.js';
@@ -50,6 +51,7 @@ const ROUTE_CHILDREN = [
     ],
   },
   { path: 'monitor', element: <MonitorHome /> },
+  { path: 'intro', element: <Intro /> },
   { path: 'terms', element: <Terms /> },
   { path: 'privacy', element: <Privacy /> },
   {

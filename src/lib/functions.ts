@@ -199,6 +199,11 @@ export const reinstateShop = callable<
   { suspended: boolean }
 >('reinstateShop');
 
+export const renameShop = callable<
+  { shopId: string; name: string },
+  { name: string }
+>('renameShop');
+
 export const adminUpdateShop = callable<
   {
     shopId: string;

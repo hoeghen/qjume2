@@ -11,6 +11,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth } from './firebase.js';
+import { detectLocaleFromPath, withLocale } from './i18n/locale.js';
 
 const EMAIL_KEY = 'qjume:pending-email';
 
@@ -21,7 +22,12 @@ const EMAIL_KEY = 'qjume:pending-email';
  */
 export async function sendEmailLink(email: string): Promise<void> {
   await sendSignInLinkToEmail(auth, email, {
-    url: `${window.location.origin}/shop`,
+    // Back in the language they asked in: a Danish visitor signing in from
+    // /da/shop should not land on the English page.
+    url: `${window.location.origin}${withLocale(
+      '/shop',
+      detectLocaleFromPath(window.location.pathname),
+    )}`,
     handleCodeInApp: true,
   });
   try {
