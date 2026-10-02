@@ -1188,3 +1188,39 @@ form.rename-shop { flex-direction: column; align-items: stretch; flex: 1 1 100%;
 .intro-steps { padding-left: 1.2em; }
 .intro-steps li { margin-bottom: 12px; }
 .intro-price { margin: 20px 0 16px; }
+
+/*
+ * A button whose press started a server call (src/lib/activity.ts sets
+ * aria-busy). The spinner is drawn in the text colour, so it reads on every
+ * button style — white on the orange primary, orange on a link button.
+ * Pointer events are off so a second tap cannot start the same call twice.
+ */
+button[aria-busy='true'],
+[role='button'][aria-busy='true'],
+a.button[aria-busy='true'] {
+  pointer-events: none;
+  cursor: progress;
+}
+button[aria-busy='true']::before,
+[role='button'][aria-busy='true']::before,
+a.button[aria-busy='true']::before {
+  content: '';
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 0.5em;
+  vertical-align: -0.12em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  button[aria-busy='true']::before,
+  [role='button'][aria-busy='true']::before,
+  a.button[aria-busy='true']::before {
+    animation: none;
+    border-right-color: currentColor;
+    opacity: 0.6;
+  }
+}

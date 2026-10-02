@@ -1,5 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase.js';
+import { track } from './activity.js';
 import type {
   NoShowPenalty,
   QueueCategory,
@@ -19,9 +20,10 @@ export interface Geocoded {
 }
 
 function callable<Req, Res>(name: string) {
-  return async (data: Req): Promise<Res> => {
+  return (data: Req): Promise<Res> => {
     const fn = httpsCallable<Req, Res>(functions, name);
-    return (await fn(data)).data;
+    // Spinner on whichever button started this (src/lib/activity.ts).
+    return track(fn(data).then((r) => r.data));
   };
 }
 

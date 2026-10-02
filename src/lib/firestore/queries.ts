@@ -8,6 +8,7 @@ import {
   type Query,
 } from 'firebase/firestore';
 import { auditLog, shops, staff, stations, ticketDoc, tickets } from './paths.js';
+import { track } from '../activity.js';
 import type { AdminAuditEntry, Queue, Shop, Ticket } from '../../types/index.js';
 import { queues } from './paths.js';
 
@@ -77,6 +78,6 @@ export async function fetchTicket(
   queueId: string,
   ticketId: string,
 ): Promise<Ticket | null> {
-  const snap = await getDoc(ticketDoc(shopId, queueId, ticketId));
+  const snap = await track(getDoc(ticketDoc(shopId, queueId, ticketId)));
   return snap.data() ?? null;
 }

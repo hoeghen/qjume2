@@ -1,6 +1,7 @@
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { shopConverter } from './converters.js';
+import { track } from '../activity.js';
 import type { QueueStatus, Shop } from '../../types/index.js';
 
 /**
@@ -18,12 +19,9 @@ export async function setQueueStatus(
   queueId: string,
   status: QueueStatus,
 ): Promise<void> {
-  await updateDoc(
-    doc(db, 'shops', shopId, 'queues', queueId),
-    { status },
-  );
+  await track(updateDoc(doc(db, 'shops', shopId, 'queues', queueId), { status }));
 }
 
 export async function createShop(ownerUid: string, shop: Shop): Promise<void> {
-  await setDoc(doc(db, 'shops', ownerUid).withConverter(shopConverter), shop);
+  await track(setDoc(doc(db, 'shops', ownerUid).withConverter(shopConverter), shop));
 }

@@ -11,6 +11,7 @@ import { distanceBetween, geohashQueryBounds } from 'geofire-common';
 import { db } from './firebase.js';
 import { queueConverter } from './firestore/converters.js';
 import type { Queue, QueueCategory, QueueStatus } from '../types/index.js';
+import { track } from './activity.js';
 
 export interface DiscoveredQueue extends Queue {
   id: string;
@@ -77,7 +78,12 @@ export interface Filters {
  */
 const SEARCH_RINGS_KM = [10, 50, 250, 1000, 5000];
 
-export async function findNearest(
+/** Spinner on the button that asked, if one did (src/lib/activity.ts). */
+export function findNearest(center: Coordinates, limit: number): Promise<DiscoveredQueue[]> {
+  return track(findNearestUntracked(center, limit));
+}
+
+async function findNearestUntracked(
   center: Coordinates,
   limit: number,
 ): Promise<DiscoveredQueue[]> {
@@ -157,7 +163,11 @@ function byDistance(queues: DiscoveredQueue[]): DiscoveredQueue[] {
  * `distanceKm` is meaningless here and is never read — every caller checks
  * for a location before showing it (`QueueCard`'s `showDistance` prop).
  */
-export async function findAllByName(count: number): Promise<DiscoveredQueue[]> {
+export function findAllByName(count: number): Promise<DiscoveredQueue[]> {
+  return track(findAllByNameUntracked(count));
+}
+
+async function findAllByNameUntracked(count: number): Promise<DiscoveredQueue[]> {
   const snapshot = await getDocs(
     query(
       collectionGroup(db, 'queues').withConverter(queueConverter),

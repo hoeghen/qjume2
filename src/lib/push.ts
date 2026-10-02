@@ -1,5 +1,6 @@
 import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
 import { app } from './firebase.js';
+import { track } from './activity.js';
 import { isIos, isStandalone } from './platform.js';
 
 export type PushAvailability =
@@ -146,7 +147,13 @@ export async function currentPushToken(): Promise<string | null> {
  * Must be called from a user gesture — iOS requires it, and every other
  * browser treats an unprompted request as a reason to distrust the site.
  */
-export async function enablePush(): Promise<string | null> {
+export function enablePush(): Promise<string | null> {
+  // The permission prompt and token fetch can take a moment: spinner on the
+  // button that asked (src/lib/activity.ts).
+  return track(enablePushUntracked());
+}
+
+async function enablePushUntracked(): Promise<string | null> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return null;
 
