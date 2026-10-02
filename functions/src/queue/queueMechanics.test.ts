@@ -122,11 +122,11 @@ describe('joinQueue', () => {
     },
   );
 
-  it('enforces the free-tier waiting limit server-side', async () => {
-    // The cap is enforced in the function, not merely hidden in the UI, so a
-    // client calling directly still cannot exceed it. Invariant 5.
-    const fx = await seedQueue({ plan: 'free' }, { waitingCount: 20 });
-    await expect(join(fx, 99)).rejects.toThrow(/reached its limit/i);
+  it('refuses new joiners once a free shop has used its free services', async () => {
+    // Enforced in the function, not merely hidden in the UI, so a client
+    // calling directly still cannot get past it. Invariant 5.
+    const fx = await seedQueue({ plan: 'free', freeServicesGranted: 5, servicesUsed: 5 });
+    await expect(join(fx, 99)).rejects.toThrow(/not taking new customers/i);
   });
 
   it('enforces the queue max size', async () => {

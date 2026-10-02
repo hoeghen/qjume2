@@ -132,7 +132,7 @@ async function scanEverywhere(limit: number): Promise<DiscoveredQueue[]> {
   return snapshot.docs.flatMap((doc) => {
     const queue = doc.data();
     if (queue.lat === null || queue.lng === null) return [];
-    if (queue.shopSuspended) return [];
+    if (queue.shopSuspended || queue.shopOutOfFreeServices) return [];
     const shopId = doc.ref.parent.parent?.id;
     if (!shopId) return [];
     // distanceKm is a placeholder here - findNearest overwrites it with the
@@ -168,7 +168,7 @@ export async function findAllByName(count: number): Promise<DiscoveredQueue[]> {
 
   return snapshot.docs.flatMap((doc) => {
     const queue = doc.data();
-    if (queue.shopSuspended) return [];
+    if (queue.shopSuspended || queue.shopOutOfFreeServices) return [];
     const shopId = doc.ref.parent.parent?.id;
     if (!shopId) return [];
     return [{ ...queue, id: doc.id, shopId, distanceKm: 0 }];
@@ -203,8 +203,10 @@ async function queryRing(
       // A queue whose address could not be placed has no coordinates and
       // cannot be offered by distance.
       if (queue.lat === null || queue.lng === null) continue;
-      // A platform suspension takes a shop out of discovery entirely.
-      if (queue.shopSuspended) continue;
+      // A platform suspension takes a shop out of discovery entirely, and so
+      // does a free shop that has used its free services: neither takes new
+      // customers, and discovery is for finding somewhere to join now.
+      if (queue.shopSuspended || queue.shopOutOfFreeServices) continue;
 
       const distanceKm = distanceBetween(
         [queue.lat, queue.lng],

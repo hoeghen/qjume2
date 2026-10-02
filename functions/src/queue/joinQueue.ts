@@ -10,8 +10,8 @@ import { requireCaller } from '../lib/auth.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
 import { contactRef, holderKeyFor } from './tickets.js';
 import { nextPosition } from '../../../src/lib/queue/positions.js';
+import { takesNewCustomers } from '../../../src/lib/freeServices.js';
 import {
-  FREE_TIER_LIMITS,
   type Queue,
   type Shop,
   type Ticket,
@@ -110,6 +110,18 @@ export async function performJoinQueue(
         );
       }
 
+      // A free shop that has used its free services takes no new customers
+      // until it subscribes or is granted more. Read off the live shop, so
+      // the denormalised queue copy going stale cannot let a join through.
+      // Not even a scan at the counter gets past this one.
+      if (!takesNewCustomers(shop)) {
+        throw fail(
+          'failed-precondition',
+          'free-services-used-up',
+          'This shop is not taking new customers right now.',
+        );
+      }
+
       if (!acceptsJoiners(queue, atCounter)) {
         throw fail(
           'failed-precondition',
@@ -141,14 +153,6 @@ export async function performJoinQueue(
         throw fail('resource-exhausted', 'queue-full', 'This queue is full.');
       }
 
-      // Enforced here, on the server, not merely hidden in the UI.
-      if (shop.plan === 'free' && waitingCount >= FREE_TIER_LIMITS.maxWaiting) {
-        throw fail(
-          'resource-exhausted',
-          'free-tier-waiting-limit',
-          'This queue has reached its limit.',
-        );
-      }
 
       const issuedNumber = queue.lastIssuedNumber + 1;
       // Always behind everyone waiting, including anyone a penalty just moved.

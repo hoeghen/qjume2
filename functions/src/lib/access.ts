@@ -10,9 +10,8 @@ export interface ShopContext {
 /**
  * What this caller may do with this shop.
  *
- * Staff are a paid feature, so a staff record on a free shop grants nothing —
- * otherwise downgrading to free would leave staff quietly still able to serve,
- * which is the free tier being enforced in the UI only.
+ * Staff work on every plan: the free plan is the whole app, limited by a
+ * count of services rather than by features (src/types/limits.ts).
  */
 export async function shopAccessFor(
   firestore: Firestore,
@@ -25,17 +24,15 @@ export async function shopAccessFor(
 
   if (shop.ownerUid === callerUid) return { shop, access: 'owner' };
 
-  if (shop.plan === 'paid') {
-    const member = await firestore
-      .doc(`shops/${shopId}/staff/${callerUid}`)
-      .get();
-    if (member.exists) return { shop, access: 'staff' };
-  }
+  const member = await firestore
+    .doc(`shops/${shopId}/staff/${callerUid}`)
+    .get();
+  if (member.exists) return { shop, access: 'staff' };
 
   return { shop, access: 'none' };
 }
 
-/** Anyone who may work the counter: the owner, or staff on a paid shop. */
+/** Anyone who may work the counter: the owner, or one of the shop's staff. */
 export async function requireServeAccess(
   firestore: Firestore,
   shopId: string,
@@ -87,12 +84,10 @@ export async function assertServeAccessInTransaction(
 ): Promise<void> {
   if (shop.ownerUid === callerUid) return;
 
-  if (shop.plan === 'paid') {
-    const member = await tx.get(
-      firestore.doc(`shops/${shopId}/staff/${callerUid}`),
-    );
-    if (member.exists) return;
-  }
+  const member = await tx.get(
+    firestore.doc(`shops/${shopId}/staff/${callerUid}`),
+  );
+  if (member.exists) return;
 
   throw fail(
     'permission-denied',

@@ -1157,3 +1157,9 @@ button.link.danger { color: var(--danger); }
 /* The iPhone notification ask: one line and two buttons, kept compact. */
 .ios-ask p { margin: 0 0 10px; }
 .ios-ask p:last-child { margin-bottom: 0; }
+
+/* The free-services counter above the serve screen: a quiet line while
+   there are services left, a warning box once there are none. */
+.free-services { margin: 0 0 12px; }
+.free-services.notice p { margin: 0 0 6px; }
+.free-services.notice .link { color: var(--warn-fg); font-weight: 700; }

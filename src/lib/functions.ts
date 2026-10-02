@@ -209,6 +209,11 @@ export const adminUpdateShop = callable<
   void
 >('adminUpdateShop');
 
+export const adminGrantFreeServices = callable<
+  { shopId: string; amount: number },
+  { freeServicesGranted: number }
+>('adminGrantFreeServices');
+
 export const adminUpdateQueue = callable<
   {
     shopId: string;

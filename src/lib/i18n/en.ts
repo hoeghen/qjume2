@@ -117,6 +117,7 @@ export const en = {
   },
 
   queueDetail: {
+    notTakingNewCustomers: 'This shop isn’t taking new customers in the queue right now.',
     notFound: 'This queue no longer exists.',
     peopleWaiting: { one: '{count} person waiting', other: '{count} people waiting' },
     estimatedWait: 'estimated wait',
@@ -282,8 +283,6 @@ export const en = {
       noShowLabel: 'If someone isn’t there',
       noShowHint: 'After three no-shows they lose their place entirely.',
       descriptionLabel: 'Description (optional)',
-      descriptionPaidHint: 'Descriptions are part of the paid plan.',
-      seePlans: 'See plans',
       save: 'Save',
       create: 'Create queue',
       penalty: {
@@ -402,25 +401,26 @@ export const en = {
       done: 'Done',
     },
 
+    freeServices: {
+      left: 'Free services left: {left} of {of}',
+      subscribe: 'Start subscription — {price} kr/month',
+      usedUpOwner: 'Your free services are used up, so your queues take no new customers. You can still serve everyone already waiting.',
+      usedUpStaff: 'The shop’s free services are used up, so the queues take no new customers. You can still serve everyone already waiting.',
+    },
+
     billing: {
       title: 'Plan',
       onPlanBefore: 'You are on the ',
       onPlanAfter: ' plan.',
-      planPaid: 'paid',
+      planPaid: 'subscription',
       planFree: 'free',
       shopNotFound: 'Shop not found.',
-      freeSummary: 'The free plan covers one queue, one person serving, and about {n} people waiting at a time.',
-      paidFeaturesTitle: 'The paid plan adds',
-      features: {
-        moreQueues: 'More than one queue',
-        severalTills: 'Several tills serving at once',
-        staffLimited: 'Staff who can serve but not change settings',
-        analytics: 'Analytics — wait times, busiest hours, people served',
-        branding: 'A shop profile and your own branding',
-        descriptions: 'Queue descriptions and a message on joining',
-        sms: 'Text messages as well as email',
-      },
-      upgrade: 'Upgrade',
+      freeLeft: 'Free services left: {left} of {of}. A service is one customer marked served.',
+      usedUp: 'Your free services are used up. Your queues take no new customers until you subscribe — you can still serve everyone already waiting.',
+      subscriptionTitle: 'Subscription',
+      subscriptionBody: '{price} kr a month, excluding VAT, with no limit on services. Everything else is the same — the free plan is already the whole app.',
+      subscribe: 'Start subscription — {price} kr/month',
+      paidSummary: 'Your subscription is active: {price} kr a month, excluding VAT, with no limit on services. {served} customers served so far.',
       subscriptionHintBefore: 'A recurring subscription, billed until you cancel. See our ',
       terms: 'Terms',
       subscriptionHintAfter: ' for billing and cancellation.',
@@ -430,8 +430,8 @@ export const en = {
       addStaffLabel: 'Add someone by email',
       addStaffHint: 'They need to have signed in to Qjume at least once.',
       add: 'Add',
-      leavingTitle: 'Leaving the paid plan',
-      moveToFree: 'Move to the free plan',
+      leavingTitle: 'Cancel subscription',
+      moveToFree: 'Cancel subscription',
     },
   },
 
@@ -448,6 +448,8 @@ export const en = {
     },
 
     shopList: {
+      freeLeft: 'Free services: {left} of {of} left',
+      servedPaid: 'Subscription · {used} served',
       title: 'Shops',
       auditLog: 'Audit log',
       signOut: 'Sign out',
@@ -472,6 +474,14 @@ export const en = {
       suspended: 'Suspended',
     },
 
+    freeServices: {
+      title: 'Free services',
+      counter: '{used} used of {of} — {left} left.',
+      paidHint: 'This shop has a subscription, so the count does not limit it right now. A grant still applies if it ever goes back to free.',
+      amountLabel: 'Extra free services',
+      grant: 'Give extra free services',
+      granted: 'Gave {n} extra free services.',
+    },
     shopDetail: {
       allShops: '← All shops',
       owner: 'Owner: {uid}',
@@ -512,7 +522,7 @@ export const en = {
       intro: 'These Terms govern use of Qjume (the “Service”), operated by Bitwork.dk (“Bitwork.dk”, “we”, “us”). By creating a queue, joining one, or otherwise using the Service, you agree to these Terms. If you are accepting them on behalf of a business, you confirm you have the authority to do so.',
 
       s1Heading: '1. What the Service is',
-      s1Body: 'Qjume lets a business (a “Shop”) run one or more waiting lines (“Queues”) that customers can see and join remotely, and lets a customer join a Queue, track their place in it, and be notified as their turn approaches. A Shop is run by its owner and, on paid plans, staff the owner adds. A customer does not need an account to join a Queue.',
+      s1Body: 'Qjume lets a business (a “Shop”) run one or more waiting lines (“Queues”) that customers can see and join remotely, and lets a customer join a Queue, track their place in it, and be notified as their turn approaches. A Shop is run by its owner and any staff the owner adds. A customer does not need an account to join a Queue.',
 
       s2Heading: '2. Accounts',
       s2Body1: 'A Shop owner signs in with an email address and is responsible for everything done under their account, including staff they add. A customer’s session is anonymous unless they choose to give an email or phone number for updates on their place in a Queue.',
@@ -520,10 +530,10 @@ export const en = {
       s2Body2After: ' if you believe your account has been accessed without your permission.',
 
       s3Heading: '3. Plans, fees and billing',
-      s3Body1Before: 'Qjume offers a free plan and a paid plan with additional features, shown in the app. The paid plan is billed on a ',
+      s3Body1Before: 'Qjume offers a free plan, with every feature, that covers a number of free services (customers marked served) shown in the app; once those are used, the Shop’s queues take no new customers until it subscribes. The subscription removes that limit and is billed on a ',
       s3Body1Strong: 'recurring subscription',
       s3Body1After: ' at the price and interval shown at checkout, charged automatically until cancelled. Payment is processed by Stripe; Bitwork.dk never receives or stores your card details.',
-      s3Body2: 'You can cancel at any time from your billing settings. Cancelling stops future renewals; it does not refund the period already paid for, and access to paid features continues until that period ends. Except where the law gives you a right to one, payments already made are not refundable. We may change plan pricing with reasonable notice; continuing to use the paid plan after a price change takes effect means you accept it.',
+      s3Body2: 'You can cancel at any time from your billing settings. Cancelling stops future renewals; it does not refund the period already paid for, and the subscription’s unlimited services continue until that period ends. Except where the law gives you a right to one, payments already made are not refundable. We may change plan pricing with reasonable notice; continuing to use the paid plan after a price change takes effect means you accept it.',
 
       s4Heading: '4. Acceptable use',
       s4Intro: 'You agree not to:',

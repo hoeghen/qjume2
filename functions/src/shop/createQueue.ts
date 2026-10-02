@@ -5,8 +5,8 @@ import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { GEOCODING_SECRETS } from '../lib/secrets.js';
 import { geocodeAddress } from '../geocoding/index.js';
+import { takesNewCustomers } from '../../../src/lib/freeServices.js';
 import {
-  FREE_TIER_LIMITS,
   QUEUE_CATEGORIES,
   type NoShowPenalty,
   type Queue,
@@ -107,21 +107,10 @@ export async function performCreateQueue(
       );
     }
 
-    // One fetch answers two questions: whether a free-tier shop is already
-    // at its limit, and whether this shop will have more than one queue
-    // once this one exists — a name only tells two queues apart, so it is
-    // only required once there is a second one to tell apart. limit(2) is
-    // enough for both: the free tier's own limit is 1.
-    const existingQueues = await tx.get(
-      queuesRef.limit(FREE_TIER_LIMITS.maxQueues + 1),
-    );
-    if (shop.plan === 'free' && existingQueues.size >= FREE_TIER_LIMITS.maxQueues) {
-      throw fail(
-        'resource-exhausted',
-        'free-tier-waiting-limit',
-        'The free plan includes one queue.',
-      );
-    }
+    // Whether this shop will have more than one queue once this one exists:
+    // a name only tells two queues apart, so it is only required once there
+    // is a second one to tell apart.
+    const existingQueues = await tx.get(queuesRef.limit(1));
     if (existingQueues.size > 0 && !trimmedName) {
       throw fail(
         'invalid-argument',
@@ -134,6 +123,7 @@ export async function performCreateQueue(
       name: trimmedName,
       shopName: shop.name,
       shopSuspended: shop.suspended === true,
+      shopOutOfFreeServices: !takesNewCustomers(shop),
       description: input.description?.trim() || null,
       category,
       maxSize,

@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
-import { shopDoc } from '../../lib/firestore/paths.js';
+import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { QueueForm } from './QueueForm.js';
@@ -10,12 +9,11 @@ export function QueueFormRoute() {
   const { t } = useT();
   const { shopId } = useShopContext();
   const { queueId } = useParams();
-  const shop = useDoc(shopDoc(shopId));
   const { data: queues, loading: queuesLoading } = useCollection(
     queuesOf(shopId),
     `${shopId}/queues`,
   );
-  if (shop.loading || queuesLoading) return <p className="panel">{t('common.loading')}</p>;
+  if (queuesLoading) return <p className="panel">{t('common.loading')}</p>;
 
   const soleQueue = (queues ?? []).every((q) => q.id === queueId);
   // A new queue at a shop that already has one is overwhelmingly likely to
@@ -27,7 +25,6 @@ export function QueueFormRoute() {
   return (
     <QueueForm
       shopId={shopId}
-      paid={shop.data?.plan === 'paid'}
       soleQueue={soleQueue}
       {...(suggestedAddress ? { suggestedAddress } : {})}
     />

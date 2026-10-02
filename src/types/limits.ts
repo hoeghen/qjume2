@@ -1,15 +1,11 @@
 /**
- * Free-tier limits. These are enforced server-side in Cloud Functions, not just
- * hidden in the UI — a client cannot exceed them by manipulating requests.
- * See CLAUDE.md invariant 5 and PRD 8.
+ * The free plan is the whole app, for a number of services rather than a
+ * set of features: every shop starts with this many free services (customers
+ * marked served), a platform admin can grant more, and a subscription lifts
+ * the count altogether. Enforced server-side — see `takesNewCustomers` and
+ * CLAUDE.md invariant 5.
  */
-export const FREE_TIER_LIMITS = {
-  /** One active queue per shop. */
-  maxQueues: 1,
-  /** Roughly twenty people waiting at once. */
-  maxWaiting: 20,
-  /** One server at a time; parallel stations are a paid feature. */
-  maxStations: 1,
-  /** The owner alone. Staff members are a paid feature. */
-  maxStaff: 0,
-} as const;
+export const FREE_SERVICES_DEFAULT = 1000;
+
+/** The subscription, in whole kroner per month, excluding VAT. */
+export const SUBSCRIPTION_PRICE_DKK = 100;

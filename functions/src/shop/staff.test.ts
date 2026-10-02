@@ -31,7 +31,7 @@ describe('addStaff', () => {
     expect((membershipSnap.data() as StaffMembership).shopId).toBe(shopId);
   });
 
-  it('rejects a free-plan shop', async () => {
+  it('works for a free-plan shop — the free plan is the whole app', async () => {
     const shopId = await seedShop('free');
     await expect(
       performAddStaff(
@@ -40,7 +40,7 @@ describe('addStaff', () => {
         { shopId, email: 'staff@example.com' },
         lookupUid('staff-uid'),
       ),
-    ).rejects.toThrow(/paid plan/i);
+    ).resolves.toEqual({ uid: 'staff-uid' });
   });
 
   it('rejects a non-owner', async () => {

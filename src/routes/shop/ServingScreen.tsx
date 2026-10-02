@@ -41,13 +41,7 @@ function recallStation(queueId: string): string | null {
   }
 }
 
-export function ServingScreen({
-  shopId,
-  paid,
-}: {
-  shopId: string;
-  paid: boolean;
-}) {
+export function ServingScreen({ shopId }: { shopId: string }) {
   const { t, tn } = useT();
   const { queueId = '' } = useParams();
   const [station, setStation] = useState<{ id: string; label: string } | null>(
@@ -137,7 +131,6 @@ export function ServingScreen({
         shopId={shopId}
         queueId={queueId}
         stationId={null}
-        paid={paid}
         onPick={onPick}
       />
     );
@@ -359,23 +352,21 @@ export function ServingScreen({
         >
           {t('shop.serving.showQr')}
         </button>
-        {paid && (
-          <button
-            type="button"
-            className="link"
-            onClick={() => {
-              // Best-effort: the station identity is changing regardless, and
-              // this is exactly what the abandoned-queue sweep exists to
-              // catch if it fails — but a working call now beats staff having
-              // to remember to do it themselves.
-              if (iAmServing) void stopServing({ shopId, queueId, stationId: station.id });
-              rememberStation(queueId, null);
-              setStation(null);
-            }}
-          >
-            {t('shop.serving.changeStation')}
-          </button>
-        )}
+        <button
+          type="button"
+          className="link"
+          onClick={() => {
+            // Best-effort: the station identity is changing regardless, and
+            // this is exactly what the abandoned-queue sweep exists to
+            // catch if it fails — but a working call now beats staff having
+            // to remember to do it themselves.
+            if (iAmServing) void stopServing({ shopId, queueId, stationId: station.id });
+            rememberStation(queueId, null);
+            setStation(null);
+          }}
+        >
+          {t('shop.serving.changeStation')}
+        </button>
       </footer>
 
       {showWalkIn && (

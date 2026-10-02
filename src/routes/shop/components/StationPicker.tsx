@@ -8,8 +8,6 @@ interface Props {
   shopId: string;
   queueId: string;
   stationId: string | null;
-  /** The free plan's one-station cap (see FREE_TIER_LIMITS.maxStations). */
-  paid: boolean;
   onPick: (stationId: string, label: string) => void;
 }
 
@@ -17,12 +15,10 @@ interface Props {
  * Staff pick a serving identity at the start of a shift, so a called customer
  * is told where to go ("Marta, Till 2").
  *
- * Only shown at all when there could be more than one — a free-plan shop
- * never has a second station to choose between or come back to, so this
- * claims its one station silently instead of asking a question with only
- * one possible answer.
+ * With exactly one station already open it is taken without asking — a
+ * question with only one possible answer is not worth a tap.
  */
-export function StationPicker({ shopId, queueId, stationId, paid, onPick }: Props) {
+export function StationPicker({ shopId, queueId, stationId, onPick }: Props) {
   const { t } = useT();
   const { data: stations } = useCollection(
     stationsOf(shopId, queueId),
@@ -31,25 +27,17 @@ export function StationPicker({ shopId, queueId, stationId, paid, onPick }: Prop
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Free plan: claim the shop's one station (existing or new) without ever
-  // asking. Paid, with exactly one already open: take it rather than making
-  // staff choose from a list of one. Either way, `busy` guards against
-  // re-firing while the claim is in flight.
+  // Exactly one already open: take it rather than making staff choose from a
+  // list of one. `busy` guards against re-firing while a claim is in flight.
   useEffect(() => {
     if (stationId || !stations || busy) return;
-    if (!paid) {
-      const only = stations[0];
-      if (only) onPick(only.id, only.label);
-      else void claim();
-      return;
-    }
     if (stations.length === 1) {
       const only = stations[0];
       if (only) onPick(only.id, only.label);
     }
-  }, [stationId, stations, busy, paid, onPick]);
+  }, [stationId, stations, busy, onPick]);
 
-  if (stationId || !paid) return null;
+  if (stationId) return null;
 
   async function claim(existingId?: string) {
     setBusy(true);

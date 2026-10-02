@@ -20,7 +20,7 @@ export {
 } from './ticket.js';
 export type { Station } from './station.js';
 export type { Customer, CustomerHistoryEntry } from './customer.js';
-export { FREE_TIER_LIMITS } from './limits.js';
+export { FREE_SERVICES_DEFAULT, SUBSCRIPTION_PRICE_DKK } from './limits.js';
 export type { QueueErrorReason } from './errors.js';
 export type { ShopAccess, StaffMember, StaffMembership } from './staff.js';
 export type { AdminAction, AdminAuditEntry, AdminFieldChange } from './admin.js';

@@ -1,7 +1,7 @@
-/** Billing plan. Free-tier limits are enforced server-side, never only in the UI. */
+/** Billing plan: free (counted services) or a paid subscription. Enforced server-side. */
 export type Plan = 'free' | 'paid';
 
-/** Paid-tier shop profile. Absent on free-tier shops. */
+/** Optional shop profile. */
 export interface ShopProfile {
   logo: string | null;
   hours: string | null;
@@ -36,4 +36,13 @@ export interface Shop {
    */
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
+  /**
+   * Free services this shop may use before it needs a subscription — the
+   * default allowance plus whatever a platform admin has granted. Server-owned
+   * like `plan`. Absent on shops that predate the counter: read it through
+   * `freeServicesGranted` in src/lib/freeServices.ts, never directly.
+   */
+  freeServicesGranted?: number;
+  /** Customers marked served, ever — counted by `callNext`. Server-owned. */
+  servicesUsed?: number;
 }

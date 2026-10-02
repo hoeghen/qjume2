@@ -7,9 +7,7 @@ import { QueueForm } from '../shop/QueueForm.js';
 /**
  * The owner's own queue-settings form, reused: `admin` swaps `updateQueue`
  * for `adminUpdateQueue` (which skips the owner check) and sends "Save" and
- * "Cancel" back to this shop's admin page instead of `/shop`. `paid` is
- * forced true so the description field isn't blocked behind a plan an admin
- * doing support work has no reason to care about.
+ * "Cancel" back to this shop's admin page instead of `/shop`.
  */
 export function AdminQueueEditRoute() {
   const { t } = useT();
@@ -25,7 +23,6 @@ export function AdminQueueEditRoute() {
   return (
     <QueueForm
       shopId={shopId}
-      paid={true}
       admin
       soleQueue={soleQueue}
       onDone={() => navigate(`/admin/shops/${shopId}`)}

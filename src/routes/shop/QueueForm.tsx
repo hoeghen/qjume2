@@ -14,7 +14,6 @@ import {
   type NoShowPenalty,
   type QueueCategory,
 } from '../../types/index.js';
-import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { AddressField } from '../../components/AddressField.js';
 import { DeleteQueueDialog } from './components/DeleteQueueDialog.js';
@@ -27,21 +26,16 @@ const PENALTIES: NoShowPenalty[] = ['back', 'back3', 'back5'];
  *
  * The two differ only in which function they call and where "done" goes —
  * `adminUpdateQueue` bypasses the owner check, and there is no admin path to
- * *create* a queue at all: the free-tier count it would have to respect is
- * counted in `createQueue`, which stays owner-only. `paid` is forced true in
- * admin mode so the description field isn't held behind a plan an admin
- * doing support work has no reason to care about.
+ * *create* a queue at all: `createQueue` stays owner-only.
  */
 export function QueueForm({
   shopId,
-  paid,
   admin = false,
   onDone,
   soleQueue,
   suggestedAddress,
 }: {
   shopId: string;
-  paid: boolean;
   admin?: boolean;
   /** Where "Save" and "Cancel" go. Defaults to the owner's `/shop`. */
   onDone?: () => void;
@@ -204,15 +198,8 @@ export function QueueForm({
           id="description"
           name="description"
           rows={2}
-          disabled={!paid}
           defaultValue={q?.description ?? ''}
         />
-        {!paid && (
-          <p className="hint">
-            {t('shop.queueForm.descriptionPaidHint')}{' '}
-            <LocalizedLink to="/shop/billing">{t('shop.queueForm.seePlans')}</LocalizedLink>.
-          </p>
-        )}
 
         <div className="row">
           <button type="submit" disabled={busy}>

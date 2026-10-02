@@ -47,12 +47,19 @@ export function QueueDetail() {
   const activeStations = Math.max(1, stations?.length ?? 1);
   const wait = estimatedWaitSeconds(q, activeStations);
   const otherQueues = Math.max(0, (siblings?.length ?? 1) - 1);
-  const note = NOTE_STATUSES.includes(q.status) ? t(`status.note.${q.status}`) : null;
+  // Out of free services outranks the queue's own status: whatever that
+  // says, the shop is not taking new customers until it subscribes.
+  const note = q.shopOutOfFreeServices
+    ? t('queueDetail.notTakingNewCustomers')
+    : NOTE_STATUSES.includes(q.status)
+      ? t(`status.note.${q.status}`)
+      : null;
   // A platform suspension refuses a join regardless of the queue's own
   // status — checked here too so the button doesn't invite a tap that the
   // server would only then refuse. See CLAUDE.md decision 9.
   const joinable =
     !q.shopSuspended &&
+    !q.shopOutOfFreeServices &&
     (q.status === 'open' || (atCounter && q.status === 'drainMode'));
 
   return (
@@ -73,7 +80,10 @@ export function QueueDetail() {
       {q.name && <p className="queue-name">{q.name}</p>}
 
       {note && (
-        <p className={`status-banner status-${q.status}`} role="status">
+        <p
+          className={`status-banner status-${q.shopOutOfFreeServices ? 'closed' : q.status}`}
+          role="status"
+        >
           <span>{note}</span>
         </p>
       )}

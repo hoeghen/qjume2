@@ -14,6 +14,8 @@ import { assertServeAccessInTransaction } from '../lib/access.js';
 import { placesToMoveBack } from '../../../src/lib/queue/penalties.js';
 import { foldSample, isUsableSample } from '../../../src/lib/queue/serviceTime.js';
 import { channelsFromEnv, sweepMilestones } from '../notifications/dispatch.js';
+import { freeServicesRemaining } from '../../../src/lib/freeServices.js';
+import { syncFreeServicesFlag } from '../lib/freeServices.js';
 import {
   notifyBumped,
   notifyCalled,
@@ -137,6 +139,8 @@ export async function performCallNext(
     /** Carried out rather than read from an outer variable, which TypeScript
      *  cannot see being assigned inside the transaction body. */
     queue: Queue;
+    /** True when this service used the shop's last free one. */
+    usedLastFree: boolean;
   }
 
   let result: TransactionResult;
@@ -207,12 +211,18 @@ export async function performCallNext(
       let penalisedId: string | null = null;
       let penalisedPosition: number | null = null;
       let observed: { averageSeconds: number; sampleCount: number } | null = null;
+      let servedOne = false;
 
       if (current !== null && currentSnap !== null) {
         const currentId = currentSnap.id;
 
         if (outcome === 'served') {
           tx.update(currentSnap.ref, { state: 'served', station: null });
+          // The free-services counter: one per customer marked served, in
+          // the same transaction so two taps can never count once. Counted
+          // on every plan — a subscription only stops it mattering.
+          tx.update(shopRef, { servicesUsed: FieldValue.increment(1) });
+          servedOne = true;
           resolved = {
             ticketId: currentId,
             outcome: 'served',
@@ -333,6 +343,10 @@ export async function performCallNext(
             }
           : null,
       queue,
+      usedLastFree:
+        servedOne &&
+        shop.plan !== 'paid' &&
+        freeServicesRemaining(shop) === 1,
       };
     },
     );
@@ -349,6 +363,15 @@ export async function performCallNext(
       );
     }
     throw error;
+  }
+
+  // Out of free services: take the shop's queues out of discovery. Staff go
+  // on serving whoever is already waiting; joinQueue refuses new joiners on
+  // the live count regardless of whether this lands.
+  if (result.usedLastFree) {
+    await syncFreeServicesFlag(firestore, shopId).catch((error: unknown) =>
+      logger.warn('Free-services flag sync failed', { shopId, reason: String(error) }),
+    );
   }
 
   // Everything below runs only once the transaction has committed. A

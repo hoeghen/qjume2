@@ -3,11 +3,11 @@ import { logger } from 'firebase-functions';
 import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
+import { syncFreeServicesFlag } from '../lib/freeServices.js';
 import { requireCaller } from '../lib/auth.js';
 import { STRIPE_SECRETS_IF_ENABLED } from '../lib/secrets.js';
 import { providerFromEnv, type PaymentProvider } from './index.js';
 import {
-  FREE_TIER_LIMITS,
   type Plan,
   type Shop,
 } from '../../../src/types/index.js';
@@ -92,22 +92,6 @@ export async function performCompleteCheckout(
     const shop = snap.data() as Shop | undefined;
     if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
 
-    if (completed.plan === 'free' && shop.plan === 'paid') {
-      // Downgrading below what the shop is already using would leave it in a
-      // state the free tier forbids and no code path can produce. Refuse
-      // rather than silently deleting queues somebody is standing in.
-      const queues = await tx.get(
-        shopRef.collection('queues').limit(FREE_TIER_LIMITS.maxQueues + 1),
-      );
-      if (queues.size > FREE_TIER_LIMITS.maxQueues) {
-        throw fail(
-          'failed-precondition',
-          'downgrade-blocked',
-          `Delete all but ${FREE_TIER_LIMITS.maxQueues} queue before moving to the free plan.`,
-        );
-      }
-    }
-
     const update: Partial<Shop> = { plan: completed.plan };
     // Only Stripe hands these back, and only on an upgrade — a downgrade's
     // completed checkout has nothing new to record. Leaving them out of the
@@ -121,6 +105,10 @@ export async function performCompleteCheckout(
     }
     tx.update(shopRef, update);
   });
+
+  // A subscription lifts the free-services count, and losing one brings it
+  // back: either way the queues' discovery copy may need to change.
+  await syncFreeServicesFlag(firestore, completed.shopId);
 
   logger.info('Plan changed', {
     shopId: completed.shopId,

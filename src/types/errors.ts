@@ -10,8 +10,7 @@ export type QueueErrorReason =
   | 'station-not-found'
   | 'queue-not-accepting'
   | 'queue-full'
-  | 'free-tier-waiting-limit'
-  | 'free-tier-station-limit'
+  | 'free-services-used-up'
   | 'already-in-queue'
   | 'exclusive-queue-conflict'
   | 'not-shop-owner'
@@ -21,8 +20,6 @@ export type QueueErrorReason =
   /** Contention closed the transaction before it committed; nothing advanced. */
   | 'contended'
   | 'payment-unverified'
-  | 'downgrade-blocked'
   | 'not-shop-staff'
-  | 'free-tier-staff-limit'
   | 'not-platform-admin'
   | 'address-not-found';
