@@ -11,6 +11,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth } from './firebase.js';
+import { track } from './activity.js';
 import { detectLocaleFromPath, withLocale } from './i18n/locale.js';
 
 const EMAIL_KEY = 'qjume:pending-email';
@@ -21,7 +22,7 @@ const EMAIL_KEY = 'qjume:pending-email';
  * link is what Auth supports out of the box, and reaches the same place.
  */
 export async function sendEmailLink(email: string): Promise<void> {
-  await sendSignInLinkToEmail(auth, email, {
+  await track(sendSignInLinkToEmail(auth, email, {
     // Back in the language they asked in: a Danish visitor signing in from
     // /da/shop should not land on the English page.
     url: `${window.location.origin}${withLocale(
@@ -29,7 +30,7 @@ export async function sendEmailLink(email: string): Promise<void> {
       detectLocaleFromPath(window.location.pathname),
     )}`,
     handleCodeInApp: true,
-  });
+  }));
   try {
     window.localStorage.setItem(EMAIL_KEY, email);
   } catch {
@@ -70,7 +71,7 @@ export async function completeEmailLinkSignIn(): Promise<boolean> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  await signInWithPopup(auth, new GoogleAuthProvider());
+  await track(signInWithPopup(auth, new GoogleAuthProvider()));
 }
 
 /**
@@ -79,12 +80,12 @@ export async function signInWithGoogle(): Promise<void> {
  * wrapper ever ships. See PRD 5.1.
  */
 export async function signInWithApple(): Promise<void> {
-  await signInWithPopup(auth, new OAuthProvider('apple.com'));
+  await track(signInWithPopup(auth, new OAuthProvider('apple.com')));
 }
 
 /** Customers join without an account; anonymous auth still gives them a uid. */
 export async function signInAsGuest(): Promise<void> {
-  await signInAnonymously(auth);
+  await track(signInAnonymously(auth));
 }
 
 /**
@@ -101,7 +102,7 @@ export async function isPlatformAdmin(user: User | null): Promise<boolean> {
 }
 
 export function signOut(): Promise<void> {
-  return fbSignOut(auth);
+  return track(fbSignOut(auth));
 }
 
 export function watchAuth(fn: (user: User | null) => void): () => void {
