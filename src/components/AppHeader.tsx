@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo.js';
-import { withLocale } from '../lib/i18n/locale.js';
+import { detectLocaleFromPath, isLandingPath, withLocale } from '../lib/i18n/locale.js';
 
 /** What to call the *other* language, in that language - never in the one currently showing. */
 const OTHER_LANGUAGE_LABEL = { en: 'Dansk', da: 'English' } as const;
@@ -13,19 +13,18 @@ const OTHER_LANGUAGE_LABEL = { en: 'Dansk', da: 'English' } as const;
  * which is where people already expect "home" to be.
  *
  * The splash is the exception: it is the landing page, and it carries the mark
- * at full size already. Checked directly against the URL, not the resolved
- * locale, since it must hide on both `/` and `/da`.
+ * at full size already: hidden on `/`, `/en` and `/da` alike.
  */
 export function AppHeader() {
   const { pathname } = useLocation();
-  if (pathname === '/' || pathname === '/da') return null;
+  if (isLandingPath(pathname)) return null;
 
-  const isDanish = pathname === '/da' || pathname.startsWith('/da/');
-  const otherLocale = isDanish ? 'en' : 'da';
+  const locale = detectLocaleFromPath(pathname);
+  const otherLocale = locale === 'da' ? 'en' : 'da';
 
   return (
     <header className="app-header">
-      <Link className="home-link" to={withLocale('/', isDanish ? 'da' : 'en')}>
+      <Link className="home-link" to={withLocale('/', locale)}>
         <Logo size={26} decorative />
         <span>QjuMe</span>
       </Link>
