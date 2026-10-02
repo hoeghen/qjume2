@@ -1153,3 +1153,7 @@ button.link.danger { color: var(--danger); }
    almost nobody needs it; it must be findable, not noticed. */
 .resume-quiet { margin-top: 40px; font-size: 13px; }
 .resume-quiet > .link { color: var(--on-dark-faint); }
+
+/* The iPhone notification ask: one line and two buttons, kept compact. */
+.ios-ask p { margin: 0 0 10px; }
+.ios-ask p:last-child { margin-bottom: 0; }
