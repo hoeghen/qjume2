@@ -136,19 +136,12 @@ export const da: DeepPartial<typeof en> = {
   },
 
   resumeForm: {
-    prompt: 'Allerede i denne kø? Indtast din kode',
+    prompt: 'Har du fået en kode af personalet?',
     codeLabel: 'Din kode',
-    hint: 'Mistet den? Spørg butikken — de kan finde dig ved navn og udstede en ny.',
+    hint: 'Personalet kan give dig en kode, der henter din plads i denne kø over på denne telefon.',
     submit: 'Få min plads tilbage',
   },
 
-  resumeCodePrompt: {
-    ariaLabel: 'Din genoptagelseskode',
-    title: 'Du er med i køen',
-    body: 'Gem denne kode. Den giver dig din plads tilbage, hvis du mister din telefon eller skifter til en anden.',
-    hint: 'Uden den skal du bede butikken om at finde dig ved navn.',
-    dismiss: 'Forstået',
-  },
 
   ticketView: {
     loading: 'Indlæser din plads…',
@@ -389,10 +382,10 @@ export const da: DeepPartial<typeof en> = {
       nobodyWaiting: 'Ingen venter.',
       noShowTitle: 'Udeblivelser hidtil',
       noShowCount: '{count} af 3',
-      relink: 'Ny kode',
+      relink: 'Giv kode',
       remove: 'Fjern',
-      newCodeTitle: 'Ny kode til {name}',
-      newCodeBody: 'Læs denne op. Den erstatter enhver kode, de havde, og giver dem deres plads tilbage på en ny telefon.',
+      newCodeTitle: 'Kode til {name}',
+      newCodeBody: 'Læs den op. På køens side trykker de på “Har du fået en kode af personalet?” og indtaster den for at få deres plads tilbage på telefonen. Den erstatter enhver tidligere kode.',
       done: 'Færdig',
     },
 
