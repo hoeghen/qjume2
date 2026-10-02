@@ -31,7 +31,10 @@ These are correctness requirements, not preferences.
    `unavailable` — still open, no new tickets. The shop device keeps serving from cache
    and syncs on reconnect.
 
-5. **Free tier limits are enforced server-side**, not just hidden in the UI.
+5. **The free plan's service count is enforced server-side**, not just hidden in the
+   UI. `joinQueue` and `addWalkIn` refuse new customers once a free shop has used its
+   free services, reading the live shop doc; the counter fields are server-owned in the
+   rules like `plan`. See decision 12.
 
 ## Decisions that override the PRD
 
@@ -214,6 +217,101 @@ kept unedited.
     a `PaymentProvider` the emulator tests exercise instead of hitting Stripe,
     selected by `PAYMENTS_PROVIDER` the same way `stripeProvider` is.
 
+12. **The free plan is the whole app, for 1000 services; then a 100 kr/month
+    subscription.** It used to be a set of feature limits (one queue, ~20
+    waiting, one till, no staff); those are all gone — several queues, tills,
+    staff and descriptions work on every plan. What the free plan limits is
+    a count: every shop starts with `FREE_SERVICES_DEFAULT` (1000) free
+    services, a service being one customer marked *served* (no-shows do not
+    count). The subscription is `SUBSCRIPTION_PRICE_DKK` (100) kr a month
+    **excluding VAT**, and removes the limit; losing it brings the remaining
+    count back into force.
+
+    - `Shop.freeServicesGranted` / `Shop.servicesUsed` are optional on the
+      type (shops predating the counter have neither) — always read them
+      through `src/lib/freeServices.ts`, which both app and functions use, so
+      the number on screen is the number enforced.
+    - `callNext` increments `servicesUsed` inside its own transaction.
+    - At 0 on the free plan, **new customers stop, serving does not**:
+      `joinQueue` (counter scans included) and `addWalkIn` refuse with
+      `free-services-used-up`, while staff go on calling everyone already
+      waiting — the same shape as invariant 4, deliberately not blocking
+      "Next" and stranding people mid-day.
+    - `Queue.shopOutOfFreeServices` is a discovery copy, exactly like
+      `shopSuspended`, kept in step by `syncFreeServicesFlag` after the last
+      free service, an admin grant, and any plan change. Discovery hides
+      those queues; `joinQueue` never trusts the copy.
+    - A platform admin can give a shop extra free services
+      (`adminGrantFreeServices`, logged to `adminAuditLog` in the same
+      transaction). It is a gift, not a payment: `plan` never changes there.
+    - The counter shows on the serve screen (owner gets a subscribe link),
+      the billing page and both admin pages — never on the monitor.
+    - **No App Store or Play billing, by design.** Qjume is a website/PWA,
+      so Apple's and Google's in-app cuts do not apply; Apple Pay and Google
+      Pay arrive as ordinary Stripe Checkout payment methods. Wrapping it as
+      a store app would change that — don't, without deciding to pay it.
+      Payments still run on the stub provider (`PAYMENTS_PROVIDER=stub`)
+      until real Stripe keys are set.
+
+13. **Notifications count people, not minutes.** The 15/10/5/1-minute
+    milestones are gone: minutes drift with the average service time, a
+    count does not. A waiting customer gets one alert each at 3, 2 and 1
+    people ahead and at 0 ("You're next"), skipped ones marked sent so they
+    never fire late (`NOTIFICATION_POSITIONS_AHEAD`, `decidePositionMilestone`).
+    Each carries the estimated wait — the same figure the ticket screen
+    shows — and **always says it is only an estimate and can change**.
+    Being called sends a separate **"It's your turn"**, first, on every
+    channel, marked `urgent` (stays up until dismissed, longer buzz) — sent
+    even though the screen already says so, because the person may not be
+    looking at it. Push plumbing that is easy to break again:
+    - The messaging service worker lives at scope
+      `/firebase-cloud-messaging-push-scope`, **not `/`**: at `/` it and the
+      PWA's Workbox `sw.js` replace each other, and pushes FCM reports as
+      delivered land in a worker with no push handler.
+    - A visible page gets FCM messages through `onMessage`, not as a
+      notification, so `src/lib/push.ts` shows them itself; urgency travels
+      as `data.urgent`, since a page only receives title and body.
+    - The SDK already displays `notification` payloads in the background;
+      the worker only handles data-only messages, or every alert shows twice.
+    - `APP_BASE_URL` must be set for production (`functions/.env.qjume-d483a`)
+      or notification links point at the local dev server.
+    - Every FCM send logs one "FCM send result" line, success included, with
+      a per-token outcome and only the last 8 characters of each token.
+
+14. **iPhone: a short ask, and a clipboard handover from Safari.** In a
+    Safari tab iOS has no push at all, and a page cannot add itself to the
+    Home Screen. So "Notify me" opens one line and two buttons: "Add to Home
+    Screen" (shows the two Share-menu steps) and "No thanks" (states the
+    consequence). The Home Screen app shares **no storage** with Safari —
+    not the ticket memory, not the anonymous sign-in — and the web offers no
+    device id to match them by (fingerprinting is out, on privacy grounds).
+    So "Add to Home Screen" copies a link holding a 144-bit single-use token
+    the device generated (`startTransfer` stores its hash; one hour TTL), and
+    the installed app offers "Continue my place from Safari", which pastes it
+    and calls `claimTransfer`. It can fail quietly, so the steps always end
+    with "otherwise join again in the app — and leave this queue first".
+    Android needs none of this: an installed Chrome PWA shares Chrome's
+    storage. Turning push on in a browser tab when Qjume is not installed
+    also suggests installing (`src/lib/install.ts`), using
+    `getInstalledRelatedApps` via the manifest's `related_applications`.
+
+15. **The resume code stays with staff.** PRD 4.4 shows every joiner their
+    code; nearly nobody needs it — the phone remembers the place — so it was
+    noise. No code dialog after joining; entering one is a faint "Got a code
+    from staff?" link at the bottom of the queue page. Staff issue a code on
+    demand with "Give code" (`relinkTicket`) when a customer asks. Codes are
+    deliberately **not** shown beside every name on the serve screen: they
+    are stored hashed, and a two-character code anyone can read over a
+    shoulder is a key to that person's place.
+
+16. **"Your queues" is the way back to a ticket.** The landing page and Find
+    lead with a quiet panel of the queues this device holds (from
+    `myTickets`), with live place and wait; finished tickets drop out and are
+    forgotten. The installed app, opened with exactly one active queue, goes
+    straight to it — once per launch, never in a browser tab. Notification
+    choice is remembered per ticket, so returning shows "Disable
+    notifications" rather than asking again.
+
 ## Architecture notes
 
 **`/s/:shopId` is the public shop page**, listing every queue at one shop. It
@@ -273,6 +371,9 @@ build a flow that assumes push works.
 
 ## Conventions
 
+- **Always push and deploy.** Finished work is committed, pushed, opened as a PR and
+  merged to `main`, which is what deploys it (`deploy-firebase.yml`). Do not stop at a
+  pushed branch and wait to be asked.
 - TypeScript strict mode on.
 - Shared types for Firestore documents in `src/types/`, imported by both the app and
   functions — the two must not drift.
