@@ -53,7 +53,9 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
   // Set by the tap that turned push on, so the install suggestion appears at
   // that moment rather than nagging on every return visit.
   const [justEnabled, setJustEnabled] = useState(false);
-  const [showInstallSteps, setShowInstallSteps] = useState(false);
+  // iPhone in Safari: the button opens a short ask, then either the two
+  // install steps or, on "No thanks", what that means.
+  const [iosStep, setIosStep] = useState<'idle' | 'ask' | 'steps' | 'declined'>('idle');
   // Whether this place was copied for the Home Screen app to pick up. Even
   // when it was, the steps still say to join again if that doesn't work.
   const [transferReady, setTransferReady] = useState(false);
@@ -152,47 +154,60 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
 
   if (availability === 'needs-install') {
     // iPhone in Safari: web push only exists in an app added to the Home
-    // Screen. Offer the same button as everywhere else, and answer the tap
-    // with how to install — the nudge lands at the moment they asked.
-    if (!showInstallSteps) {
+    // Screen, and a page cannot add itself — only Safari's Share menu can.
+    // So the ask is one line and two buttons; the steps come only if wanted.
+    if (iosStep === 'idle') {
       return (
         <div className="notice">
-          <button type="button" className="secondary" onClick={prepareInstall}>
+          <button type="button" className="secondary" onClick={() => setIosStep('ask')}>
             {t('enableNotifications.turnOnQuestion')}
           </button>
         </div>
       );
     }
+    if (iosStep === 'declined') {
+      return <p className="notice">{t('enableNotifications.iosDeclined')}</p>;
+    }
+    if (iosStep === 'ask') {
+      return (
+        <div className="notice ios-ask">
+          <p>{t('enableNotifications.iosAsk')}</p>
+          <div className="row">
+            <button type="button" onClick={prepareInstall}>
+              {t('enableNotifications.iosAdd')}
+            </button>
+            <button type="button" className="secondary" onClick={() => setIosStep('declined')}>
+              {t('enableNotifications.iosNoThanks')}
+            </button>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className="notice" role="status">
+      <div className="notice ios-ask" role="status">
         <p>
-          <strong>{t('enableNotifications.needsInstallTitle')}</strong>
-        </p>
-        <p>
-          {t('enableNotifications.needsInstallBefore')}
+          {t('enableNotifications.iosStepsBefore')}
           <strong>{t('enableNotifications.share')}</strong>
-          {t('enableNotifications.needsInstallMiddle')}
+          {t('enableNotifications.iosStepsMiddle')}
           <strong>{t('enableNotifications.addToHomeScreen')}</strong>
-          {t('enableNotifications.needsInstallAfter')}
+          {t('enableNotifications.iosStepsAfter')}
         </p>
-        {/* The Home Screen app has its own storage, separate from Safari, so
-            it starts without this ticket. The copied link usually carries the
-            place across; joining again is the fallback, and leaving here first
-            matters then — an abandoned ticket still gets called, and its
-            no-shows hold up everyone behind it. */}
-        {transferReady && <p>{t('enableNotifications.needsInstallTransfer')}</p>}
+        {/* The Home Screen app shares no storage with Safari. The copied link
+            usually carries the place across; joining again is the fallback,
+            and leaving here first matters then — an abandoned ticket still
+            gets called, and its no-shows hold up everyone behind it. */}
         <p>
           {transferReady
-            ? t('enableNotifications.needsInstallFallback')
-            : t('enableNotifications.needsInstallCode')}
+            ? t('enableNotifications.iosThenContinue')
+            : t('enableNotifications.iosThenRejoin')}
         </p>
-        <p className="hint">{t('enableNotifications.needsInstallHint')}</p>
+        {transferReady && <p className="hint">{t('enableNotifications.iosFallback')}</p>}
       </div>
     );
   }
 
   function prepareInstall() {
-    setShowInstallSteps(true);
+    setIosStep('steps');
     const token = newTransferToken();
     // Written before anything is awaited: iOS only allows a clipboard write
     // while the tap that asked for it is still being handled.
