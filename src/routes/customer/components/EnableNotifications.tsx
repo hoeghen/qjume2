@@ -42,7 +42,7 @@ interface Props {
  * this is an extra channel, not the delivery mechanism.
  */
 export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [availability, setAvailability] = useState<PushAvailability | null>(null);
   const [enabled, setEnabled] = useState(false);
   // Kept so "Disable notifications" can remove the same token it added —
@@ -95,13 +95,15 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
       }
       // Turned on here before: show it as on straight away, then re-read the
       // token — they rotate — and re-register it, which is a no-op when
-      // unchanged. A failure leaves it shown as on: the last token registered
-      // is still on the ticket, so alerts are still going somewhere.
+      // unchanged. It also carries the current language, so switching language
+      // with notifications on switches the notifications too. A failure leaves
+      // it shown as on: the last token registered is still on the ticket, so
+      // alerts are still going somewhere.
       setEnabled(true);
       void currentPushToken()
         .then(async (token) => {
           if (!token || cancelled) return;
-          await registerPushToken({ shopId, queueId, ticketId, token });
+          await registerPushToken({ shopId, queueId, ticketId, token, locale });
           if (!cancelled) setPushToken(token);
         })
         .catch(() => undefined);
@@ -109,7 +111,7 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [shopId, queueId, ticketId]);
+  }, [shopId, queueId, ticketId, locale]);
 
   if (availability === null) return null;
 
@@ -229,7 +231,7 @@ export function EnableNotifications({ shopId, queueId, ticketId }: Props) {
           setAvailability('denied');
           return;
         }
-        await registerPushToken({ shopId, queueId, ticketId, token });
+        await registerPushToken({ shopId, queueId, ticketId, token, locale });
         rememberPush(ticketId, true);
         setPushToken(token);
         setEnabled(true);

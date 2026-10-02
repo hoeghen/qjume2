@@ -1,6 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase.js';
 import { track } from './activity.js';
+import type { Locale } from './i18n/locale.js';
 import type {
   NoShowPenalty,
   QueueCategory,
@@ -36,6 +37,8 @@ export const joinQueue = callable<
     phone?: string;
     /** Scanned the monitor's QR code, so they are in the shop. */
     atCounter?: boolean;
+    /** The language they joined in; notifications are written in it. */
+    locale?: Locale;
   },
   { ticketId: string; number: number; resumeCode: string }
 >('joinQueue');
@@ -85,7 +88,7 @@ export const claimTransfer = callable<
 >('claimTransfer');
 
 export const registerPushToken = callable<
-  { shopId: string; queueId: string; ticketId: string; token: string },
+  { shopId: string; queueId: string; ticketId: string; token: string; locale?: Locale },
   { ok: true }
 >('registerPushToken');
 

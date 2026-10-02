@@ -1224,3 +1224,7 @@ a.button[aria-busy='true']::before {
     opacity: 0.6;
   }
 }
+
+/* The landing page's header: just the language switch, top right, over the
+   centred splash. */
+.app-header-landing { justify-content: flex-end; }

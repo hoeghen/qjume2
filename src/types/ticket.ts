@@ -25,6 +25,9 @@ export const NOTIFICATION_POSITIONS_AHEAD = [3, 2, 1, 0] as const;
 export type NotificationPositionMilestone =
   (typeof NOTIFICATION_POSITIONS_AHEAD)[number];
 
+/** The languages a customer can be notified in. */
+export type ContactLocale = 'da' | 'en';
+
 /** Three no-shows removes a ticket. Per ticket, per queue. Invariant 3. */
 export const NO_SHOW_REMOVAL_THRESHOLD = 3;
 
@@ -83,6 +86,12 @@ export interface TicketContact {
   phone: string | null;
   fcmTokens: string[];
 
+  /**
+   * The language notifications are written in: set on joining, updated when
+   * notifications are turned on. Absent on older tickets, which get Danish,
+   * the app's default.
+   */
+  locale?: ContactLocale | null;
   /** Position alerts already sent, so an advance cannot duplicate one. */
   dispatchedPositions: NotificationPositionMilestone[];
   /**

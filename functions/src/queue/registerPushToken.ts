@@ -6,6 +6,7 @@ import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { contactRef } from './tickets.js';
 import { tokenTail } from '../notifications/channels.js';
+import { asContactLocale } from '../notifications/messages.js';
 import type { TicketContact } from '../../../src/types/index.js';
 
 export interface RegisterPushTokenRequest {
@@ -13,6 +14,12 @@ export interface RegisterPushTokenRequest {
   queueId: string;
   ticketId: string;
   token: string;
+  /**
+   * The language the customer is using as they turn notifications on — the
+   * clearest statement of which language they want to be notified in, so it
+   * replaces whatever was stored on joining.
+   */
+  locale?: string;
 }
 
 /**
@@ -53,12 +60,17 @@ export async function performRegisterPushToken(
 
   // arrayUnion so re-registering on the same device is a no-op rather than a
   // second copy of every alert.
-  await ref.update({ fcmTokens: FieldValue.arrayUnion(token) });
+  const locale = asContactLocale(input.locale);
+  await ref.update({
+    fcmTokens: FieldValue.arrayUnion(token),
+    ...(locale ? { locale } : {}),
+  });
   logger.info('Push token registered', {
     shopId,
     queueId,
     ticketId,
     token: tokenTail(token),
+    locale,
     tokensBefore: contact.fcmTokens.length,
   });
   return { ok: true } as const;

@@ -1,10 +1,12 @@
 import type { Firestore } from 'firebase-admin/firestore';
 import { notifyTicket, type DispatchTarget } from './dispatch.js';
+import { messagesFor, queueUrl } from './messages.js';
 import type { Channels } from './channels.js';
 
 /**
  * The notices that are not about time passing: something happened to a
- * customer's place, and they need to know without opening the app.
+ * customer's place, and they need to know without opening the app. Worded
+ * in messages.ts, in the language stored on each ticket.
  */
 
 export async function notifyBumped(
@@ -19,13 +21,10 @@ export async function notifyBumped(
   await notifyTicket(
     firestore,
     target,
-    {
-      title: 'You missed your turn',
-      body:
-        `${displayName}, you were called at ${shopName} and weren't there, ` +
-        `so you've moved back. ${strikesLeft} more and you lose your place.`,
-      url: `${baseUrl}/q/${target.shopId}/${target.queueId}`,
-    },
+    (locale) => ({
+      ...messagesFor(locale).bumped(displayName, shopName, strikesLeft),
+      url: queueUrl(baseUrl, target, locale),
+    }),
     channels,
   );
 }
@@ -50,14 +49,11 @@ export async function notifyCalled(
   await notifyTicket(
     firestore,
     target,
-    {
-      title: 'It’s your turn',
-      body: tillLabel
-        ? `${displayName}, please go to ${tillLabel} at ${shopName}.`
-        : `${displayName}, you’re being called at ${shopName}.`,
-      url: `${baseUrl}/q/${target.shopId}/${target.queueId}`,
+    (locale) => ({
+      ...messagesFor(locale).turn(displayName, shopName, tillLabel),
+      url: queueUrl(baseUrl, target, locale),
       urgent: true,
-    },
+    }),
     channels,
   );
 }
@@ -74,14 +70,10 @@ export async function notifyRemoved(
   await notifyTicket(
     firestore,
     target,
-    {
-      title: 'You have left the queue',
-      body:
-        reason === 'noShows'
-          ? `${displayName}, you missed three calls at ${shopName}, so your place has gone.`
-          : `${displayName}, ${shopName} has taken you out of the queue.`,
-      url: `${baseUrl}/q/${target.shopId}/${target.queueId}`,
-    },
+    (locale) => ({
+      ...messagesFor(locale).removed(displayName, shopName, reason),
+      url: queueUrl(baseUrl, target, locale),
+    }),
     channels,
   );
 }
@@ -98,11 +90,10 @@ export async function notifyQueueClosed(
       notifyTicket(
         firestore,
         target,
-        {
-          title: 'Queue closed',
-          body: `${shopName} has closed for now. Sorry — do visit us next time.`,
-          url: `${baseUrl}/q/${target.shopId}/${target.queueId}`,
-        },
+        (locale) => ({
+          ...messagesFor(locale).queueClosed(shopName),
+          url: queueUrl(baseUrl, target, locale),
+        }),
         channels,
       ),
     ),

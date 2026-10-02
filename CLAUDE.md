@@ -316,8 +316,14 @@ kept unedited.
     render Danish; English lives under `/en/…`. `/da/…` still renders Danish,
     because it was the Danish prefix while English was the default and old
     links point at it. Build paths with `withLocale`/`stripLocale` in
-    `src/lib/i18n/locale.ts`, never by hand. Server-side notification and
-    email text is still English only.
+    `src/lib/i18n/locale.ts`, never by hand. The language switch shows the
+    *other* language's own name, on every page including the landing page,
+    and keeps the query string (the monitor's `?shop=…&queue=…`).
+    **Notifications follow the customer's language**: `TicketContact.locale`
+    is set on joining and replaced when they turn notifications on (or the
+    app re-registers after a language switch), and every notice and email is
+    worded from `functions/src/notifications/messages.ts`, Danish when no
+    language is stored. Write a new notice there, in both languages.
 
 ## Architecture notes
 

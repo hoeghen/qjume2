@@ -26,12 +26,15 @@ beforeEach(async () => {
   channels = recordingChannels(sent);
 });
 
-async function join(fx: Fixture, n: number, email?: string) {
+// These customers join in English, so the assertions below can read the
+// English wording; the language tests at the end cover Danish, the default.
+async function join(fx: Fixture, n: number, email?: string, locale: string | null = 'en') {
   return performJoinQueue(testDb, phone(n), {
     shopId: fx.shopId,
     queueId: fx.queueId,
     displayName: `Customer ${n}`,
     ...(email ? { email } : {}),
+    ...(locale ? { locale } : {}),
   });
 }
 
@@ -407,5 +410,63 @@ describe('being called', () => {
     await call(fx, station);
 
     expect(sent).toEqual([]);
+  });
+});
+
+describe('the language a notification is written in', () => {
+  it('is Danish by default, with a link to the Danish page', async () => {
+    const fx = await seedQueue();
+    await join(fx, 1, 'one@example.com', null);
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+
+    expect(sent[0]).toMatchObject({
+      title: 'Det er din tur',
+      body: 'Customer 1, du bliver kaldt op hos Test Shop.',
+    });
+    expect(sent[0]?.url).toMatch(new RegExp(`[^n]/q/${fx.shopId}/${fx.queueId}$`));
+  });
+
+  it('follows the language chosen when turning notifications on', async () => {
+    // Joined in Danish, then turned notifications on while reading English:
+    // the later, deliberate choice wins.
+    const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
+    await join(fx, 1);
+    const second = await join(fx, 2, undefined, 'da');
+    await performRegisterPushToken(testDb, phone(2), {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      ticketId: second.ticketId,
+      token: 'token-two',
+      locale: 'en',
+    });
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+
+    const next = sent.find((n) => n.to === 'token-two');
+    expect(next?.title).toBe('You’re next');
+    expect(next?.url).toContain(`/en/q/${fx.shopId}/${fx.queueId}`);
+    expect((await ticketContact(fx, second.ticketId)).locale).toBe('en');
+  });
+
+  it('writes the position alerts in Danish too, estimate and all', async () => {
+    const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
+    for (let n = 1; n <= 5; n++) await join(fx, n, `c${n}@example.com`, 'da');
+    const station = await seedStation(fx, 'Till 1');
+
+    await call(fx, station);
+
+    const toFive = sent.find((n) => n.to === 'c5@example.com');
+    expect(toFive?.title).toBe('3 personer foran dig');
+    expect(toFive?.body).toMatch(/Anslået ventetid: cirka 15 min\. Det er kun et skøn/);
+    expect(sent.find((n) => n.to === 'c2@example.com')?.title).toBe('Du er den næste');
+  });
+
+  it('ignores a language it does not speak', async () => {
+    const fx = await seedQueue();
+    const ticket = await join(fx, 1, undefined, 'xx');
+    expect((await ticketContact(fx, ticket.ticketId)).locale).toBeNull();
   });
 });
