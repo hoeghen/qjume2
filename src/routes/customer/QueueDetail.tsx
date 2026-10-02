@@ -106,26 +106,33 @@ export function QueueDetail() {
         </section>
       )}
 
-      {q.description && <p>{q.description}</p>}
+      {/* In the queue, the place and the wait are the page: they come straight
+          after the name, and the details someone needed for deciding where to
+          go — address, category, description — step aside. */}
+      {!ticketId && (
+        <>
+          {q.description && <p>{q.description}</p>}
 
-      <dl className="detail">
-        <dt>{t('queueDetail.address')}</dt>
-        <dd>{q.address}</dd>
+          <dl className="detail">
+            <dt>{t('queueDetail.address')}</dt>
+            <dd>{q.address}</dd>
 
-        <dt>{t('queueDetail.category')}</dt>
-        <dd>{t(`categories.${q.category}`)}</dd>
+            <dt>{t('queueDetail.category')}</dt>
+            <dd>{t(`categories.${q.category}`)}</dd>
 
-        {otherQueues > 0 && (
-          <>
-            <dt>{t('queueDetail.alsoAtShop')}</dt>
-            <dd>
-              <LocalizedLink to={`/s/${shopId}`} className="link">
-                {tn(otherQueues, 'queueDetail.otherQueues')}
-              </LocalizedLink>
-            </dd>
-          </>
-        )}
-      </dl>
+            {otherQueues > 0 && (
+              <>
+                <dt>{t('queueDetail.alsoAtShop')}</dt>
+                <dd>
+                  <LocalizedLink to={`/s/${shopId}`} className="link">
+                    {tn(otherQueues, 'queueDetail.otherQueues')}
+                  </LocalizedLink>
+                </dd>
+              </>
+            )}
+          </dl>
+        </>
+      )}
 
       {ticketId ? (
         <TicketView

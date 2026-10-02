@@ -312,6 +312,13 @@ kept unedited.
     choice is remembered per ticket, so returning shows "Disable
     notifications" rather than asking again.
 
+17. **Danish is the default language.** Unprefixed paths (`/find`, `/q/…`)
+    render Danish; English lives under `/en/…`. `/da/…` still renders Danish,
+    because it was the Danish prefix while English was the default and old
+    links point at it. Build paths with `withLocale`/`stripLocale` in
+    `src/lib/i18n/locale.ts`, never by hand. Server-side notification and
+    email text is still English only.
+
 ## Architecture notes
 
 **`/s/:shopId` is the public shop page**, listing every queue at one shop. It

@@ -23,8 +23,8 @@ const EMAIL_KEY = 'qjume:pending-email';
  */
 export async function sendEmailLink(email: string): Promise<void> {
   await track(sendSignInLinkToEmail(auth, email, {
-    // Back in the language they asked in: a Danish visitor signing in from
-    // /da/shop should not land on the English page.
+    // Back in the language they asked in: someone signing in from /en/shop
+    // should not land on the Danish page, or the reverse.
     url: `${window.location.origin}${withLocale(
       '/shop',
       detectLocaleFromPath(window.location.pathname),

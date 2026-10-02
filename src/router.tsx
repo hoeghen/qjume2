@@ -25,9 +25,10 @@ import { AdminAuditLog } from './routes/admin/AdminAuditLog.js';
 const isPortable = import.meta.env.VITE_PORTABLE === 'true';
 
 /**
- * Every route, written once and unprefixed. Mounted twice below - as-is for
- * English, and again under `da/` for Danish - rather than as a `:lang?`
- * dynamic segment: a literal `da` branch can never be ambiguous with a
+ * Every route, written once and unprefixed. Mounted three times below - as-is
+ * for Danish (the default), under `en/` for English, and under `da/` as a
+ * Danish alias for old links - rather than as a `:lang?` dynamic segment: a
+ * literal prefix branch can never be ambiguous with a
  * sibling route the way an optional dynamic prefix can (an unprefixed
  * `/find` would otherwise be parseable either as the `find` route or as
  * `:lang="find"` matching the index route). See src/lib/i18n/locale.ts for
@@ -77,7 +78,13 @@ export const router = (isPortable ? createHashRouter : createBrowserRouter)(
     {
       path: '/',
       element: <App />,
-      children: [...ROUTE_CHILDREN, { path: 'da', children: ROUTE_CHILDREN }],
+      // Unprefixed is Danish, the default; `/en` is English; `/da` stays as
+      // a Danish alias so links from when English was the default still work.
+      children: [
+        ...ROUTE_CHILDREN,
+        { path: 'en', children: ROUTE_CHILDREN },
+        { path: 'da', children: ROUTE_CHILDREN },
+      ],
     },
   ],
   // Served from a subdirectory on GitHub Pages, from the root everywhere else.
