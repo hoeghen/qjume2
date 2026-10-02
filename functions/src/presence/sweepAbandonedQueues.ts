@@ -39,7 +39,7 @@ async function sweepCandidate(
       const lastServedAt = queue.lastServedAt;
       if (lastServedAt !== null && lastServedAt >= cutoff) return;
 
-      tx.update(snap.ref, { status: 'unavailable' });
+      tx.update(snap.ref, { status: 'unavailable', servingStations: 0 });
       for (const stationDoc of stationsSnap.docs) {
         if ((stationDoc.data() as Station).serving) {
           tx.update(stationDoc.ref, { serving: false });

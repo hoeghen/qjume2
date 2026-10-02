@@ -1,3 +1,4 @@
+import { joinWaitSeconds } from './queue/waitTime.js';
 import {
   collectionGroup,
   endAt,
@@ -269,23 +270,10 @@ export function applyFilters(
       case 'name':
         return a.shopName.localeCompare(b.shopName);
       case 'wait':
-        return estimatedWaitSeconds(a) - estimatedWaitSeconds(b);
+        return joinWaitSeconds(a) - joinWaitSeconds(b);
       case 'distance':
       default:
         return a.distanceKm - b.distanceKm;
     }
   });
-}
-
-/**
- * Rough wait for someone joining now: everyone ahead, at the queue's current
- * average service time. Phase 4 refines the average from observed service
- * times and divides by the number of active stations (PRD 9.5).
- */
-export function estimatedWaitSeconds(
-  queue: Pick<Queue, 'waitingCount' | 'avgServiceTimeSeconds'>,
-  activeStations = 1,
-): number {
-  const stations = Math.max(1, activeStations);
-  return Math.round((queue.waitingCount * queue.avgServiceTimeSeconds) / stations);
 }

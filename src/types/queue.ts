@@ -115,4 +115,11 @@ export interface Queue {
   servedSampleCount: number;
   /** Denormalised for list and map queries. */
   waitingCount: number;
+  /**
+   * Tills with `serving` set, denormalised so lists can divide the wait
+   * without reading every queue's stations. Server-owned; kept by
+   * `startServing`, `stopServing` and `sweepAbandonedQueues`. Absent on queues
+   * that predate it, which read as one till. See `src/lib/queue/waitTime.ts`.
+   */
+  servingStations?: number;
 }

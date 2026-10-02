@@ -8,6 +8,7 @@ import {
   type HeldTicket,
 } from '../../../lib/myTickets.js';
 import { formatOrdinalSuffix, formatWaitCompact } from '../../../lib/format.js';
+import { estimatedWaitSeconds, staffedTills } from '../../../lib/queue/waitTime.js';
 import { LocalizedLink } from '../../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 
@@ -97,10 +98,7 @@ function HeldQueueRow({
     detail = '';
   } else {
     const peopleAhead = ahead?.length ?? 0;
-    const serviceTime = q.observedServiceTimeSeconds ?? q.avgServiceTimeSeconds;
-    const wait = Math.round(
-      (peopleAhead * serviceTime) / Math.max(1, stations?.length ?? 1),
-    );
+    const wait = estimatedWaitSeconds(peopleAhead, q, staffedTills(stations));
     headline =
       peopleAhead === 0
         ? t('yourQueues.next')

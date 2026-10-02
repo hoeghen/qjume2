@@ -1,7 +1,7 @@
 import { LocalizedLink } from '../../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 import type { DiscoveredQueue } from '../../../lib/discovery.js';
-import { estimatedWaitSeconds } from '../../../lib/discovery.js';
+import { joinWaitSeconds } from '../../../lib/queue/waitTime.js';
 import { formatDistance, formatWaitCompact } from '../../../lib/format.js';
 import { CategoryIcon } from '../../../components/CategoryIcon.js';
 import { statusBadgeLabel } from '../../../lib/i18n/statusLabels.js';
@@ -23,7 +23,7 @@ export function QueueCard({
 }) {
   const { t } = useT();
   const status = statusBadgeLabel(t, queue.status);
-  const wait = estimatedWaitSeconds(queue);
+  const wait = joinWaitSeconds(queue);
 
   return (
     <li className="queue-card">

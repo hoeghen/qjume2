@@ -24,6 +24,7 @@ describe('sweepAbandonedQueues', () => {
     expect((await getQueue(fx)).status).toBe('unavailable');
     // Cleared so a returning device shows "Start serving", not a stale toggle.
     expect((await getStation(fx, stationId)).serving).toBe(false);
+    expect((await getQueue(fx)).servingStations).toBe(0);
   });
 
   it('leaves a recently active queue alone', async () => {

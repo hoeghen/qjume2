@@ -57,11 +57,16 @@ export async function performStopServing(
 
     tx.update(stationRef, { serving: false });
 
-    const stillServing = stationsSnap.docs.some(
+    const stillServingCount = stationsSnap.docs.filter(
       (d) => d.id !== stationId && (d.data() as Station).serving,
-    );
-    const next = nextStatusForServing(queue.status, stillServing);
-    if (next) tx.update(queueRef, { status: next });
+    ).length;
+    // The wait estimate's divisor (`src/lib/queue/waitTime.ts`).
+    const queueUpdate: Record<string, unknown> = {
+      servingStations: stillServingCount,
+    };
+    const next = nextStatusForServing(queue.status, stillServingCount > 0);
+    if (next) queueUpdate['status'] = next;
+    tx.update(queueRef, queueUpdate);
   });
 }
 
