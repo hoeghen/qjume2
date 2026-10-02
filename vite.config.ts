@@ -57,7 +57,10 @@ export default defineConfig({
       manifest: {
         name: 'Qjume',
         short_name: 'Qjume',
-        description: 'Join and run queues.',
+        // Danish, the app's default language (CLAUDE.md decision 17): this is
+        // what the phone shows when someone installs Qjume.
+        description: 'Stil dig i kø hvor som helst fra — og styr din egen kø.',
+        lang: 'da',
         display: 'standalone',
         // Lets a browser tab ask whether this app is already installed
         // (getInstalledRelatedApps, src/lib/install.ts), so the install
