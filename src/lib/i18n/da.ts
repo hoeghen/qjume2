@@ -61,10 +61,24 @@ export const da: DeepPartial<typeof en> = {
     denied: 'Kunne ikke finde din placering.',
   },
 
+  intro: {
+    title: 'Sådan virker Qjume',
+    noVideoYet: 'Introduktionsvideoen er på vej. Her er det i tre trin.',
+    step1Title: 'Opret din butik og en kø.',
+    step1: 'Giv den et navn og en adresse, og print QR-koden til din disk.',
+    step2Title: 'Kunderne stiller sig i kø hvor som helst fra.',
+    step2: 'De ser ventetiden, før de tager hjemmefra, stiller sig i kø med bare et navn og følger deres plads på telefonen — uden app eller konto.',
+    step3Title: 'Tryk på “Kald næste”.',
+    step3: 'Den næste kunde får besked om, at det er deres tur, og alle bagved rykker op. Notifikationer fortæller dem, når de er tæt på.',
+    price: 'Gratis for dine første 1000 betjente kunder, derefter 100 kr om måneden ekskl. moms.',
+    create: 'Opret en butik',
+  },
+
   splash: {
     lede: 'Se ventetiden, inden du tager af sted. Tilslut dig en kø hvor som helst — ingen login nødvendig.',
     join: 'Tilslut dig en kø',
     createLink: 'Jeg er en forretning',
+    admin: 'Admin',
   },
 
   discovery: {
@@ -244,6 +258,21 @@ export const da: DeepPartial<typeof en> = {
       and: ' og ',
       privacy: 'privatlivspolitik',
       period: '.',
+    },
+
+    welcome: {
+      title: 'Styr din kø med Qjume',
+      body: 'Kunderne ser ventetiden, stiller sig i kø hvor som helst fra og får besked, når det er deres tur. Gratis for dine første 1000 betjente kunder.',
+      create: 'Opret en butik',
+      video: 'Se introduktionen',
+      signIn: 'Har du allerede en butik? Log ind',
+    },
+
+    renameShop: {
+      rename: 'Omdøb',
+      label: 'Butikkens navn',
+      save: 'Gem',
+      cancel: 'Annuller',
     },
 
     createShop: {

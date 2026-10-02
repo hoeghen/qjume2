@@ -1163,3 +1163,28 @@ button.link.danger { color: var(--danger); }
 .free-services { margin: 0 0 12px; }
 .free-services.notice p { margin: 0 0 6px; }
 .free-services.notice .link { color: var(--warn-fg); font-weight: 700; }
+
+/* The faintest thing on the splash: a way in for the platform admin that
+   everyone else should look straight past. */
+.splash-admin {
+  font-size: 11px;
+  color: var(--on-dark-faint);
+  opacity: 0.6;
+  text-decoration: none;
+}
+.splash-admin:hover, .splash-admin:focus-visible { opacity: 1; }
+
+/* "I am a business" with no shop yet: two ways forward, side by side when
+   there is room. */
+.business-welcome-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0 16px; }
+.business-welcome-signin { font-size: 13px; }
+
+.rename-shop { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.rename-shop h1 { margin: 0; }
+form.rename-shop { flex-direction: column; align-items: stretch; flex: 1 1 100%; }
+
+.intro-video { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: var(--r-panel); margin: 12px 0 20px; }
+.intro-video iframe { width: 100%; height: 100%; border: 0; border-radius: inherit; }
+.intro-steps { padding-left: 1.2em; }
+.intro-steps li { margin-bottom: 12px; }
+.intro-price { margin: 20px 0 16px; }
