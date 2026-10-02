@@ -9,7 +9,6 @@ import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { JoinQueue } from './JoinQueue.js';
 import { TicketView } from './TicketView.js';
-import { ResumeCodePrompt } from './components/ResumeCodePrompt.js';
 import { ResumeForm } from './components/ResumeForm.js';
 import { heldTicket } from '../../lib/myTickets.js';
 import type { QueueStatus } from '../../types/index.js';
@@ -28,7 +27,6 @@ export function QueueDetail() {
   const [ticketId, setTicketId] = useState<string | null>(() =>
     heldTicket(shopId, queueId),
   );
-  const [freshCode, setFreshCode] = useState<string | null>(null);
 
   const queue = useDoc(shopId && queueId ? queueDoc(shopId, queueId) : null);
   const { data: stations } = useCollection(
@@ -134,10 +132,9 @@ export function QueueDetail() {
           shopId={shopId}
           queueId={queueId}
           atCounter={atCounter}
-          onJoined={(id, code) => {
+          onJoined={(id) => {
             setTicketId(id);
             setJoining(false);
-            setFreshCode(code);
           }}
           onCancel={() => setJoining(false)}
         />
@@ -152,16 +149,20 @@ export function QueueDetail() {
             {joinable ? t('queueDetail.join') : t('queueDetail.notTakingJoiners')}
           </button>
           {joinable && <p className="hint">{t('queueDetail.joinHint')}</p>}
+        </>
+      )}
+
+      {/* Rarely needed — a customer only has a code when staff gave them one
+          (a lost phone, a walk-in) — so it sits last on the page, quietly,
+          rather than competing with joining. */}
+      {!ticketId && !joining && (
+        <div className="resume-quiet">
           <ResumeForm
             shopId={shopId}
             queueId={queueId}
             onClaimed={(id) => setTicketId(id)}
           />
-        </>
-      )}
-
-      {freshCode && (
-        <ResumeCodePrompt code={freshCode} onDismiss={() => setFreshCode(null)} />
+        </div>
       )}
     </main>
   );

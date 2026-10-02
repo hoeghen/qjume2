@@ -1148,3 +1148,8 @@ button.link.danger { color: var(--danger); }
 
 .queue-card-line { margin: 2px 0 0; font-size: 12.5px; line-height: 1.35; }
 .queue-card-queue { font-weight: 600; color: var(--card-fg); }
+
+/* "Got a code from staff?" — last on the queue page and small, because
+   almost nobody needs it; it must be findable, not noticed. */
+.resume-quiet { margin-top: 40px; font-size: 13px; }
+.resume-quiet > .link { color: var(--on-dark-faint); }

@@ -139,19 +139,12 @@ export const en = {
   },
 
   resumeForm: {
-    prompt: 'Already in this queue? Enter your code',
+    prompt: 'Got a code from staff?',
     codeLabel: 'Your code',
-    hint: 'Lost it? Ask the shop — they can find you by name and issue a new one.',
+    hint: 'Staff can give you a code that brings your place in this queue back to this phone.',
     submit: 'Get my place back',
   },
 
-  resumeCodePrompt: {
-    ariaLabel: 'Your resume code',
-    title: 'You’re in the queue',
-    body: 'Keep this code. It gets your place back if you lose your phone or switch to another one.',
-    hint: 'Without it, you would have to ask the shop to find you by name.',
-    dismiss: 'Got it',
-  },
 
   ticketView: {
     loading: 'Loading your place…',
@@ -393,10 +386,10 @@ export const en = {
       nobodyWaiting: 'Nobody waiting.',
       noShowTitle: 'No-shows so far',
       noShowCount: '{count} of 3',
-      relink: 'Re-link',
+      relink: 'Give code',
       remove: 'Remove',
-      newCodeTitle: 'New code for {name}',
-      newCodeBody: 'Read this out. It replaces any code they had, and gets their place back on a new phone.',
+      newCodeTitle: 'Code for {name}',
+      newCodeBody: 'Read this out. On the queue page they tap “Got a code from staff?” and enter it to get their place back on this phone. It replaces any earlier code.',
       done: 'Done',
     },
 
