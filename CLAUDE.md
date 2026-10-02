@@ -325,6 +325,18 @@ kept unedited.
     worded from `functions/src/notifications/messages.ts`, Danish when no
     language is stored. Write a new notice there, in both languages.
 
+18. **One wait estimate, divided by the tills serving now.** People ahead ×
+    service time ÷ staffed tills, worked out only in
+    `src/lib/queue/waitTime.ts` and used by every screen and notification.
+    The service time is the learned `observedServiceTimeSeconds`, falling back
+    to the owner's `avgServiceTimeSeconds` until anything has been learned.
+    A till counts only while its `serving` flag is set (minimum one) —
+    stations are never deleted, so counting documents divided the wait among
+    tills opened days ago. Lists that cannot read every queue's stations use
+    `Queue.servingStations`, a server-owned count kept by `startServing`,
+    `stopServing` and `sweepAbandonedQueues`. Till *labels* still show
+    whenever a queue has more than one station at all, staffed or not.
+
 ## Architecture notes
 
 **`/s/:shopId` is the public shop page**, listing every queue at one shop. It

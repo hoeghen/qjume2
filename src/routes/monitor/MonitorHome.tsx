@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
+import { serviceTimeSeconds } from '../../lib/queue/waitTime.js';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { servingTickets, stationsOf, waitingTickets } from '../../lib/firestore/queries.js';
 import { JoinQr } from '../../components/JoinQr.js';
@@ -84,10 +85,9 @@ export function MonitorHome() {
   const status = queue.data.status;
   const scannable = SCANNABLE.includes(status);
   const closedReasonKey = CLOSED_TO_JOINERS_KEYS[status];
-  // The owner's own estimate until enough real completions replace it —
-  // the same fallback TicketView uses for a customer's personal wait.
-  const serviceTime =
-    queue.data.observedServiceTimeSeconds ?? queue.data.avgServiceTimeSeconds;
+  // The owner's own estimate until real completions replace it — the same
+  // figure every wait estimate is built from.
+  const serviceTime = serviceTimeSeconds(queue.data);
 
   return (
     <main className="monitor screen">

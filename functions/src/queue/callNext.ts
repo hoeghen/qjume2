@@ -13,6 +13,7 @@ import { EMAIL_SECRETS } from '../lib/secrets.js';
 import { assertServeAccessInTransaction } from '../lib/access.js';
 import { placesToMoveBack } from '../../../src/lib/queue/penalties.js';
 import { foldSample, isUsableSample } from '../../../src/lib/queue/serviceTime.js';
+import { staffedTills } from '../../../src/lib/queue/waitTime.js';
 import { channelsFromEnv, sweepMilestones } from '../notifications/dispatch.js';
 import { freeServicesRemaining } from '../../../src/lib/freeServices.js';
 import { syncFreeServicesFlag } from '../lib/freeServices.js';
@@ -376,8 +377,12 @@ export async function performCallNext(
 
   // Everything below runs only once the transaction has committed. A
   // transaction body can be retried, and a retried send is a duplicate alert.
-  const stations = await stationRef.parent.count().get();
-  const activeStations = Math.max(1, stations.data().count);
+  const stationDocs = (await stationRef.parent.get()).docs;
+  const stations = stationDocs.map((d) => d.data() as Station);
+  // A till's label is shown whenever the queue has more than one at all; the
+  // wait divides only by the tills serving now (`src/lib/queue/waitTime.ts`).
+  const manyTills = stations.length > 1;
+  const tills = staffedTills(stations);
   const shopName = result.queue.shopName;
 
   logger.info('callNext advanced', {
@@ -393,7 +398,7 @@ export async function performCallNext(
           noShowCount: result.bumped.noShowCount,
         }
       : null,
-    activeStations,
+    tills,
   });
 
   try {
@@ -401,8 +406,10 @@ export async function performCallNext(
     // "it's your turn" is the one that must not wait behind the others.
     if (result.ticketId && result.displayName !== null) {
       const tillLabel =
-        activeStations > 1
-          ? ((await stationRef.get()).data() as Station | undefined)?.label ?? null
+        manyTills
+          ? ((stationDocs.find((d) => d.id === stationId)?.data() as
+              | Station
+              | undefined)?.label ?? null)
           : null;
       await notifyCalled(
         firestore,
@@ -448,7 +455,7 @@ export async function performCallNext(
       shopId,
       queueId,
       queue: result.queue,
-      activeStations,
+      tills,
       baseUrl: baseUrl(),
       channels,
     });

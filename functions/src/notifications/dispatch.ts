@@ -2,6 +2,7 @@ import { FieldValue, type Firestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';
 import { contactRef } from '../queue/tickets.js';
 import { decidePositionMilestone, waitMinutesFor } from './milestones.js';
+import { serviceTimeSeconds } from '../../../src/lib/queue/waitTime.js';
 import { fcmPush } from './fcm.js';
 import { resendEmail } from './email.js';
 import {
@@ -133,7 +134,8 @@ export interface MilestoneSweepOptions {
   shopId: string;
   queueId: string;
   queue: Queue;
-  activeStations: number;
+  /** Tills serving now — see `staffedTills`. */
+  tills: number;
   baseUrl: string;
   channels?: Channels;
 }
@@ -152,7 +154,7 @@ export async function sweepMilestones(
   firestore: Firestore,
   options: MilestoneSweepOptions,
 ): Promise<number> {
-  const { shopId, queueId, queue, activeStations, baseUrl } = options;
+  const { shopId, queueId, queue, tills, baseUrl } = options;
   const channels = options.channels ?? channelsFromEnv();
 
   const waiting = await firestore
@@ -161,9 +163,6 @@ export async function sweepMilestones(
     .orderBy('position')
     .limit(50)
     .get();
-
-  const serviceTime =
-    queue.observedServiceTimeSeconds ?? queue.avgServiceTimeSeconds;
 
   let sent = 0;
   // Every waiting ticket's decision, logged once at the end: "why didn't I get
@@ -183,7 +182,7 @@ export async function sweepMilestones(
 
       const target = { shopId, queueId, ticketId: doc.id };
 
-      const minutes = waitMinutesFor(index, serviceTime, activeStations);
+      const minutes = waitMinutesFor(index, queue, tills);
       const decision = decidePositionMilestone(index, contact.dispatchedPositions);
       decisions.push({
         ticketId: doc.id,
@@ -220,8 +219,8 @@ export async function sweepMilestones(
   logger.info('Milestone sweep', {
     shopId,
     queueId,
-    serviceTimeSeconds: serviceTime,
-    activeStations,
+    serviceTimeSeconds: serviceTimeSeconds(queue),
+    tills,
     waiting: waiting.size,
     sent,
     decisions,

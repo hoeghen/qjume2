@@ -170,6 +170,21 @@ describe('position alerts', () => {
     }
   });
 
+  it('does not split the estimate across tills nobody is serving at', async () => {
+    // Tills opened on earlier days stay as documents. Dividing by them turned
+    // three ahead of a five-minute service into "about 5 min".
+    const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
+    for (let n = 1; n <= 5; n++) await join(fx, n, `c${n}@example.com`);
+    const station = await seedStation(fx, 'Till 1', { serving: true });
+    await seedStation(fx, 'Till 2', { serving: false });
+    await seedStation(fx, 'Till 3', { serving: false });
+
+    await call(fx, station);
+
+    const toFive = sent.find((x) => x.to === 'c5@example.com');
+    expect(toFive?.body).toMatch(/Estimated wait: about 15 min/);
+  });
+
   it('never sends the same position alert twice', async () => {
     const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
     for (let n = 1; n <= 4; n++) await join(fx, n);

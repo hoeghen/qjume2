@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  applyFilters,
   estimatedWaitSeconds,
+  joinWaitSeconds,
+  staffedTills,
+} from '../../src/lib/queue/waitTime.js';
+import {
+  applyFilters,
   type DiscoveredQueue,
   type Filters,
 } from '../../src/lib/discovery.js';
@@ -137,21 +141,41 @@ describe('filtering', () => {
 });
 
 describe('wait estimate', () => {
-  it('counts everyone ahead at the queue average', () => {
-    expect(estimatedWaitSeconds({ waitingCount: 4, avgServiceTimeSeconds: 300 })).toBe(1200);
+  const seeded = { avgServiceTimeSeconds: 900, observedServiceTimeSeconds: null };
+
+  it('counts everyone ahead at the owner\'s figure until one is learned', () => {
+    // Three ahead of a fifteen-minute service is 45 minutes, not one.
+    expect(estimatedWaitSeconds(3, seeded, 1)).toBe(2700);
   });
 
-  it('divides across parallel stations', () => {
-    // Two tills serving at once halves the wait.
+  it('uses the learned service time once there is one', () => {
     expect(
-      estimatedWaitSeconds({ waitingCount: 4, avgServiceTimeSeconds: 300 }, 2),
-    ).toBe(600);
+      estimatedWaitSeconds(3, { avgServiceTimeSeconds: 900, observedServiceTimeSeconds: 600 }, 1),
+    ).toBe(1800);
   });
 
-  it('never divides by zero stations', () => {
-    expect(
-      estimatedWaitSeconds({ waitingCount: 2, avgServiceTimeSeconds: 60 }, 0),
-    ).toBe(120);
+  it('divides across tills serving at once', () => {
+    expect(estimatedWaitSeconds(4, seeded, 2)).toBe(1800);
+  });
+
+  it('never divides by zero tills', () => {
+    expect(estimatedWaitSeconds(2, seeded, 0)).toBe(1800);
+  });
+
+  it('counts only tills that are serving', () => {
+    // A till opened once and left idle still exists; it serves nobody.
+    expect(staffedTills([{ serving: true }, { serving: false }, { serving: false }])).toBe(1);
+    expect(staffedTills([{ serving: true }, { serving: true }])).toBe(2);
+    expect(staffedTills([])).toBe(1);
+    expect(staffedTills(null)).toBe(1);
+  });
+
+  it('reads the staffed count off the queue for lists', () => {
+    expect(joinWaitSeconds({ ...seeded, waitingCount: 4, servingStations: 2 })).toBe(1800);
+    // Queues from before the count existed read as one till.
+    expect(joinWaitSeconds({ ...seeded, waitingCount: 4 })).toBe(3600);
+    // Nobody serving yet is still one till's worth of wait, not none.
+    expect(joinWaitSeconds({ ...seeded, waitingCount: 4, servingStations: 0 })).toBe(3600);
   });
 });
 

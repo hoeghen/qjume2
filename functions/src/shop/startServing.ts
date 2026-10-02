@@ -47,18 +47,20 @@ export async function performStartServing(
   await requireServeAccess(firestore, shopId, callerUid);
 
   const queueRef = firestore.doc(`shops/${shopId}/queues/${queueId}`);
-  const stationRef = queueRef.collection('stations').doc(stationId);
+  const stationsRef = queueRef.collection('stations');
+  const stationRef = stationsRef.doc(stationId);
 
   await firestore.runTransaction(async (tx: Transaction) => {
-    const [queueSnap, stationSnap] = await Promise.all([
+    const [queueSnap, stationsSnap] = await Promise.all([
       tx.get(queueRef),
-      tx.get(stationRef),
+      tx.get(stationsRef),
     ]);
+    const stationSnap = stationsSnap.docs.find((d) => d.id === stationId);
 
     const queue = queueSnap.data() as Queue | undefined;
     if (!queue) throw fail('not-found', 'queue-not-found', 'Queue not found.');
 
-    const station = stationSnap.data() as Station | undefined;
+    const station = stationSnap?.data() as Station | undefined;
     if (!station) {
       throw fail('not-found', 'station-not-found', 'Station not found.');
     }
@@ -70,6 +72,10 @@ export async function performStartServing(
       // quiet spell must not be swept as abandoned before it has even had a
       // chance to call anyone.
       lastServedAt: Date.now(),
+      // The wait estimate's divisor (`src/lib/queue/waitTime.ts`).
+      servingStations: stationsSnap.docs.filter(
+        (d) => d.id === stationId || (d.data() as Station).serving,
+      ).length,
     };
     const next = nextStatusForServing(queue.status, true);
     if (next) queueUpdate['status'] = next;

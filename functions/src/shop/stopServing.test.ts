@@ -53,6 +53,21 @@ describe('stopServing', () => {
     expect((await getQueue(fx)).status).toBe('open');
   });
 
+  it('counts the tills still serving, for the wait estimate', async () => {
+    const fx = await seedQueue({}, { status: 'open' });
+    const stationId = await seedStation(fx, 'Till 1', { serving: true });
+    await seedStation(fx, 'Till 2', { serving: true });
+    await seedStation(fx, 'Till 3', { serving: false });
+
+    await performStopServing(testDb, OWNER_UID, {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      stationId,
+    });
+
+    expect((await getQueue(fx)).servingStations).toBe(1);
+  });
+
   it.each(['paused', 'drainMode', 'closed'] as const)(
     'does not disturb a %s queue',
     async (status) => {

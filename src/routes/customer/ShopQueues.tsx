@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
-import { estimatedWaitSeconds } from '../../lib/discovery.js';
+import { joinWaitSeconds } from '../../lib/queue/waitTime.js';
 import { formatWaitCompact } from '../../lib/format.js';
 import { CategoryIcon } from '../../components/CategoryIcon.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
@@ -79,7 +79,7 @@ export function ShopQueues() {
                 </div>
                 <div className="queue-card-meta">
                   <span className="wait">
-                    {formatWaitCompact(estimatedWaitSeconds(q), t)}
+                    {formatWaitCompact(joinWaitSeconds(q), t)}
                   </span>
                   <span className="queue-card-stats">
                     {t('queueCard.waiting', { count: q.waitingCount })}

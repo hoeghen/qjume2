@@ -36,8 +36,12 @@ describe('decidePositionMilestone', () => {
 
 describe('waitMinutesFor', () => {
   it('matches what the ticket screen shows', () => {
-    expect(waitMinutesFor(3, 300, 1)).toBe(15);
-    expect(waitMinutesFor(3, 300, 3)).toBe(5);
-    expect(waitMinutesFor(0, 300, 1)).toBe(0);
+    const seeded = { avgServiceTimeSeconds: 300, observedServiceTimeSeconds: null };
+    expect(waitMinutesFor(3, seeded, 1)).toBe(15);
+    expect(waitMinutesFor(3, seeded, 3)).toBe(5);
+    expect(waitMinutesFor(0, seeded, 1)).toBe(0);
+    // The learned time replaces the owner's figure once there is one.
+    const learned = { avgServiceTimeSeconds: 900, observedServiceTimeSeconds: 600 };
+    expect(waitMinutesFor(3, learned, 1)).toBe(30);
   });
 });

@@ -30,6 +30,22 @@ describe('startServing', () => {
     expect(queue.lastServedAt).not.toBeNull();
   });
 
+  it('counts only the tills serving, not every till ever opened', async () => {
+    const fx = await seedQueue({}, { status: 'open' });
+    await seedStation(fx, 'Till 1', { serving: true });
+    // Opened once on another day and left idle: still a document, serves nobody.
+    await seedStation(fx, 'Till 2', { serving: false });
+    const stationId = await seedStation(fx, 'Till 3');
+
+    await performStartServing(testDb, OWNER_UID, {
+      shopId: fx.shopId,
+      queueId: fx.queueId,
+      stationId,
+    });
+
+    expect((await getQueue(fx)).servingStations).toBe(2);
+  });
+
   it('reopens an unavailable queue', async () => {
     const fx = await seedQueue({}, { status: 'unavailable' });
     const stationId = await seedStation(fx, 'Till 1');

@@ -1,7 +1,9 @@
 import {
   NOTIFICATION_POSITIONS_AHEAD,
   type NotificationPositionMilestone,
+  type Queue,
 } from '../../../src/types/index.js';
+import { estimatedWaitSeconds } from '../../../src/lib/queue/waitTime.js';
 
 /**
  * Closeness alerts cannot be scheduled when someone joins, because the queue
@@ -48,13 +50,13 @@ export function decidePositionMilestone(
  *
  * `peopleAhead` rather than a position number, so this matches exactly what
  * the customer is looking at on their own screen. Two different numbers for
- * the same question would be worse than none.
+ * the same question would be worse than none — which is why the arithmetic
+ * itself lives in `src/lib/queue/waitTime.ts`, shared with every screen.
  */
 export function waitMinutesFor(
   peopleAhead: number,
-  serviceTimeSeconds: number,
-  activeStations: number,
+  queue: Pick<Queue, 'avgServiceTimeSeconds' | 'observedServiceTimeSeconds'>,
+  tills: number,
 ): number {
-  const stations = Math.max(1, activeStations);
-  return Math.round((peopleAhead * serviceTimeSeconds) / stations / 60);
+  return Math.round(estimatedWaitSeconds(peopleAhead, queue, tills) / 60);
 }

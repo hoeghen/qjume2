@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
+import { estimatedWaitSeconds } from '../../lib/queue/waitTime.js';
 import { ticketDoc } from '../../lib/firestore/paths.js';
 import { ticketsAhead } from '../../lib/firestore/queries.js';
 import { leaveQueue, messageOf } from '../../lib/functions.js';
@@ -14,7 +15,8 @@ interface Props {
   queueId: string;
   ticketId: string;
   queue: Queue;
-  activeStations: number;
+  /** Tills serving now — see `staffedTills`. */
+  tills: number;
   /** Named counters, so a called ticket can say which one to walk to. */
   stations: { id: string; label: string }[];
   onLeft: () => void;
@@ -33,7 +35,7 @@ export function TicketView({
   queueId,
   ticketId,
   queue,
-  activeStations,
+  tills,
   stations,
   onLeft,
 }: Props) {
@@ -62,7 +64,7 @@ export function TicketView({
 
   const ticketData = ticket.data;
   const tillName =
-    activeStations > 1 && ticketData.station
+    stations.length > 1 && ticketData.station
       ? (stations.find((s) => s.id === ticketData.station)?.label ?? null)
       : null;
 
@@ -99,11 +101,7 @@ export function TicketView({
   }
 
   const peopleAhead = ahead?.length ?? 0;
-  const serviceTime =
-    queue.observedServiceTimeSeconds ?? queue.avgServiceTimeSeconds;
-  const wait = Math.round(
-    (peopleAhead * serviceTime) / Math.max(1, activeStations),
-  );
+  const wait = estimatedWaitSeconds(peopleAhead, queue, tills);
 
   function leave() {
     setBusy(true);

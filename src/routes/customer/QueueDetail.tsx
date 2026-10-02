@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
-import { estimatedWaitSeconds } from '../../lib/discovery.js';
+import { estimatedWaitSeconds, staffedTills } from '../../lib/queue/waitTime.js';
 import { formatWait } from '../../lib/format.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
@@ -42,10 +42,10 @@ export function QueueDetail() {
   if (!queue.data) return <p>{t('queueDetail.notFound')}</p>;
 
   const q = queue.data;
-  // A station with nobody assigned is still a staffed position; what matters
-  // for the estimate is how many are being served in parallel.
-  const activeStations = Math.max(1, stations?.length ?? 1);
-  const wait = estimatedWaitSeconds(q, activeStations);
+  // Read live here rather than from the queue's `servingStations` copy: this
+  // page already has the tills, and a till opening shows at once.
+  const tills = staffedTills(stations);
+  const wait = estimatedWaitSeconds(q.waitingCount, q, tills);
   const otherQueues = Math.max(0, (siblings?.length ?? 1) - 1);
   // Out of free services outranks the queue's own status: whatever that
   // says, the shop is not taking new customers until it subscribes.
@@ -140,7 +140,7 @@ export function QueueDetail() {
           queueId={queueId}
           ticketId={ticketId}
           queue={q}
-          activeStations={activeStations}
+          tills={tills}
           stations={stations ?? []}
           onLeft={() => setTicketId(null)}
         />
