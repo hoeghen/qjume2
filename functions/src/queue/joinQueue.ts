@@ -11,6 +11,7 @@ import { generateResumeCode, hashResumeCode } from './resumeCode.js';
 import { contactRef, holderKeyFor } from './tickets.js';
 import { nextPosition } from '../../../src/lib/queue/positions.js';
 import { takesNewCustomers } from '../../../src/lib/freeServices.js';
+import { asContactLocale } from '../notifications/messages.js';
 import {
   type Queue,
   type Shop,
@@ -24,6 +25,8 @@ export interface JoinQueueRequest {
   displayName: string;
   email?: string;
   phone?: string;
+  /** The language the customer joined in; notifications are written in it. */
+  locale?: string;
   /**
    * Set when the join came from the QR code on the in-shop monitor, so the
    * person is standing in front of it.
@@ -180,6 +183,7 @@ export async function performJoinQueue(
         email: email?.trim() || null,
         phone: phone?.trim() || null,
         fcmTokens: [],
+        locale: asContactLocale(input.locale),
         dispatchedPositions: [],
       };
 

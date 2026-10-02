@@ -10,7 +10,9 @@ import {
   type Channels,
   type Notice,
 } from './channels.js';
+import { DEFAULT_CONTACT_LOCALE, messagesFor, queueUrl } from './messages.js';
 import type {
+  ContactLocale,
   Queue,
   Ticket,
   TicketContact,
@@ -22,10 +24,6 @@ export interface DispatchTarget {
   ticketId: string;
 }
 
-/** Where a customer lands from a notification. */
-function ticketUrl(base: string, t: DispatchTarget): string {
-  return `${base}/q/${t.shopId}/${t.queueId}`;
-}
 
 export function channelsFromEnv(env = process.env): Channels {
   const key = env['EMAIL_API_KEY'];
@@ -63,7 +61,8 @@ export function channelsFromEnv(env = process.env): Channels {
 export async function notifyTicket(
   firestore: Firestore,
   target: DispatchTarget,
-  notice: Notice,
+  /** Written once the contact is read, in the language stored on it. */
+  compose: (locale: ContactLocale) => Notice,
   channels: Channels,
 ): Promise<void> {
   const ref = contactRef(
@@ -76,16 +75,20 @@ export async function notifyTicket(
   if (!contact) {
     logger.warn('Notification skipped: ticket has no contact record', {
       ...target,
-      title: notice.title,
+      title: compose(DEFAULT_CONTACT_LOCALE).title,
     });
     return;
   }
+
+  const locale = contact.locale ?? DEFAULT_CONTACT_LOCALE;
+  const notice = compose(locale);
 
   // One line per notice, before anything is sent, so a notice that reached
   // no channel at all is visible as exactly that rather than as silence.
   logger.info('Notifying ticket', {
     ...target,
     title: notice.title,
+    locale,
     pushTokens: contact.fcmTokens.map(tokenTail),
     hasEmail: Boolean(contact.email),
   });
@@ -124,43 +127,6 @@ export async function notifyTicket(
       });
     }
   }
-}
-
-/**
- * "3 people ahead of you", down to "You're next", with the estimated wait.
- *
- * The wait is the same figure the ticket screen shows, so the two never
- * disagree — and it is always called an estimate, because it is one: it
- * comes from the queue's average service time and moves the moment someone
- * takes longer, leaves, or doesn't turn up. The count of people ahead is
- * the part that can be relied on.
- */
-export function positionNotice(
-  displayName: string,
-  shopName: string,
-  peopleAhead: number,
-  waitMinutes: number,
-  url: string,
-): Notice {
-  const caveat = 'This is only an estimate and can change.';
-  if (peopleAhead === 0) {
-    return {
-      title: 'You’re next',
-      body:
-        `${displayName}, you’re next in line at ${shopName}. ` +
-        `Estimated wait: any moment now. ${caveat}`,
-      url,
-    };
-  }
-  const wait =
-    waitMinutes < 1 ? 'under a minute' : `about ${waitMinutes} min`;
-  return {
-    title: `${peopleAhead} ${peopleAhead === 1 ? 'person' : 'people'} ahead of you`,
-    body:
-      `${displayName}, ${peopleAhead} ${peopleAhead === 1 ? 'person is' : 'people are'} ` +
-      `ahead of you at ${shopName}. Estimated wait: ${wait}. ${caveat}`,
-    url,
-  };
 }
 
 export interface MilestoneSweepOptions {
@@ -215,7 +181,6 @@ export async function sweepMilestones(
         return;
       }
 
-      const url = ticketUrl(baseUrl, { shopId, queueId, ticketId: doc.id });
       const target = { shopId, queueId, ticketId: doc.id };
 
       const minutes = waitMinutesFor(index, serviceTime, activeStations);
@@ -242,7 +207,10 @@ export async function sweepMilestones(
       await notifyTicket(
         firestore,
         target,
-        positionNotice(ticket.displayName, queue.shopName, index, minutes, url),
+        (locale) => ({
+          ...messagesFor(locale).position(ticket.displayName, queue.shopName, index, minutes),
+          url: queueUrl(baseUrl, target, locale),
+        }),
         channels,
       );
       sent += 1;

@@ -8,6 +8,7 @@ export type {
 } from './queue.js';
 export { QUEUE_CATEGORIES } from './queue.js';
 export type {
+  ContactLocale,
   NotificationPositionMilestone,
   Ticket,
   TicketContact,

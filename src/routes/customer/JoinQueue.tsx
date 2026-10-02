@@ -27,7 +27,7 @@ export function JoinQueue({
   onJoined,
   onCancel,
 }: Props) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const { user } = useAuth();
   const recalled = recalledJoinDetails();
   const [name, setName] = useState(recalled.name);
@@ -52,6 +52,7 @@ export function JoinQueue({
           shopId,
           queueId,
           displayName,
+          locale,
           ...(trimmedEmail ? { email: trimmedEmail } : {}),
           ...(atCounter ? { atCounter: true } : {}),
         });
