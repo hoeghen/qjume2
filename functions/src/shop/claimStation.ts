@@ -5,7 +5,6 @@ import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { requireServeAccess } from '../lib/access.js';
 import {
-  FREE_TIER_LIMITS,
   type Shop,
   type Station,
 } from '../../../src/types/index.js';
@@ -67,16 +66,6 @@ export async function performClaimStation(
     }
 
     const existing = await tx.get(stationsRef);
-    if (
-      shop.plan === 'free' &&
-      existing.size >= FREE_TIER_LIMITS.maxStations
-    ) {
-      throw fail(
-        'resource-exhausted',
-        'free-tier-station-limit',
-        'The free plan serves one customer at a time.',
-      );
-    }
 
     const label = input.label?.trim() || `Till ${existing.size + 1}`;
     const ref = stationsRef.doc();

@@ -11,8 +11,8 @@ import { requireServeAccess } from '../lib/access.js';
 import { generateResumeCode, hashResumeCode } from './resumeCode.js';
 import { contactRef } from './tickets.js';
 import { nextPosition } from '../../../src/lib/queue/positions.js';
+import { takesNewCustomers } from '../../../src/lib/freeServices.js';
 import {
-  FREE_TIER_LIMITS,
   type Queue,
   type Shop,
   type Ticket,
@@ -89,14 +89,13 @@ export async function performAddWalkIn(
     if (queue.waitingCount >= queue.maxSize) {
       throw fail('resource-exhausted', 'queue-full', 'This queue is full.');
     }
-    if (
-      shop.plan === 'free' &&
-      queue.waitingCount >= FREE_TIER_LIMITS.maxWaiting
-    ) {
+    // A walk-in is a new customer too. Staff keep serving whoever is already
+    // waiting, but adding anyone needs free services left or a subscription.
+    if (!takesNewCustomers(shop)) {
       throw fail(
-        'resource-exhausted',
-        'free-tier-waiting-limit',
-        'This queue has reached its limit.',
+        'failed-precondition',
+        'free-services-used-up',
+        'Your free services are used up. Start a subscription to add new customers.',
       );
     }
 

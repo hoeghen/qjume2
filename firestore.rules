@@ -21,14 +21,12 @@ service cloud.firestore {
       return signedIn() && request.auth.token.platformAdmin == true;
     }
 
-    // Anyone who may work the counter. Staff are a paid feature, so a staff
-    // record on a free shop grants nothing — otherwise a downgrade would leave
-    // staff quietly still able to serve.
+    // Anyone who may work the counter: the owner or one of the shop's staff,
+    // on any plan — the free plan is the whole app, limited by a count of
+    // services rather than by features.
     function canServe(shopId) {
       return isShopOwner(shopId)
         || (signedIn()
-            && get(/databases/$(database)/documents/shops/$(shopId)).data.plan
-               == 'paid'
             && exists(/databases/$(database)/documents/shops/$(shopId)/staff/$(request.auth.uid)));
     }
 
@@ -53,14 +51,12 @@ service cloud.firestore {
     // Shops and queues are publicly readable: customers discover queues before
     // signing in, and joining is anonymous by default.
     // ----------------------------------------------------------------------
-    // `plan` is server-owned, and this is the hinge the whole free tier hangs
-    // on. Every limit — one queue, twenty waiting, one server at a time — is
-    // enforced by a Cloud Function reading shop.plan. An owner who could write
-    // that field would lift all of them in a single request, and the limits
-    // would be decoration. It changes only through a verified payment.
-    //
-    // `profile` is a paid feature, so it is gated on the plan rather than on
-    // the UI merely hiding the form.
+    // `plan` and the free-services counter (`freeServicesGranted`,
+    // `servicesUsed`) are server-owned: the free plan is a number of services,
+    // counted by callNext and refused by joinQueue once used up. An owner who
+    // could write any of them would never run out. `plan` changes only
+    // through a verified payment, the counter only through callNext and a
+    // platform admin's grant.
     //
     // `suspended` is a platform admin's call, not the owner's: it is what
     // makes a suspension the owner cannot undo themselves. Only the admin
@@ -71,29 +67,30 @@ service cloud.firestore {
     function keepsServerOwnedShopFields() {
       return request.resource.data.ownerUid == resource.data.ownerUid
         && request.resource.data.plan == resource.data.plan
-        && request.resource.data.suspended == resource.data.suspended;
-    }
-
-    function profileAllowed() {
-      return resource.data.plan == 'paid'
-        || !request.resource.data.diff(resource.data)
-             .affectedKeys().hasAny(['profile']);
+        && request.resource.data.suspended == resource.data.suspended
+        && request.resource.data.get('freeServicesGranted', null)
+           == resource.data.get('freeServicesGranted', null)
+        && request.resource.data.get('servicesUsed', null)
+           == resource.data.get('servicesUsed', null);
     }
 
     match /shops/{shopId} {
       allow read: if true;
-      // Nobody starts paid, or suspended, whatever they put in the request.
+      // Nobody starts paid, suspended or with extra free services, whatever
+      // they put in the request.
       allow create: if signedIn()
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.plan == 'free'
-        && request.resource.data.suspended == false;
+        && request.resource.data.suspended == false
+        // The counter starts at its defaults by being absent.
+        && !('freeServicesGranted' in request.resource.data)
+        && !('servicesUsed' in request.resource.data);
       allow update: if isShopOwner(shopId)
-        && keepsServerOwnedShopFields()
-        && profileAllowed();
+        && keepsServerOwnedShopFields();
       allow delete: if isShopOwner(shopId);
 
-      // Staff records are server-written: adding one is a paid feature, and a
-      // client that could write here would grant itself serving rights.
+      // Staff records are server-written: a client that could write here
+      // would grant itself serving rights.
       // Readable by the owner, and by the person it names, so a staff member's
       // app can tell it has access.
       match /staff/{uid} {

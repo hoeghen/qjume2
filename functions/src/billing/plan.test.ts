@@ -45,9 +45,8 @@ const settings = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// Phase 7's whole point: a free shop cannot exceed its limits by any
-// client-side manipulation. Every limit below is enforced by a function
-// reading shop.plan, which is why that field is server-owned.
+// The plan only changes through a verified payment. The free plan has every
+// feature; what it limits is the count of services (see freeServices.test).
 // ---------------------------------------------------------------------------
 describe('a plan changes only through a verified payment', () => {
   it('upgrades when the provider confirms the session', async () => {
@@ -126,9 +125,9 @@ describe('a plan changes only through a verified payment', () => {
     expect(await planOf(shopId)).toBe('free');
   });
 
-  it('blocks a downgrade that would leave the shop over its limits', async () => {
-    // Otherwise the shop lands in a state the free tier forbids and no code
-    // path can produce — with queues nobody could legitimately have created.
+  it('lets a shop with several queues go back to free', async () => {
+    // The free plan is the whole app now, so nothing a paid shop can have is
+    // out of bounds on free — only the count of services is.
     const shopId = await seedShop('paid');
     await performCreateQueue(testDb, OWNER_UID, { shopId, ...settings });
     await performCreateQueue(testDb, OWNER_UID, { shopId, ...settings });
@@ -141,37 +140,29 @@ describe('a plan changes only through a verified payment', () => {
     );
     const sessionId = new URL(url, 'http://x').searchParams.get('session')!;
 
-    await expect(
-      performCompleteCheckout(testDb, OWNER_UID, { sessionId }, payments),
-    ).rejects.toThrow(/Delete all but/i);
-    expect(await planOf(shopId)).toBe('paid');
+    await performCompleteCheckout(testDb, OWNER_UID, { sessionId }, payments);
+    expect(await planOf(shopId)).toBe('free');
   });
 });
 
-describe('what the free tier actually withholds', () => {
-  it('a second queue', async () => {
+describe('the free plan is the whole app', () => {
+  it('several queues', async () => {
     const shopId = await seedShop('free');
     await performCreateQueue(testDb, OWNER_UID, { shopId, ...settings });
     await expect(
       performCreateQueue(testDb, OWNER_UID, { shopId, ...settings }),
-    ).rejects.toThrow(/one queue/i);
+    ).resolves.toHaveProperty('queueId');
   });
 
-  it('a second station', async () => {
+  it('several tills', async () => {
     const fx = await seedQueue({ plan: 'free' });
-    await performClaimStation(testDb, OWNER_UID, {
-      shopId: fx.shopId,
-      queueId: fx.queueId,
-    });
+    await performClaimStation(testDb, OWNER_UID, { shopId: fx.shopId, queueId: fx.queueId });
     await expect(
-      performClaimStation(testDb, OWNER_UID, {
-        shopId: fx.shopId,
-        queueId: fx.queueId,
-      }),
-    ).rejects.toThrow(/one customer at a time/i);
+      performClaimStation(testDb, OWNER_UID, { shopId: fx.shopId, queueId: fx.queueId }),
+    ).resolves.toHaveProperty('stationId');
   });
 
-  it('a twenty-first person waiting', async () => {
+  it('more than twenty people waiting, joined or walked in', async () => {
     const fx = await seedQueue({ plan: 'free' }, { waitingCount: 20 });
     await expect(
       performJoinQueue(
@@ -179,32 +170,18 @@ describe('what the free tier actually withholds', () => {
         { uid: 'someone', isAnonymous: true },
         { shopId: fx.shopId, queueId: fx.queueId, displayName: 'Late' },
       ),
-    ).rejects.toThrow(/reached its limit/i);
-  });
-
-  it('a twenty-first walk-in, added at the counter', async () => {
-    const fx = await seedQueue({ plan: 'free' }, { waitingCount: 20 });
+    ).resolves.toHaveProperty('ticketId');
     await expect(
       performAddWalkIn(testDb, OWNER_UID, {
         shopId: fx.shopId,
         queueId: fx.queueId,
-        displayName: 'Late',
+        displayName: 'Walk-in',
       }),
-    ).rejects.toThrow(/reached its limit/i);
+    ).resolves.toHaveProperty('ticketId');
   });
 
   it('staff members', async () => {
     const shopId = await seedShop('free');
-    await expect(
-      performAddStaff(testDb, OWNER_UID, { shopId, email: 'staff@example.com' }, async () => STAFF_UID),
-    ).rejects.toThrow(/paid plan/i);
-  });
-
-  it('and grants all of them once the plan is paid', async () => {
-    const shopId = await seedShop('paid');
-    await expect(
-      performCreateQueue(testDb, OWNER_UID, { shopId, ...settings }),
-    ).resolves.toHaveProperty('queueId');
     await expect(
       performAddStaff(testDb, OWNER_UID, { shopId, email: 'staff@example.com' }, async () => STAFF_UID),
     ).resolves.toEqual({ uid: STAFF_UID });
@@ -279,9 +256,9 @@ describe('staff can serve but not change anything', () => {
     ).rejects.toThrow(/owner/i);
   });
 
-  it('cuts staff off the moment the shop drops to free', async () => {
-    // A staff record on a free shop must grant nothing, or a downgrade would
-    // leave people quietly still able to serve.
+  it('keeps staff serving when the shop drops to free', async () => {
+    // Staff are part of the whole app on every plan, so a downgrade changes
+    // nothing for them.
     const fx = await paidShopWithStaff();
     await testDb.doc(`shops/${fx.shopId}`).update({ plan: 'free' });
 
@@ -291,7 +268,7 @@ describe('staff can serve but not change anything', () => {
         queueId: fx.queueId,
         displayName: 'Walk-in',
       }),
-    ).rejects.toThrow(/not serving this shop/i);
+    ).resolves.toHaveProperty('ticketId');
   });
 
   it('cuts them off when removed', async () => {

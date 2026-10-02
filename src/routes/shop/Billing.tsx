@@ -10,20 +10,15 @@ import {
   startCheckout,
 } from '../../lib/functions.js';
 import { staffOf } from '../../lib/firestore/queries.js';
-import { FREE_TIER_LIMITS } from '../../types/index.js';
+import { SUBSCRIPTION_PRICE_DKK } from '../../types/index.js';
+import {
+  freeServicesGranted,
+  freeServicesRemaining,
+  servicesUsed,
+} from '../../lib/freeServices.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { useShopContext } from './ShopHome.js';
-
-const PAID_FEATURE_KEYS = [
-  'moreQueues',
-  'severalTills',
-  'staffLimited',
-  'analytics',
-  'branding',
-  'descriptions',
-  'sms',
-] as const;
 
 export function Billing() {
   const { t } = useT();
@@ -107,15 +102,22 @@ export function Billing() {
 
       {!paid && (
         <>
-          <p>{t('shop.billing.freeSummary', { n: FREE_TIER_LIMITS.maxWaiting })}</p>
-          <h2>{t('shop.billing.paidFeaturesTitle')}</h2>
-          <ul className="feature-list">
-            {PAID_FEATURE_KEYS.map((f) => (
-              <li key={f}>{t(`shop.billing.features.${f}`)}</li>
-            ))}
-          </ul>
+          {/* The free plan is the whole app, for a number of services. */}
+          <p>
+            {t('shop.billing.freeLeft', {
+              left: freeServicesRemaining(shop.data),
+              of: freeServicesGranted(shop.data),
+            })}
+          </p>
+          {freeServicesRemaining(shop.data) === 0 && (
+            <p className="notice warn" role="status">
+              {t('shop.billing.usedUp')}
+            </p>
+          )}
+          <h2>{t('shop.billing.subscriptionTitle')}</h2>
+          <p>{t('shop.billing.subscriptionBody', { price: SUBSCRIPTION_PRICE_DKK })}</p>
           <button type="button" disabled={busy} onClick={() => changePlan('paid')}>
-            {t('shop.billing.upgrade')}
+            {t('shop.billing.subscribe', { price: SUBSCRIPTION_PRICE_DKK })}
           </button>
           <p className="hint">
             {t('shop.billing.subscriptionHintBefore')}
@@ -126,44 +128,54 @@ export function Billing() {
       )}
 
       {paid && (
-        <>
-          <h2>{t('shop.billing.staffTitle')}</h2>
-          <p className="hint">{t('shop.billing.staffHint')}</p>
-          <ul className="queue-list">
-            {staff?.map((member) => (
-              <li key={member.id}>
-                <span>{member.email ?? member.id}</span>
-                <button
-                  type="button"
-                  className="link danger"
-                  disabled={busy}
-                  onClick={() =>
-                    void removeStaff({ shopId, uid: member.id }).catch((e: unknown) =>
-                      setError(messageOf(e)),
-                    )
-                  }
-                >
-                  {t('shop.billing.remove')}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <p>
+          {t('shop.billing.paidSummary', {
+            price: SUBSCRIPTION_PRICE_DKK,
+            served: servicesUsed(shop.data),
+          })}
+        </p>
+      )}
 
-          <form onSubmit={invite} className="stack">
-            <label htmlFor="staff-email">{t('shop.billing.addStaffLabel')}</label>
-            <input
-              id="staff-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <p className="hint">{t('shop.billing.addStaffHint')}</p>
-            <button type="submit" disabled={busy}>
-              {t('shop.billing.add')}
+      {/* Staff are part of the whole app, on every plan. */}
+      <h2>{t('shop.billing.staffTitle')}</h2>
+      <p className="hint">{t('shop.billing.staffHint')}</p>
+      <ul className="queue-list">
+        {staff?.map((member) => (
+          <li key={member.id}>
+            <span>{member.email ?? member.id}</span>
+            <button
+              type="button"
+              className="link danger"
+              disabled={busy}
+              onClick={() =>
+                void removeStaff({ shopId, uid: member.id }).catch((e: unknown) =>
+                  setError(messageOf(e)),
+                )
+              }
+            >
+              {t('shop.billing.remove')}
             </button>
-          </form>
+          </li>
+        ))}
+      </ul>
 
+      <form onSubmit={invite} className="stack">
+        <label htmlFor="staff-email">{t('shop.billing.addStaffLabel')}</label>
+        <input
+          id="staff-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <p className="hint">{t('shop.billing.addStaffHint')}</p>
+        <button type="submit" disabled={busy}>
+          {t('shop.billing.add')}
+        </button>
+      </form>
+
+      {paid && (
+        <>
           <h2>{t('shop.billing.leavingTitle')}</h2>
           <button
             type="button"

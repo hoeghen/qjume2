@@ -56,12 +56,12 @@ describe('createQueue', () => {
     expect(queue.lastPosition).toBe(0);
   });
 
-  it('enforces the free-tier one-queue limit server-side', async () => {
+  it('lets a free shop create several queues — the free plan is the whole app', async () => {
     const shopId = await seedShop('free');
     await performCreateQueue(testDb, OWNER_UID, { shopId, ...settings });
     await expect(
       performCreateQueue(testDb, OWNER_UID, { shopId, ...settings }),
-    ).rejects.toThrow(/one queue/i);
+    ).resolves.toHaveProperty('queueId');
   });
 
   it('lets a paid shop create several queues', async () => {
@@ -146,7 +146,7 @@ describe('claimStation', () => {
     expect(result.label).toBe('Till 2');
   });
 
-  it('enforces one server at a time on the free tier', async () => {
+  it('lets a free shop open several tills — the free plan is the whole app', async () => {
     const fx = await seedQueue({ plan: 'free' });
     await performClaimStation(testDb, OWNER_UID, {
       shopId: fx.shopId,
@@ -157,7 +157,7 @@ describe('claimStation', () => {
         shopId: fx.shopId,
         queueId: fx.queueId,
       }),
-    ).rejects.toThrow(/one customer at a time/i);
+    ).resolves.toHaveProperty('stationId');
   });
 
   it('lets a free-tier shop reclaim its existing station', async () => {

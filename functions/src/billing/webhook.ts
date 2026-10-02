@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { onRequest, type Request } from 'firebase-functions/v2/https';
 import type { Response } from 'express';
 import { logger } from 'firebase-functions';
+import { syncFreeServicesFlag } from '../lib/freeServices.js';
 import { type Firestore } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { STRIPE_WEBHOOK_SECRETS_IF_ENABLED } from '../lib/secrets.js';
@@ -49,6 +50,9 @@ export async function performStripeWebhookEvent(
   if (shop.plan !== 'paid') return;
 
   await shopDoc.ref.update({ plan: 'free' });
+  // Back on the counter: if its free services are gone, it stops taking new
+  // customers, and discovery should stop offering its queues.
+  await syncFreeServicesFlag(shopDoc.ref.firestore, shopDoc.id);
   logger.info('Plan changed', {
     shopId: shopDoc.id,
     plan: 'free',

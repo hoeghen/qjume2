@@ -3,6 +3,11 @@ import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { allShops } from '../../lib/firestore/queries.js';
 import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import {
+  freeServicesGranted,
+  freeServicesRemaining,
+  servicesUsed,
+} from '../../lib/freeServices.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import {
   ADMIN_FILTER_DEFAULTS,
@@ -105,6 +110,14 @@ export function AdminShopList() {
                 <span className="badge status-closed">{t('admin.shopList.suspended')}</span>
               )}
               <p className="muted">{t('admin.shopList.owner', { uid: s.ownerUid })}</p>
+              <p className="muted">
+                {s.plan === 'paid'
+                  ? t('admin.shopList.servedPaid', { used: servicesUsed(s) })
+                  : t('admin.shopList.freeLeft', {
+                      left: freeServicesRemaining(s),
+                      of: freeServicesGranted(s),
+                    })}
+              </p>
             </div>
             <span className="row tight">
               <LocalizedLink className="button" to={`/admin/shops/${s.id}`}>

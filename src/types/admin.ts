@@ -9,6 +9,7 @@ export type AdminAction =
   | 'shop.suspend'
   | 'shop.reinstate'
   | 'shop.update'
+  | 'shop.grantFreeServices'
   | 'shop.delete'
   | 'queue.update'
   | 'queue.delete';

@@ -114,6 +114,7 @@ export const da: DeepPartial<typeof en> = {
   },
 
   queueDetail: {
+    notTakingNewCustomers: 'Butikken tager ikke nye kunder ind i køen lige nu.',
     notFound: 'Denne kø findes ikke længere.',
     peopleWaiting: { one: '{count} person venter', other: '{count} personer venter' },
     estimatedWait: 'anslået ventetid',
@@ -278,8 +279,6 @@ export const da: DeepPartial<typeof en> = {
       noShowLabel: 'Hvis nogen ikke er der',
       noShowHint: 'Efter tre udeblivelser mister de deres plads helt.',
       descriptionLabel: 'Beskrivelse (valgfrit)',
-      descriptionPaidHint: 'Beskrivelser er en del af det betalte abonnement.',
-      seePlans: 'Se abonnementer',
       save: 'Gem',
       create: 'Opret kø',
       penalty: {
@@ -398,25 +397,26 @@ export const da: DeepPartial<typeof en> = {
       done: 'Færdig',
     },
 
+    freeServices: {
+      left: 'Gratis betjeninger tilbage: {left} af {of}',
+      subscribe: 'Start abonnement — {price} kr/md',
+      usedUpOwner: 'Dine gratis betjeninger er brugt op, så dine køer tager ikke nye kunder ind. Du kan stadig betjene alle, der allerede venter.',
+      usedUpStaff: 'Butikkens gratis betjeninger er brugt op, så køerne tager ikke nye kunder ind. Du kan stadig betjene alle, der allerede venter.',
+    },
+
     billing: {
       title: 'Abonnement',
       onPlanBefore: 'Du er på ',
       onPlanAfter: '.',
-      planPaid: 'det betalte abonnement',
-      planFree: 'det gratis abonnement',
+      planPaid: 'abonnement',
+      planFree: 'den gratis plan',
       shopNotFound: 'Butikken blev ikke fundet.',
-      freeSummary: 'Det gratis abonnement dækker én kø, én person der betjener, og omkring {n} personer, der venter ad gangen.',
-      paidFeaturesTitle: 'Det betalte abonnement tilføjer',
-      features: {
-        moreQueues: 'Mere end én kø',
-        severalTills: 'Flere diske, der betjener samtidig',
-        staffLimited: 'Personale, der kan betjene, men ikke ændre indstillinger',
-        analytics: 'Analyser — ventetider, travleste tidspunkter, betjente kunder',
-        branding: 'En butiksprofil og dit eget brand',
-        descriptions: 'Købeskrivelser og en besked ved tilslutning',
-        sms: 'Sms-beskeder såvel som e-mail',
-      },
-      upgrade: 'Opgrader',
+      freeLeft: 'Gratis betjeninger tilbage: {left} af {of}. En betjening er én kunde, der markeres som betjent.',
+      usedUp: 'Dine gratis betjeninger er brugt op. Dine køer tager ikke nye kunder ind, før du starter et abonnement — du kan stadig betjene alle, der allerede venter.',
+      subscriptionTitle: 'Abonnement',
+      subscriptionBody: '{price} kr om måneden ekskl. moms, uden grænse for betjeninger. Alt andet er det samme — den gratis plan er allerede hele appen.',
+      subscribe: 'Start abonnement — {price} kr/md',
+      paidSummary: 'Dit abonnement er aktivt: {price} kr om måneden ekskl. moms, uden grænse for betjeninger. {served} kunder betjent indtil nu.',
       subscriptionHintBefore: 'Et tilbagevendende abonnement, faktureret indtil du opsiger det. Se vores ',
       terms: 'vilkår',
       subscriptionHintAfter: ' for fakturering og opsigelse.',
@@ -426,8 +426,8 @@ export const da: DeepPartial<typeof en> = {
       addStaffLabel: 'Tilføj nogen via e-mail',
       addStaffHint: 'De skal have logget ind på Qjume mindst én gang.',
       add: 'Tilføj',
-      leavingTitle: 'Forlad det betalte abonnement',
-      moveToFree: 'Skift til det gratis abonnement',
+      leavingTitle: 'Opsig abonnement',
+      moveToFree: 'Opsig abonnement',
     },
   },
 
@@ -444,6 +444,8 @@ export const da: DeepPartial<typeof en> = {
     },
 
     shopList: {
+      freeLeft: 'Gratis betjeninger: {left} af {of} tilbage',
+      servedPaid: 'Abonnement · {used} betjent',
       title: 'Butikker',
       auditLog: 'Aktivitetslog',
       signOut: 'Log ud',
@@ -468,6 +470,14 @@ export const da: DeepPartial<typeof en> = {
       suspended: 'Suspenderet',
     },
 
+    freeServices: {
+      title: 'Gratis betjeninger',
+      counter: '{used} brugt af {of} — {left} tilbage.',
+      paidHint: 'Butikken har abonnement, så tælleren begrænser den ikke lige nu. En tildeling gælder stadig, hvis den går tilbage til gratis.',
+      amountLabel: 'Ekstra gratis betjeninger',
+      grant: 'Giv ekstra gratis betjeninger',
+      granted: 'Gav {n} ekstra gratis betjeninger.',
+    },
     shopDetail: {
       allShops: '← Alle butikker',
       owner: 'Ejer: {uid}',
@@ -508,7 +518,7 @@ export const da: DeepPartial<typeof en> = {
       intro: 'Disse vilkår regulerer brugen af Qjume ("Tjenesten"), som drives af Bitwork.dk ("Bitwork.dk", "vi", "os"). Ved at oprette en kø, tilslutte dig en, eller på anden måde bruge Tjenesten, accepterer du disse vilkår. Hvis du accepterer dem på vegne af en virksomhed, bekræfter du, at du har bemyndigelse til det.',
 
       s1Heading: '1. Hvad Tjenesten er',
-      s1Body: 'Qjume lader en virksomhed ("Butik") drive en eller flere ventelinjer ("Køer"), som kunder kan se og tilslutte sig eksternt, og lader en kunde tilslutte sig en kø, følge sin plads i den, og få besked, når deres tur nærmer sig. En Butik drives af sin ejer og, på betalte abonnementer, af personale ejeren tilføjer. En kunde behøver ingen konto for at tilslutte sig en kø.',
+      s1Body: 'Qjume lader en virksomhed ("Butik") drive en eller flere ventelinjer ("Køer"), som kunder kan se og tilslutte sig eksternt, og lader en kunde tilslutte sig en kø, følge sin plads i den, og få besked, når deres tur nærmer sig. En Butik drives af sin ejer og det personale, ejeren tilføjer. En kunde behøver ingen konto for at tilslutte sig en kø.',
 
       s2Heading: '2. Konti',
       s2Body1: 'En Butiks ejer logger ind med en e-mailadresse og er ansvarlig for alt, der sker under vedkommendes konto, herunder personale, de tilføjer. En kundes session er anonym, medmindre kunden vælger at give en e-mailadresse eller et telefonnummer for at få opdateringer om sin plads i en kø.',
@@ -516,10 +526,10 @@ export const da: DeepPartial<typeof en> = {
       s2Body2After: ', hvis du mener, at din konto er blevet tilgået uden din tilladelse.',
 
       s3Heading: '3. Abonnementer, gebyrer og fakturering',
-      s3Body1Before: 'Qjume tilbyder et gratis abonnement og et betalt abonnement med yderligere funktioner, vist i appen. Det betalte abonnement faktureres som et ',
+      s3Body1Before: 'Qjume tilbyder en gratis plan med alle funktioner, der dækker et antal gratis betjeninger (kunder markeret som betjent), vist i appen; når de er brugt, tager Butikkens køer ikke nye kunder ind, før den starter et abonnement. Abonnementet fjerner den grænse og faktureres som et ',
       s3Body1Strong: 'tilbagevendende abonnement',
       s3Body1After: ' til den pris og det interval, der vises ved betaling, og opkræves automatisk, indtil det opsiges. Betaling behandles af Stripe; Bitwork.dk modtager eller opbevarer aldrig dine kortoplysninger.',
-      s3Body2: 'Du kan opsige når som helst fra dine faktureringsindstillinger. Opsigelse stopper fremtidige fornyelser; det refunderer ikke den periode, der allerede er betalt for, og adgang til betalte funktioner fortsætter, indtil den periode udløber. Bortset fra hvor loven giver dig ret til det, refunderes allerede foretagne betalinger ikke. Vi kan ændre abonnementspriser med rimeligt varsel; fortsat brug af det betalte abonnement, efter en prisændring træder i kraft, betyder, at du accepterer den.',
+      s3Body2: 'Du kan opsige når som helst fra dine faktureringsindstillinger. Opsigelse stopper fremtidige fornyelser; det refunderer ikke den periode, der allerede er betalt for, og abonnementets ubegrænsede betjeninger fortsætter, indtil den periode udløber. Bortset fra hvor loven giver dig ret til det, refunderes allerede foretagne betalinger ikke. Vi kan ændre abonnementspriser med rimeligt varsel; fortsat brug af det betalte abonnement, efter en prisændring træder i kraft, betyder, at du accepterer den.',
 
       s4Heading: '4. Acceptabel brug',
       s4Intro: 'Du accepterer ikke at:',

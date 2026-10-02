@@ -303,9 +303,9 @@ describe('discovery', () => {
 });
 
 // ---------------------------------------------------------------------------
-// The hinge the free tier hangs on. Every limit — one queue, twenty waiting,
-// one server — is enforced by a Cloud Function reading shop.plan. An owner who
-// could write that field would lift all of them in a single request, and every
+// The hinges the free plan hangs on: `plan` and the free-services counter.
+// joinQueue refuses new customers once a free shop's services are used up;
+// an owner who could write either field would never run out, and every
 // server-side check would become decoration.
 // ---------------------------------------------------------------------------
 describe('the plan is not the owner’s to set', () => {
@@ -329,6 +329,20 @@ describe('the plan is not the owner’s to set', () => {
         ownerUid: OTHER,
         plan: 'paid',
         exclusiveQueues: false,
+      }),
+    );
+  });
+
+  it('refuses a shop created with extra free services', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'shops/shop9'), {
+        name: 'Generous',
+        ownerUid: OTHER,
+        plan: 'free',
+        exclusiveQueues: false,
+        suspended: false,
+        freeServicesGranted: 1_000_000,
       }),
     );
   });
@@ -366,13 +380,21 @@ describe('the plan is not the owner’s to set', () => {
     );
   });
 
-  it('refuses a free shop writing a paid profile', async () => {
+  it('lets a free shop write its profile — the free plan is the whole app', async () => {
     const db = env.authenticatedContext(OWNER).firestore();
-    await assertFails(
+    await assertSucceeds(
       updateDoc(doc(db, SHOP), {
         profile: { logo: null, hours: '9-5', phone: null, description: null },
       }),
     );
+  });
+
+  it('refuses an owner writing their own free-services counter', async () => {
+    // The whole free plan hangs on this count; an owner who could write it
+    // would never run out.
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, SHOP), { freeServicesGranted: 999999 }));
+    await assertFails(updateDoc(doc(db, SHOP), { servicesUsed: 0 }));
   });
 
   it('allows a profile once the shop is paid', async () => {
@@ -523,10 +545,10 @@ describe('staff records', () => {
     await assertFails(getDoc(doc(db, STAFF)));
   });
 
-  it('does not let a staff member on a free shop pause the queue', async () => {
-    // The shop is on the free plan, so the staff record grants nothing.
+  it('lets a staff member on a free shop pause the queue', async () => {
+    // Staff are part of the whole app on every plan.
     const db = env.authenticatedContext('staff-uid').firestore();
-    await assertFails(updateDoc(doc(db, QUEUE), { status: 'paused' }));
+    await assertSucceeds(updateDoc(doc(db, QUEUE), { status: 'paused' }));
   });
 
   it('lets a staff member on a paid shop pause the queue', async () => {

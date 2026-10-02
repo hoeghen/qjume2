@@ -18,10 +18,8 @@ export interface RemoveStaffRequest {
 }
 
 /**
- * Add someone who can serve but not change anything.
- *
- * A paid feature, enforced here rather than by hiding the form: a free shop
- * that could add staff would have got a paid feature for nothing.
+ * Add someone who can serve but not change anything. Available on every
+ * plan: the free plan is the whole app, limited by a count of services.
  */
 export async function performAddStaff(
   firestore: Firestore,
@@ -42,13 +40,6 @@ export async function performAddStaff(
   }
 
   const shop = await requireOwnerAccess(firestore, shopId, callerUid);
-  if (shop.plan !== 'paid') {
-    throw fail(
-      'failed-precondition',
-      'free-tier-staff-limit',
-      'Staff members are part of the paid plan.',
-    );
-  }
 
   const uid = await lookupUid(email);
   if (!uid) {

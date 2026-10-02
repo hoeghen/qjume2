@@ -62,6 +62,13 @@ export interface Queue {
    * queue a beat too long, never let a join through it shouldn't.
    */
   shopSuspended: boolean;
+  /**
+   * The owning shop is on the free plan and has used its free services, so
+   * it takes no new customers. Denormalised for discovery exactly like
+   * `shopSuspended`, and likewise not trusted by `joinQueue`, which checks
+   * the live shop. Absent on queues that predate the counter.
+   */
+  shopOutOfFreeServices?: boolean;
   description: string | null;
   category: QueueCategory;
   maxSize: number;

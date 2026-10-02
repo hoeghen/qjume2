@@ -4,12 +4,19 @@ import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
 import {
+  adminGrantFreeServices,
   adminUpdateShop,
   messageOf,
   reinstateShop,
   suspendShop,
 } from '../../lib/functions.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import {
+  freeServicesGranted,
+  freeServicesRemaining,
+  servicesUsed,
+} from '../../lib/freeServices.js';
+import type { Shop } from '../../types/index.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { DeleteShopDialog } from '../shop/components/DeleteShopDialog.js';
 
@@ -107,6 +114,8 @@ export function AdminShopDetail() {
       </div>
       {s.suspended && <p className="hint">{t('admin.shopDetail.suspendedHint')}</p>}
 
+      <FreeServicesAdmin shopId={shopId} shop={s} />
+
       <h2>{t('admin.shopDetail.editShop')}</h2>
       <form onSubmit={onSaveShop} className="stack">
         <label htmlFor="name">{t('admin.shopDetail.nameLabel')}</label>
@@ -193,5 +202,77 @@ export function AdminShopDetail() {
         />
       )}
     </main>
+  );
+}
+
+/**
+ * The shop's free-services counter, and the one lever an admin has on it:
+ * granting more. A gift, not a payment — the plan never changes here. Every
+ * grant lands in the audit log (adminGrantFreeServices).
+ */
+function FreeServicesAdmin({ shopId, shop }: { shopId: string; shop: Shop }) {
+  const { t } = useT();
+  const [amount, setAmount] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [granted, setGranted] = useState<number | null>(null);
+
+  function onGrant(event: FormEvent) {
+    event.preventDefault();
+    const n = Number(amount);
+    if (!Number.isInteger(n) || n < 1) return;
+    setBusy(true);
+    setError(null);
+    setGranted(null);
+    void adminGrantFreeServices({ shopId, amount: n })
+      .then(() => {
+        setGranted(n);
+        setAmount('');
+      })
+      .catch((e: unknown) => setError(messageOf(e)))
+      .finally(() => setBusy(false));
+  }
+
+  return (
+    <>
+      <h2>{t('admin.freeServices.title')}</h2>
+      <p>
+        {t('admin.freeServices.counter', {
+          used: servicesUsed(shop),
+          of: freeServicesGranted(shop),
+          left: freeServicesRemaining(shop),
+        })}
+      </p>
+      {shop.plan === 'paid' && <p className="hint">{t('admin.freeServices.paidHint')}</p>}
+      <form onSubmit={onGrant} className="row tight">
+        <label htmlFor="grant-amount" className="sr-only">
+          {t('admin.freeServices.amountLabel')}
+        </label>
+        <input
+          id="grant-amount"
+          type="number"
+          inputMode="numeric"
+          min={1}
+          step={1}
+          placeholder={t('admin.freeServices.amountLabel')}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          required
+        />
+        <button type="submit" disabled={busy}>
+          {t('admin.freeServices.grant')}
+        </button>
+      </form>
+      {granted !== null && (
+        <p className="hint" role="status">
+          {t('admin.freeServices.granted', { n: granted })}
+        </p>
+      )}
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
+    </>
   );
 }
