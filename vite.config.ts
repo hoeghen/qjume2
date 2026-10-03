@@ -6,6 +6,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { Plugin } from 'vite';
 import { SEO_PAGES, appHeadHtml, headHtml, sitemapXml } from './src/lib/seo.js';
+import { staticBodyHtml } from './src/lib/seoBody.js';
 
 /**
  * The short commit SHA of whatever was checked out for this build - a
@@ -40,6 +41,8 @@ const isPortable = process.env['VITE_PORTABLE'] === 'true';
 // start_url and scope follow the base, or an installed PWA would launch at a
 // path that does not exist.
 const SEO_BLOCK = /<!--seo:start-->[\s\S]*?<!--seo:end-->/;
+const BODY_BLOCK = /<!--body:start-->[\s\S]*?<!--body:end-->/;
+const body = (html: string) => `<!--body:start-->${html}<!--body:end-->`;
 
 /**
  * Search and link previews (src/lib/seo.ts). The app is one HTML file that
@@ -48,7 +51,9 @@ const SEO_BLOCK = /<!--seo:start-->[\s\S]*?<!--seo:end-->/;
  * writes each public page, in each language, as its own HTML file with its
  * own title, description and share tags — `find.html`, `en/find.html`, … —
  * which Firebase serves at `/find`, `/en/find` (`cleanUrls`). The app inside
- * is identical; only the head differs. Also writes sitemap.xml, and
+ * is identical; only the head differs — plus the page's visible text inside
+ * `#root` (src/lib/seoBody.ts), which React replaces on start but which is all
+ * a reader that runs no JavaScript ever sees. Also writes sitemap.xml, and
  * `app.html` — the file every other path is rewritten to (firebase.json), with
  * no canonical, since it stands for many different pages.
  */
@@ -62,7 +67,9 @@ function seoPages(): Plugin {
     transformIndexHtml(html) {
       // Every page starts as the Danish home page; the app updates the head as
       // it navigates (src/lib/pageMeta.ts).
-      return html.replace(SEO_BLOCK, `<!--seo:start-->${headHtml('/', 'da', SEO_PAGES['/']!.da)}<!--seo:end-->`);
+      return html
+        .replace(SEO_BLOCK, `<!--seo:start-->${headHtml('/', 'da', SEO_PAGES['/']!.da)}<!--seo:end-->`)
+        .replace(BODY_BLOCK, body(staticBodyHtml('/', 'da')));
     },
     closeBundle() {
       if (isPortable) return;
@@ -76,6 +83,7 @@ function seoPages(): Plugin {
           if (!file) continue; // the Danish home page is index.html itself
           const html = index
             .replace(SEO_BLOCK, `<!--seo:start-->${headHtml(path, locale, words[locale])}<!--seo:end-->`)
+            .replace(BODY_BLOCK, body(staticBodyHtml(path, locale)))
             .replace('<html lang="da">', `<html lang="${locale}">`);
           const target = join(outDir, file);
           mkdirSync(dirname(target), { recursive: true });
@@ -84,7 +92,10 @@ function seoPages(): Plugin {
       }
       writeFileSync(
         join(outDir, 'app.html'),
-        index.replace(SEO_BLOCK, `<!--seo:start-->${appHeadHtml()}<!--seo:end-->`),
+        index
+          .replace(SEO_BLOCK, `<!--seo:start-->${appHeadHtml()}<!--seo:end-->`)
+          // Stands for many pages, so it says none of their text.
+          .replace(BODY_BLOCK, body('')),
       );
       writeFileSync(join(outDir, 'sitemap.xml'), sitemapXml(new Date().toISOString().slice(0, 10)));
     },
