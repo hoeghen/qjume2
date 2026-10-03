@@ -161,7 +161,7 @@ export function TicketView({
 
       <EnableNotifications shopId={shopId} queueId={queueId} ticketId={ticketId} />
 
-      <button type="button" className="secondary" disabled={busy} onClick={leave}>
+      <button type="button" className="secondary leave-queue" disabled={busy} onClick={leave}>
         {t('ticketView.leaveQueue')}
       </button>
 

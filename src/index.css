@@ -630,6 +630,10 @@ button.link.danger { color: var(--danger); }
 .detail dd { margin: 2px 0 12px; }
 
 /* ---------- customer ticket ---------- */
+/* Leaving gives up the place, so it stands apart from the notification panel
+   above rather than reading as part of it — and is harder to hit by mistake. */
+.leave-queue { margin-top: 32px; }
+
 .ticket {
   background: var(--dark-inset);
   color: var(--fg);
