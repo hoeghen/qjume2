@@ -386,6 +386,14 @@ spec is in `docs/design-system.md`. Things that are easy to undo by accident:
 - **The app header is rendered by the shell**, not by each screen, so every
   route has a way back to the landing page without anyone remembering to add
   one. It hides itself on `/`. Do not reintroduce per-screen logos.
+- **An installed app updates itself** (`src/lib/appUpdate.ts`). The browser
+  only checks for a new service worker on a full page load, which an app left
+  open in the background almost never does, and a running page keeps its old
+  JavaScript even after a new worker takes over. So it checks every time the
+  app returns to the front, and reloads once a new version controls it —
+  at once, unless an input is focused or a dialog is open, else when the app
+  is next put away. Without this, a deployed fix could take days to reach a
+  shop's phone.
 - **Fonts are self-hosted**, not linked from Google. A linked font costs a
   round-trip before first paint and renders nothing offline — wrong for a PWA
   built to survive a dropped network. Sora ships as one variable file covering
