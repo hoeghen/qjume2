@@ -346,7 +346,10 @@ export function ServingScreen({ shopId }: { shopId: string }) {
 
       {iAmServing && (
         <div className="serving-toggle">
-          <span className="muted">{t('shop.serving.youAreServing')}</span>
+          {/* One word: the banner above already explains being offline. */}
+          <span className={offline.online ? 'muted' : 'serving-offline'}>
+            {t(offline.online ? 'shop.serving.ready' : 'shop.serving.offline')}
+          </span>
           <button
             type="button"
             className="secondary"
