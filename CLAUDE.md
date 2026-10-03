@@ -469,7 +469,10 @@ the sitemap, the structured data — used both by the app at runtime
 the shop's name) and by the build (`seoPages` in `vite.config.ts`), which
 writes each public page as its own HTML file (`find.html`, `en/find.html`, …,
 served at `/find` by `cleanUrls`) so crawlers and link previews that run no
-JavaScript see the right head. Every other path is rewritten to `app.html`,
+JavaScript see the right head — and the page's visible text too, inside
+`#root` (`src/lib/seoBody.ts`, built from the same `da.ts`/`en.ts` strings
+the page shows), which React replaces on start. An SEO checker that runs no
+JavaScript saw "0 words, no H1" without it. Every other path is rewritten to `app.html`,
 which has **no canonical** — it stands for many pages, and a canonical to the
 home page would tell Google a shop's page is a copy of it. `public/robots.txt`
 keeps `/shop`, `/admin` and `/monitor` out. A new public page goes in
