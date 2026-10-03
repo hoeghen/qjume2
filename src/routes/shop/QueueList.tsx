@@ -1,11 +1,8 @@
-import { useState } from 'react';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
-import { queuesOf } from '../../lib/firestore/queries.js';
+import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
 import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
-import { DeleteShopDialog } from './components/DeleteShopDialog.js';
-import { RenameShop } from './components/RenameShop.js';
 import { FreeServicesBar } from './components/FreeServicesBar.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 
@@ -24,14 +21,18 @@ export function QueueList({
     queuesOf(shopId),
     `${shopId}/queues`,
   );
-  const [showDelete, setShowDelete] = useState(false);
   const shop = useDoc(shopDoc(shopId));
 
   return (
     <main className="panel">
       <header className="serving-header">
-        {isOwner ? <RenameShop shopId={shopId} shopName={shopName} /> : <h1>{shopName}</h1>}
+        <h1>{shopName}</h1>
         <span className="row tight">
+          {isOwner && (
+            <LocalizedLink className="link" to="/shop/settings">
+              {t('shop.queueList.shopSettings')}
+            </LocalizedLink>
+          )}
           {isOwner && (
             <LocalizedLink className="link" to="/shop/billing">
               {t('shop.queueList.plan')}
@@ -62,6 +63,7 @@ export function QueueList({
               <p className="muted">
                 {t('shop.queueList.waitingAddress', { count: q.waitingCount, address: q.address })}
               </p>
+              <TillCount shopId={shopId} queueId={q.id} />
             </div>
             <span className="row tight">
               <LocalizedLink className="button" to={`/shop/q/${q.id}/serve`}>
@@ -92,31 +94,30 @@ export function QueueList({
         </LocalizedLink>
       )}
 
-      {isOwner && (
-        <div className="danger-zone">
-          <button
-            type="button"
-            className="link danger"
-            onClick={() => setShowDelete(true)}
-          >
-            {t('shop.deleteShop.button')}
-          </button>
-        </div>
-      )}
-
-      {showDelete && (
-        <DeleteShopDialog
-          shopId={shopId}
-          shopName={shopName}
-          admin={false}
-          onClose={() => setShowDelete(false)}
-          onDeleted={() => {
-            // The shop is gone; ShopHome's own query re-fires and falls
-            // through to CreateShop once `shops` comes back empty, so there
-            // is nowhere else that still needs this shop's id to navigate to.
-          }}
-        />
-      )}
     </main>
+  );
+}
+
+/**
+ * How many tills a queue has and how many are open — "open" meaning serving
+ * now, the same count the wait estimate divides by. A queue with no tills
+ * says so, since nobody can serve it until one is opened.
+ */
+function TillCount({ shopId, queueId }: { shopId: string; queueId: string }) {
+  const { t, tn } = useT();
+  const { data: stations } = useCollection(
+    stationsOf(shopId, queueId),
+    `${shopId}/${queueId}/till-count`,
+  );
+  if (!stations) return null;
+  const open = stations.filter((s) => s.serving).length;
+  return (
+    <p className="muted">
+      {stations.length === 0
+        ? t('shop.queueList.noTills')
+        : stations.length === 1
+          ? tn(1, 'shop.queueList.tills')
+          : `${tn(stations.length, 'shop.queueList.tills')} · ${tn(open, 'shop.queueList.openTills')}`}
+    </p>
   );
 }

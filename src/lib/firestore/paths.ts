@@ -10,6 +10,7 @@ import {
   customerConverter,
   queueConverter,
   shopConverter,
+  shopOwnerConverter,
   staffConverter,
   staffMembershipConverter,
   stationConverter,
@@ -20,6 +21,7 @@ import type {
   Customer,
   Queue,
   Shop,
+  ShopOwner,
   StaffMember,
   StaffMembership,
   Station,
@@ -38,6 +40,13 @@ export const shops = (): CollectionReference<Shop> =>
 
 export const shopDoc = (shopId: string): DocumentReference<Shop> =>
   doc(db, 'shops', shopId).withConverter(shopConverter);
+
+/** Owner emails, admin-readable only. See `ShopOwner`. */
+export const shopOwners = (): CollectionReference<ShopOwner> =>
+  collection(db, 'shopOwners').withConverter(shopOwnerConverter);
+
+export const shopOwnerDoc = (shopId: string): DocumentReference<ShopOwner> =>
+  doc(db, 'shopOwners', shopId).withConverter(shopOwnerConverter);
 
 export const staff = (shopId: string): CollectionReference<StaffMember> =>
   collection(db, 'shops', shopId, 'staff').withConverter(staffConverter);

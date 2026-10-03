@@ -120,7 +120,7 @@ export const completeCheckout = callable<
 >('completeCheckout');
 
 export const addStaff = callable<
-  { shopId: string; email: string },
+  { shopId: string; email: string; name?: string },
   { uid: string }
 >('addStaff');
 

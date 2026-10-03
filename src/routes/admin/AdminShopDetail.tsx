@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
-import { shopDoc } from '../../lib/firestore/paths.js';
+import { shopDoc, shopOwnerDoc } from '../../lib/firestore/paths.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
 import {
   adminGrantFreeServices,
@@ -30,6 +30,7 @@ export function AdminShopDetail() {
   const { shopId = '' } = useParams();
   const navigate = useNavigate();
   const shop = useDoc(shopId ? shopDoc(shopId) : null);
+  const owner = useDoc(shopId ? shopOwnerDoc(shopId) : null);
   const { data: queuesList, loading: queuesLoading } = useCollection(
     shopId ? queuesOf(shopId) : null,
     `admin/${shopId}/queues`,
@@ -97,7 +98,7 @@ export function AdminShopDetail() {
         </span>
         {s.suspended && <span className="badge status-closed">{t('admin.shopList.suspended')}</span>}
       </header>
-      <p className="muted">{t('admin.shopDetail.owner', { uid: s.ownerUid })}</p>
+      <p className="muted">{t('admin.shopDetail.owner', { who: owner.data?.email ?? s.ownerUid })}</p>
 
       <div className="row tight">
         <button type="button" disabled={busy} onClick={toggleSuspension}>

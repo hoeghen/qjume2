@@ -1,12 +1,17 @@
 /**
  * Someone who can serve a shop's queues without owning it.
  *
- * A paid feature (PRD 8). Staff run the counter; they cannot change queue
- * settings, and they cannot see or touch billing.
+ * On every plan. Staff run the counter; they cannot change queue settings,
+ * and they cannot see or touch billing or the shop's settings.
  */
 export interface StaffMember {
   /** Shown in the shop's staff list, since a uid means nothing to a human. */
   email: string | null;
+  /**
+   * What the owner calls them, typed when adding them. Only for the staff
+   * list; customers never see it. Absent on staff added before it existed.
+   */
+  name?: string | null;
   addedAt: number;
   addedBy: string;
 }

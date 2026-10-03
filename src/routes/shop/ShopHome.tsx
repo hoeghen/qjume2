@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useSearchParams, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../lib/hooks/useAuth.js';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopsOwnedBy } from '../../lib/firestore/queries.js';
-import { shopDoc, staffMembershipDoc } from '../../lib/firestore/paths.js';
+import { shopDoc, shopOwnerDoc, staffMembershipDoc } from '../../lib/firestore/paths.js';
+import { recordShopOwner } from '../../lib/firestore/writes.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { SignIn } from './SignIn.js';
 import { CreateShop } from './CreateShop.js';
@@ -56,6 +57,20 @@ export function ShopHome() {
   const staffShop = useDoc(
     membership.data ? shopDoc(membership.data.shopId) : null,
   );
+
+  // Keep the owner's email beside the shop for the platform admin (ShopOwner):
+  // fills in for shops that predate it, and follows a changed address.
+  const ownedId = ownedShops?.[0]?.id ?? null;
+  const ownerRecord = useDoc(ownedId ? shopOwnerDoc(ownedId) : null);
+  const email = user && !user.isAnonymous ? user.email : null;
+  useEffect(() => {
+    if (!ownedId || !user || !email || ownerRecord.loading) return;
+    const stored = ownerRecord.data;
+    if (stored?.email === email && stored.uid === user.uid) return;
+    void recordShopOwner(ownedId, { uid: user.uid, email }).catch(() => {
+      // Best-effort: the admin shows the uid until a later visit succeeds.
+    });
+  }, [ownedId, user, email, ownerRecord.loading, ownerRecord.data]);
 
   if (authLoading) return <p className="panel">{t('common.loading')}</p>;
   // An anonymous customer is not a shop. Without this, someone who joined a

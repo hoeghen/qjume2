@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
+import { useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
-import {
-  addStaff,
-  completeCheckout,
-  messageOf,
-  removeStaff,
-  startCheckout,
-} from '../../lib/functions.js';
-import { staffOf } from '../../lib/firestore/queries.js';
+import { completeCheckout, messageOf, startCheckout } from '../../lib/functions.js';
 import { SUBSCRIPTION_PRICE_DKK } from '../../types/index.js';
 import {
   freeServicesGranted,
@@ -26,11 +19,9 @@ export function Billing() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const shop = useDoc(shopDoc(shopId));
-  const { data: staff } = useCollection(staffOf(shopId), `${shopId}/staff`);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
 
   // Returning from the provider. The session id is a lookup key, not proof —
   // the server asks the provider whether it was really paid.
@@ -68,24 +59,6 @@ export function Billing() {
         }
       } catch (e) {
         setError(messageOf(e));
-        setBusy(false);
-      }
-    })();
-  }
-
-  function invite(event: React.FormEvent) {
-    event.preventDefault();
-    const trimmed = email.trim();
-    if (!trimmed) return;
-    setBusy(true);
-    setError(null);
-    void (async () => {
-      try {
-        await addStaff({ shopId, email: trimmed });
-        setEmail('');
-      } catch (e) {
-        setError(messageOf(e));
-      } finally {
         setBusy(false);
       }
     })();
@@ -135,44 +108,6 @@ export function Billing() {
           })}
         </p>
       )}
-
-      {/* Staff are part of the whole app, on every plan. */}
-      <h2>{t('shop.billing.staffTitle')}</h2>
-      <p className="hint">{t('shop.billing.staffHint')}</p>
-      <ul className="queue-list">
-        {staff?.map((member) => (
-          <li key={member.id}>
-            <span>{member.email ?? member.id}</span>
-            <button
-              type="button"
-              className="link danger"
-              disabled={busy}
-              onClick={() =>
-                void removeStaff({ shopId, uid: member.id }).catch((e: unknown) =>
-                  setError(messageOf(e)),
-                )
-              }
-            >
-              {t('shop.billing.remove')}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <form onSubmit={invite} className="stack">
-        <label htmlFor="staff-email">{t('shop.billing.addStaffLabel')}</label>
-        <input
-          id="staff-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <p className="hint">{t('shop.billing.addStaffHint')}</p>
-        <button type="submit" disabled={busy}>
-          {t('shop.billing.add')}
-        </button>
-      </form>
 
       {paid && (
         <>
