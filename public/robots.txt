@@ -1,0 +1,18 @@
+# Qjume — https://qjume.dk
+# The owner's, the platform admin's and the in-shop monitor's pages are not
+# for search; everything customers and new shops look for is.
+User-agent: *
+Disallow: /shop
+Disallow: /en/shop
+Disallow: /da/shop
+Disallow: /admin
+Disallow: /en/admin
+Disallow: /da/admin
+Disallow: /monitor
+Disallow: /en/monitor
+Disallow: /da/monitor
+# The shell every other path is served from; not a page of its own.
+Disallow: /app$
+Disallow: /app.html
+
+Sitemap: https://qjume.dk/sitemap.xml

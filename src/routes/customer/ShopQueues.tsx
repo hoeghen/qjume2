@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { applyPageMeta, defaultPageMeta } from '../../lib/pageMeta.js';
+import { shopPageMeta } from '../../lib/seo.js';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 import { queuesOf } from '../../lib/firestore/queries.js';
@@ -22,7 +25,7 @@ const OPEN_FIRST: QueueStatus[] = ['open', 'drainMode'];
  * queue, or from "N other queues".
  */
 export function ShopQueues() {
-  const { t, tn } = useT();
+  const { t, tn, locale } = useT();
   const { shopId = '' } = useParams();
   const shop = useDoc(shopId ? shopDoc(shopId) : null);
   const { data: queues, loading } = useCollection(
@@ -30,11 +33,20 @@ export function ShopQueues() {
     `${shopId}/queues`,
   );
 
-  if (shop.loading || loading) return <p>{t('common.loading')}</p>;
-
   // The shop's name lives on its own document, but every queue carries a copy
   // for discovery, so either will do and one of them is always there.
   const name = shop.data?.name ?? queues?.[0]?.shopName ?? null;
+
+  // Searchable by the shop's own name ("Børges Juletræer — kø på Qjume").
+  useEffect(() => {
+    applyPageMeta(
+      `/s/${shopId}`,
+      locale,
+      name ? shopPageMeta(name, locale) : defaultPageMeta(locale),
+    );
+  }, [shopId, name, locale]);
+
+  if (shop.loading || loading) return <p>{t('common.loading')}</p>;
   if (!name) return <p>{t('shopQueues.shopGone')}</p>;
 
   const address = queues?.[0]?.address ?? null;
