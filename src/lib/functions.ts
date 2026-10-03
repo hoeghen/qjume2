@@ -44,7 +44,14 @@ export const joinQueue = callable<
 >('joinQueue');
 
 export const callNext = callable<
-  { shopId: string; queueId: string; stationId: string; outcome?: 'served' | 'noShow' },
+  {
+    shopId: string;
+    queueId: string;
+    stationId: string;
+    outcome?: 'served' | 'noShow';
+    /** Finish the current customer without calling the next one. */
+    finishOnly?: boolean;
+  },
   {
     ticketId: string | null;
     displayName: string | null;

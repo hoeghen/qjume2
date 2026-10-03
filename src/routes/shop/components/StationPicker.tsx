@@ -8,6 +8,8 @@ interface Props {
   shopId: string;
   queueId: string;
   stationId: string | null;
+  /** Take the only open station without asking. Off after "Change station". */
+  autoPick?: boolean;
   onPick: (stationId: string, label: string) => void;
 }
 
@@ -18,7 +20,13 @@ interface Props {
  * With exactly one station already open it is taken without asking — a
  * question with only one possible answer is not worth a tap.
  */
-export function StationPicker({ shopId, queueId, stationId, onPick }: Props) {
+export function StationPicker({
+  shopId,
+  queueId,
+  stationId,
+  autoPick = true,
+  onPick,
+}: Props) {
   const { t } = useT();
   const { data: stations } = useCollection(
     stationsOf(shopId, queueId),
@@ -30,12 +38,12 @@ export function StationPicker({ shopId, queueId, stationId, onPick }: Props) {
   // Exactly one already open: take it rather than making staff choose from a
   // list of one. `busy` guards against re-firing while a claim is in flight.
   useEffect(() => {
-    if (stationId || !stations || busy) return;
+    if (!autoPick || stationId || !stations || busy) return;
     if (stations.length === 1) {
       const only = stations[0];
       if (only) onPick(only.id, only.label);
     }
-  }, [stationId, stations, busy, onPick]);
+  }, [autoPick, stationId, stations, busy, onPick]);
 
   if (stationId) return null;
 

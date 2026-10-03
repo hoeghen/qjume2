@@ -18,6 +18,7 @@ import { UpcomingList } from './components/UpcomingList.js';
 import { WalkInDialog } from './components/WalkInDialog.js';
 import { CloseDialog } from './components/CloseDialog.js';
 import { QrDialog } from './components/QrDialog.js';
+import { SwitchStationDialog } from './components/SwitchStationDialog.js';
 
 const STATION_KEY = 'qjume:station';
 
@@ -56,6 +57,11 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [showClose, setShowClose] = useState(false);
   const [showQr, setShowQr] = useState(false);
+  const [confirmSwitch, setConfirmSwitch] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  // Set by "Change station", so the picker asks rather than putting them
+  // straight back on the only till there is.
+  const [choosingAgain, setChoosingAgain] = useState(false);
 
   const offline = useOfflineServing(shopId, queueId, station?.id ?? null);
 
@@ -131,6 +137,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         shopId={shopId}
         queueId={queueId}
         stationId={null}
+        autoPick={!choosingAgain}
         onPick={onPick}
       />
     );
@@ -190,6 +197,35 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     } finally {
       setServingBusy(false);
     }
+  }
+
+  // Leaving a till: finish its customer if asked, stop it serving, and clear
+  // the start guard so the next till picked starts serving by itself — the
+  // screen does not remount, so without that the new till never would.
+  async function leaveStation(finishCurrent: boolean) {
+    if (!station) return;
+    setServingBusy(true);
+    setSwitchError(null);
+    try {
+      if (finishCurrent) {
+        await callNext({ shopId, queueId, stationId: station.id, finishOnly: true });
+      }
+    } catch (e) {
+      // The customer is still at this till; switching now would strand them.
+      setSwitchError(messageOf(e));
+      setServingBusy(false);
+      return;
+    }
+    if (iAmServing) {
+      // Best-effort: the abandoned-queue sweep catches a till left serving.
+      await stopServing({ shopId, queueId, stationId: station.id }).catch(() => {});
+    }
+    setServingBusy(false);
+    setConfirmSwitch(false);
+    startAttempted.current = false;
+    rememberStation(queueId, null);
+    setChoosingAgain(true);
+    setStation(null);
   }
 
   return (
@@ -355,20 +391,30 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <button
           type="button"
           className="link"
+          // Offline, saved taps belong to this till and must replay there.
+          disabled={servingBusy || !offline.online || offline.pending > 0}
           onClick={() => {
-            // Best-effort: the station identity is changing regardless, and
-            // this is exactly what the abandoned-queue sweep exists to
-            // catch if it fails — but a working call now beats staff having
-            // to remember to do it themselves.
-            if (iAmServing) void stopServing({ shopId, queueId, stationId: station.id });
-            rememberStation(queueId, null);
-            setStation(null);
+            if (mine) {
+              setSwitchError(null);
+              setConfirmSwitch(true);
+            } else {
+              void leaveStation(false);
+            }
           }}
         >
           {t('shop.serving.changeStation')}
         </button>
       </footer>
 
+      {confirmSwitch && mine && (
+        <SwitchStationDialog
+          name={mine.displayName}
+          busy={servingBusy}
+          error={switchError}
+          onDone={() => void leaveStation(true)}
+          onCancel={() => setConfirmSwitch(false)}
+        />
+      )}
       {showWalkIn && (
         <WalkInDialog
           shopId={shopId}

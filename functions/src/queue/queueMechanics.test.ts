@@ -7,6 +7,7 @@ import {
   OWNER_UID,
   clearFirestore,
   getQueue,
+  getStation,
   seedQueue,
   seedStation,
   testDb,
@@ -154,6 +155,28 @@ describe('callNext', () => {
     const empty = await call();
     expect(empty.ticketId).toBeNull();
     expect((await getQueue(fx)).waitingCount).toBe(0);
+  });
+
+  it('can finish the current customer without calling the next', async () => {
+    // Leaving a till mid-service: the customer is done, and nobody is called
+    // to a till nobody is standing at.
+    const fx = await seedQueue();
+    const [first] = await joinMany(fx, 2);
+    const station = await seedStation(fx, 'Till 1');
+    const base = { shopId: fx.shopId, queueId: fx.queueId, stationId: station };
+    await performCallNext(testDb, OWNER_UID, base);
+
+    const result = await performCallNext(testDb, OWNER_UID, {
+      ...base,
+      finishOnly: true,
+    });
+
+    expect(result.ticketId).toBeNull();
+    expect(result.resolved).toMatchObject({ ticketId: first, outcome: 'served' });
+    expect((await ticket(fx, first!)).state).toBe('served');
+    expect((await getStation(fx, station)).currentTicketId).toBeNull();
+    // Customer 2 is still waiting, first in line.
+    expect((await getQueue(fx)).waitingCount).toBe(1);
   });
 
   it('rejects a caller with no business serving this shop', async () => {
