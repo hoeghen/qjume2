@@ -377,6 +377,7 @@ export const en = {
       close: 'Close',
       showQr: 'Show QR',
       changeStation: 'Change till',
+      tillDeleted: 'This till was deleted on another device — pick a till.',
     },
 
     switchStation: {
@@ -393,6 +394,8 @@ export const en = {
       delete: 'Delete',
       deleteNamed: 'Delete {name}',
       confirmDelete: 'Delete {name}?',
+      confirmDeleteHeld: '{name} is open on another device. Delete anyway?',
+      deleteAnyway: 'Delete anyway',
     },
 
     walkIn: {

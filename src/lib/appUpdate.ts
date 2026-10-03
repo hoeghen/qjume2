@@ -37,18 +37,30 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     if (document.visibilityState === 'hidden' || !busy()) window.location.reload();
   });
 
+  const check = () => {
+    void navigator.serviceWorker
+      .getRegistration()
+      .then((registration) => registration?.update())
+      .catch(() => {
+        // Offline, most likely; the next check tries again.
+      });
+  };
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       if (updated) window.location.reload();
       return;
     }
-    void navigator.serviceWorker
-      .getRegistration()
-      .then((registration) => registration?.update())
-      .catch(() => {
-        // Offline, most likely; the next return to the front tries again.
-      });
+    check();
   });
+
+  // A screen that is never put away — the PC at the counter, the monitor on
+  // the wall — never comes back to the front either, so it also checks on a
+  // timer. Its reload then waits only for nobody to be typing.
+  window.setInterval(() => {
+    if (updated && !busy()) window.location.reload();
+    else check();
+  }, 30 * 60 * 1000);
 }
 
 export {};

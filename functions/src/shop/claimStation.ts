@@ -16,6 +16,8 @@ export interface ClaimStationRequest {
   /** Claim an existing station, or omit to open a new one. */
   stationId?: string;
   label?: string;
+  /** This device's id (`src/lib/device.ts`): the till is held by it. */
+  deviceId?: string;
 }
 
 export interface ClaimStationResult {
@@ -55,18 +57,31 @@ export async function performClaimStation(
     const shop = shopSnap.data() as Shop | undefined;
     if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
 
+    const existing = await tx.get(stationsRef);
+    const deviceId = input.deviceId || null;
+
+    // One device stands at one till per queue: taking a till lets go of any
+    // other this device was holding here, so a switch never leaves a stale
+    // hold that would block deleting the till it left.
+    const letGoOfOthers = (keep: string) => {
+      if (!deviceId) return;
+      for (const doc of existing.docs) {
+        if (doc.id !== keep && (doc.data() as Station).activeDeviceId === deviceId) {
+          tx.update(doc.ref, { activeDeviceId: null });
+        }
+      }
+    };
+
     if (stationId) {
-      const ref = stationsRef.doc(stationId);
-      const snap = await tx.get(ref);
-      const station = snap.data() as Station | undefined;
-      if (!station) {
+      const snap = existing.docs.find((d) => d.id === stationId);
+      const station = snap?.data() as Station | undefined;
+      if (!snap || !station) {
         throw fail('not-found', 'station-not-found', 'Station not found.');
       }
-      tx.update(ref, { activeStaffUid: callerUid });
+      letGoOfOthers(stationId);
+      tx.update(snap.ref, { activeStaffUid: callerUid, activeDeviceId: deviceId });
       return { stationId, label: station.label };
     }
-
-    const existing = await tx.get(stationsRef);
 
     // Stored in English and worded per reader by `tillLabel`.
     const label =
@@ -78,7 +93,9 @@ export async function performClaimStation(
       activeStaffUid: callerUid,
       currentTicketId: null,
       serving: false,
+      activeDeviceId: deviceId,
     };
+    letGoOfOthers(ref.id);
     tx.set(ref, station);
     return { stationId: ref.id, label };
   });

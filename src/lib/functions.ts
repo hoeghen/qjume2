@@ -171,14 +171,19 @@ export const reverseGeocode = callable<
 >('reverseGeocode');
 
 export const claimStation = callable<
-  { shopId: string; queueId: string; stationId?: string; label?: string },
+  { shopId: string; queueId: string; stationId?: string; label?: string; deviceId?: string },
   { stationId: string; label: string }
 >('claimStation');
 
 export const deleteStation = callable<
-  { shopId: string; queueId: string; stationId: string },
+  { shopId: string; queueId: string; stationId: string; deviceId?: string; force?: boolean },
   void
 >('deleteStation');
+
+export const releaseStation = callable<
+  { shopId: string; queueId: string; stationId: string; deviceId: string },
+  void
+>('releaseStation');
 
 export const startServing = callable<
   { shopId: string; queueId: string; stationId: string },

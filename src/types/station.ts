@@ -18,4 +18,14 @@ export interface Station {
    * `src/lib/queue/presence.ts`.
    */
   serving: boolean;
+  /**
+   * The device that has this till open on its serve screen, or null. Per
+   * device, not per person: one owner signed in on a PC and a phone is one
+   * `activeStaffUid` but two devices. Set by `claimStation` (which also lets
+   * go of any other till this device held in the queue), cleared by
+   * `releaseStation` on "Skift kasse" and by the abandoned-queue sweep.
+   * `deleteStation` refuses a till another device holds unless told to go
+   * ahead anyway. Absent on tills from before it existed.
+   */
+  activeDeviceId?: string | null;
 }

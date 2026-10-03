@@ -5,6 +5,7 @@ import { performDeleteQueue } from './deleteQueue.js';
 import { performDeleteShop } from './deleteShop.js';
 import { performClaimStation } from './claimStation.js';
 import { performDeleteStation } from './deleteStation.js';
+import { performReleaseStation } from './releaseStation.js';
 import { performCloseQueue } from './closeQueue.js';
 import { performAddWalkIn } from '../queue/addWalkIn.js';
 import { performRelinkTicket } from '../queue/relinkTicket.js';
@@ -172,6 +173,30 @@ describe('deleteStation', () => {
     ).rejects.toThrow(/not serving this shop/i);
   });
 
+  it('asks before deleting a till another device has open, and deletes when told to', async () => {
+    const fx = await seedQueue();
+    const id = await seedStation(fx, 'Till 2', { activeDeviceId: 'pc' });
+
+    await expect(
+      performDeleteStation(testDb, OWNER_UID, { ...ids(fx), stationId: id, deviceId: 'phone' }),
+    ).rejects.toMatchObject({ code: 'failed-precondition', details: { reason: 'station-held' } });
+
+    await performDeleteStation(testDb, OWNER_UID, {
+      ...ids(fx),
+      stationId: id,
+      deviceId: 'phone',
+      force: true,
+    });
+    expect((await testDb.doc(stationPath(fx, id)).get()).exists).toBe(false);
+  });
+
+  it('lets a device delete a till it holds itself', async () => {
+    const fx = await seedQueue();
+    const id = await seedStation(fx, 'Till 2', { activeDeviceId: 'pc' });
+    await performDeleteStation(testDb, OWNER_UID, { ...ids(fx), stationId: id, deviceId: 'pc' });
+    expect((await testDb.doc(stationPath(fx, id)).get()).exists).toBe(false);
+  });
+
   it('numbers the next till after the gap a deletion left', async () => {
     const fx = await seedQueue();
     await seedStation(fx, 'Till 1');
@@ -181,6 +206,33 @@ describe('deleteStation', () => {
 
     const opened = await performClaimStation(testDb, OWNER_UID, ids(fx));
     expect(opened.label).toBe('Till 2');
+  });
+});
+
+describe('till holds', () => {
+  it('holds the claimed till for the device, and lets go of the one it held before', async () => {
+    const fx = await seedQueue();
+    const first = await seedStation(fx, 'Till 1', { activeDeviceId: 'pc' });
+    const second = await seedStation(fx, 'Till 2');
+
+    await performClaimStation(testDb, OWNER_UID, { ...ids(fx), stationId: second, deviceId: 'pc' });
+
+    const held = async (id: string) =>
+      (await testDb.doc(stationPath(fx, id)).get()).data()?.activeDeviceId;
+    expect(await held(second)).toBe('pc');
+    expect(await held(first)).toBeNull();
+  });
+
+  it('releases only this device’s own hold', async () => {
+    const fx = await seedQueue();
+    const mine = await seedStation(fx, 'Till 1', { activeDeviceId: 'pc' });
+    const theirs = await seedStation(fx, 'Till 2', { activeDeviceId: 'phone' });
+
+    await performReleaseStation(testDb, OWNER_UID, { ...ids(fx), stationId: mine, deviceId: 'pc' });
+    await performReleaseStation(testDb, OWNER_UID, { ...ids(fx), stationId: theirs, deviceId: 'pc' });
+
+    expect((await testDb.doc(stationPath(fx, mine)).get()).data()?.activeDeviceId).toBeNull();
+    expect((await testDb.doc(stationPath(fx, theirs)).get()).data()?.activeDeviceId).toBe('phone');
   });
 });
 

@@ -10,6 +10,8 @@ export type QueueErrorReason =
   | 'station-not-found'
   /** A till that is serving or has a customer cannot be deleted. */
   | 'station-in-use'
+  /** Another device has the till open; deleting needs `force`. */
+  | 'station-held'
   | 'queue-not-accepting'
   | 'queue-full'
   | 'free-services-used-up'

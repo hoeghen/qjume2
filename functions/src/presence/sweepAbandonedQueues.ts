@@ -41,8 +41,11 @@ async function sweepCandidate(
 
       tx.update(snap.ref, { status: 'unavailable', servingStations: 0 });
       for (const stationDoc of stationsSnap.docs) {
-        if ((stationDoc.data() as Station).serving) {
-          tx.update(stationDoc.ref, { serving: false });
+        const station = stationDoc.data() as Station;
+        // Hours of silence: whatever device held a till is gone too, and a
+        // hold left behind would only make the till awkward to delete.
+        if (station.serving || station.activeDeviceId) {
+          tx.update(stationDoc.ref, { serving: false, activeDeviceId: null });
         }
       }
     });
