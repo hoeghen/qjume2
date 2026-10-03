@@ -379,6 +379,8 @@ button.link.danger { color: var(--danger); }
 .till-row { display: flex; align-items: center; gap: 12px; }
 .till-row > button:first-child { flex: 1; }
 .till-confirm > span { flex: 1; font-weight: 600; }
+/* Light red: --stop-fg is for the pale banner, too dark to read on ink. */
+.serving-offline { color: var(--stop-bg); font-weight: 700; }
 .serving-till { color: var(--orange-on-dark); font-weight: 700; }
 .called-station { margin: 0; color: var(--muted); font-size: 1.1rem; }
 
