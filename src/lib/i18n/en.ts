@@ -158,6 +158,9 @@ export const en = {
     codeLabel: 'Your code',
     hint: 'Staff can give you a code that brings your place in this queue back to this phone.',
     submit: 'Get my place back',
+    noMatch: 'That code doesn’t match a ticket in this queue. Check it, or ask staff for a new one.',
+    notActive: 'That ticket is no longer active — it has been served, removed or left.',
+    failed: 'That didn’t work just now. Try again in a moment.',
   },
 
 

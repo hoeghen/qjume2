@@ -59,6 +59,20 @@
   ],
   "fieldOverrides": [
     {
+      "collectionGroup": "private",
+      "fieldPath": "resumeCodeHash",
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
+    {
       "collectionGroup": "queues",
       "fieldPath": "geohash",
       "indexes": [

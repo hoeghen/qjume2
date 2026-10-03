@@ -155,6 +155,9 @@ export const da: DeepPartial<typeof en> = {
     codeLabel: 'Din kode',
     hint: 'Personalet kan give dig en kode, der henter din plads i denne kø over på denne telefon.',
     submit: 'Få min plads tilbage',
+    noMatch: 'Koden passer ikke til en billet i denne kø. Tjek den, eller bed personalet om en ny.',
+    notActive: 'Den billet er ikke længere aktiv — den er betjent, fjernet eller forladt.',
+    failed: 'Det gik ikke lige nu. Prøv igen om lidt.',
   },
 
 

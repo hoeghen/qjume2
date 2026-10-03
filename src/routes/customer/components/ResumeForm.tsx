@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { signInAsGuest } from '../../../lib/auth.js';
 import { useAuth } from '../../../lib/hooks/useAuth.js';
-import { claimTicket, messageOf } from '../../../lib/functions.js';
+import { claimTicket, reasonOf } from '../../../lib/functions.js';
 import { rememberTicket } from '../../../lib/myTickets.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 
@@ -42,7 +42,19 @@ export function ResumeForm({ shopId, queueId, onClaimed }: Props) {
         rememberTicket(shopId, queueId, result.ticketId);
         onClaimed(result.ticketId);
       } catch (e) {
-        setError(messageOf(e));
+        // Worded here, in the reader's language, rather than passing on the
+        // server's English — and a fault that is not about the code reads as
+        // "try again", not as a stack of internals.
+        const reason = reasonOf(e);
+        setError(
+          t(
+            reason === 'ticket-not-found'
+              ? 'resumeForm.noMatch'
+              : reason === 'ticket-not-waiting'
+                ? 'resumeForm.notActive'
+                : 'resumeForm.failed',
+          ),
+        );
       } finally {
         setBusy(false);
       }
