@@ -369,6 +369,13 @@ export const da: DeepPartial<typeof en> = {
       changeStation: 'Skift station',
     },
 
+    switchStation: {
+      title: 'Færdig med {name}?',
+      body: 'Kunden er stadig i gang ved denne station. Afslut, før du skifter, så de ikke bliver hængende.',
+      done: 'Færdig',
+      cancel: 'Fortryd',
+    },
+
     stationPicker: {
       title: 'Hvilken station betjener du fra?',
       openFirst: 'Åbn en station',

@@ -373,6 +373,13 @@ export const en = {
       changeStation: 'Change station',
     },
 
+    switchStation: {
+      title: 'Done with {name}?',
+      body: "They're still being served at this station. Finish before you switch, so they aren't left hanging.",
+      done: 'Done',
+      cancel: 'Cancel',
+    },
+
     stationPicker: {
       title: 'Which station are you serving from?',
       openFirst: 'Open a station',

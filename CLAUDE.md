@@ -350,6 +350,14 @@ queue has a single station — a name only tells you something when there is
 another one to tell it apart from — and `ticket.station` is an **id**, so
 anything showing it to a person must look up the label.
 
+**A customer being served belongs to the till, not to the person behind
+it** (`station.currentTicketId`). So "Change station" asks "Done with
+{name}?" first and finishes them with `callNext({ finishOnly: true })` —
+counted, without calling anyone to a till nobody stands at — then stops the
+old till and lets the newly picked one start serving. The serve screen does
+not remount on a switch, so `leaveStation` resets the start guard itself, and
+the picker does not auto-take the only till after a deliberate switch.
+
 ## Design system
 
 `src/index.css` is the implementation of the QjuMe design canvas; the extracted

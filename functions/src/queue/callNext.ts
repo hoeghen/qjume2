@@ -46,6 +46,12 @@ export interface CallNextRequest {
   stationId: string;
   /** Defaults to `served`. */
   outcome?: CurrentOutcome;
+  /**
+   * Resolve the current customer without calling anyone else. Used when
+   * staff leave a till mid-service ("Change station"): the customer is
+   * finished and counted, and nobody is called to a till nobody stands at.
+   */
+  finishOnly?: boolean;
 }
 
 export interface CallNextResult {
@@ -113,7 +119,7 @@ export async function performCallNext(
   /** Overridden by tests so nothing is actually sent. */
   channels: Channels = channelsFromEnv(),
 ): Promise<CallNextResult> {
-  const { shopId, queueId, stationId, outcome = 'served' } = input;
+  const { shopId, queueId, stationId, outcome = 'served', finishOnly = false } = input;
 
   if (!shopId || !queueId || !stationId) {
     throw fail(
@@ -294,10 +300,11 @@ export async function performCallNext(
 
     // A ticket just sent back must not be handed straight back to the same
     // station, even when it is still the lowest waiting position.
-    const next =
-      (placement?.kind === 'reindex' ? fullWaiting : head).find(
-        (t) => t.id !== penalisedId,
-      ) ?? null;
+    const next = finishOnly
+      ? null
+      : ((placement?.kind === 'reindex' ? fullWaiting : head).find(
+          (t) => t.id !== penalisedId,
+        ) ?? null);
 
     if (next) {
       tx.update(ticketsRef.doc(next.id), {
