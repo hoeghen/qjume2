@@ -9,6 +9,12 @@ export interface Loadable<T> {
   data: T | null;
   loading: boolean;
   error: Error | null;
+  /**
+   * True when the data came from the local cache without the server having
+   * confirmed it — typically while offline. Absence in such data proves
+   * nothing: a document can be missing simply because it was never cached.
+   */
+  fromCache?: boolean;
 }
 
 /** Live subscription to one document. */
@@ -71,6 +77,7 @@ export function useCollection<T>(
           data: snap.docs.map((d) => ({ ...d.data(), id: d.id })),
           loading: false,
           error: null,
+          fromCache: snap.metadata.fromCache,
         }),
       (error) => setState({ data: null, loading: false, error }),
     );

@@ -376,6 +376,7 @@ export const en = {
       noConnectionBefore: 'Keep serving — ',
       pendingTaps: { one: '{count} tap is', other: '{count} taps are' },
       noConnectionAfter: ' saved and will sync when you are back. Nobody new can join meanwhile.',
+      reconnecting: 'Looking for a connection…',
       catchingUpTitle: 'Catching up',
       catchingUpBody: 'Sending {count} saved from while you were offline.',
       allQueues: 'All queues',

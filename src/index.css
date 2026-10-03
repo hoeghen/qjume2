@@ -322,6 +322,7 @@ button.link.danger { color: var(--danger); }
   font-size: 1rem;
 }
 .status-banner strong { font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.status-banner > span.loading-row { margin-top: 6px; }
 .status-banner.status-paused,
 .status-banner.status-drainMode { background: var(--warn-bg); color: var(--warn-fg); }
 .status-banner.status-closed,
