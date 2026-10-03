@@ -8,7 +8,16 @@ import {
   stationsOf,
   waitingTickets,
 } from '../../lib/firestore/queries.js';
-import { callNext, messageOf, startServing, stopServing } from '../../lib/functions.js';
+import {
+  callNext,
+  claimStation,
+  messageOf,
+  reasonOf,
+  releaseStation,
+  startServing,
+  stopServing,
+} from '../../lib/functions.js';
+import { deviceId } from '../../lib/device.js';
 import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
@@ -63,6 +72,8 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   // Set by "Change station", so the picker asks rather than putting them
   // straight back on the only till there is.
   const [choosingAgain, setChoosingAgain] = useState(false);
+  // Why the picker is showing when nobody asked for it.
+  const [pickerNotice, setPickerNotice] = useState<string | null>(null);
 
   const offline = useOfflineServing(shopId, queueId, station?.id ?? null);
 
@@ -89,24 +100,65 @@ export function ServingScreen({ shopId }: { shopId: string }) {
 
   const myStation = stations?.find((s) => s.id === station?.id);
 
-  // The till this device remembered may have been deleted from another one
-  // since. Only the remembered one: a till just opened here can be missing
-  // from the list for a moment before its snapshot arrives.
+  // See the start-serving effect below; declared here because `tillGone`
+  // resets it too.
+  const startAttempted = useRef(false);
+
+  // Back to the picker, saying why, when this till no longer exists —
+  // deleted from another device. Clears the start guard so whichever till is
+  // picked next starts serving, the same as a deliberate switch.
+  const tillGone = useCallback(() => {
+    rememberStation(queueId, null);
+    startAttempted.current = false;
+    setError(null);
+    setPickerNotice(t('shop.serving.tillDeleted'));
+    setStation(null);
+  }, [queueId, t]);
+
+  // A till counts as gone once it has been missing from the live list after
+  // being in it — or, for one remembered from before this page loaded, after
+  // the first full list. A till just opened here can be missing for a moment
+  // before its snapshot arrives; that is not a deletion.
   const remembered = useRef(station?.id ?? null);
+  const seen = useRef<string | null>(null);
   useEffect(() => {
     if (stationsLoading || !stations || !station) return;
-    if (station.id !== remembered.current) return;
-    if (!stations.some((s) => s.id === station.id)) {
-      remembered.current = null;
-      rememberStation(queueId, null);
-      setStation(null);
+    if (stations.some((s) => s.id === station.id)) {
+      seen.current = station.id;
+      return;
     }
-  }, [stations, stationsLoading, station, queueId]);
+    if (seen.current === station.id || remembered.current === station.id) {
+      remembered.current = null;
+      seen.current = null;
+      tillGone();
+    }
+  }, [stations, stationsLoading, station, tillGone]);
+
+  // This device holds the till it stands at, so another device asks before
+  // deleting it. Claimed whenever the hold is not ours — after picking, after
+  // a reload, or after another device took it and let go.
+  const me = deviceId();
+  const claimed = useRef<string | null>(null);
+  const listed = stations?.find((s) => s.id === station?.id);
+  const holder = listed?.activeDeviceId ?? null;
+  useEffect(() => {
+    // Not before the till is in the list: missing means not arrived yet, or
+    // deleted, which the effect above deals with.
+    if (!station || !listed) return;
+    if (holder === me || claimed.current === station.id) return;
+    claimed.current = station.id;
+    void claimStation({ shopId, queueId, stationId: station.id, deviceId: me }).catch(
+      (e) => {
+        if (reasonOf(e) === 'station-not-found') tillGone();
+      },
+    );
+  }, [station, listed, holder, me, shopId, queueId, tillGone]);
   const iAmServing = myStation?.serving ?? false;
 
   const onPick = useCallback(
     (id: string, label: string) => {
       rememberStation(queueId, id);
+      setPickerNotice(null);
       setStation({ id, label });
     },
     [queueId],
@@ -121,16 +173,19 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   // immediately undo the stop. A failure surfaces through the existing
   // error banner and a reload (which remounts) is the retry, rather than a
   // dedicated button for a case that should be rare.
-  const startAttempted = useRef(false);
   useEffect(() => {
     if (!station || stationsLoading || startAttempted.current) return;
     startAttempted.current = true;
     if (iAmServing) return;
     void startServing({ shopId, queueId, stationId: station.id }).catch((e) => {
+      if (reasonOf(e) === 'station-not-found') {
+        tillGone();
+        return;
+      }
       setError(messageOf(e));
       startAttempted.current = false;
     });
-  }, [station, stationsLoading, iAmServing, shopId, queueId]);
+  }, [station, stationsLoading, iAmServing, shopId, queueId, tillGone]);
 
   if (queue.loading) return <p className="panel">{t('common.loading')}</p>;
   if (!queue.data) return <p className="panel">{t('shop.serving.queueNotFound')}</p>;
@@ -154,7 +209,8 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         shopId={shopId}
         queueId={queueId}
         stationId={null}
-        autoPick={!choosingAgain}
+        autoPick={!choosingAgain && !pickerNotice}
+        notice={pickerNotice}
         onPick={onPick}
       />
     );
@@ -182,7 +238,8 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           ...(outcome === 'noShow' ? { outcome } : {}),
         });
       } catch (e) {
-        setError(messageOf(e));
+        if (reasonOf(e) === 'station-not-found') tillGone();
+        else setError(messageOf(e));
       } finally {
         setBusy(false);
       }
@@ -237,6 +294,12 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       // Best-effort: the abandoned-queue sweep catches a till left serving.
       await stopServing({ shopId, queueId, stationId: station.id }).catch(() => {});
     }
+    // Let go of the till, so deleting it needs no "delete anyway?".
+    await releaseStation({ shopId, queueId, stationId: station.id, deviceId: me }).catch(
+      () => {},
+    );
+    claimed.current = null;
+    seen.current = null;
     setServingBusy(false);
     setConfirmSwitch(false);
     startAttempted.current = false;

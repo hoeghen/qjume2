@@ -17,7 +17,7 @@ const now = Date.now();
 describe('sweepAbandonedQueues', () => {
   it('takes an open queue offline once it has been quiet past the threshold', async () => {
     const fx = await seedQueue({}, { status: 'open', lastServedAt: now - 5 * HOUR });
-    const stationId = await seedStation(fx, 'Till 1', { serving: true });
+    const stationId = await seedStation(fx, 'Till 1', { serving: true, activeDeviceId: 'pc' });
 
     await performSweepAbandonedQueues(testDb, now);
 
@@ -25,6 +25,7 @@ describe('sweepAbandonedQueues', () => {
     // Cleared so a returning device shows "Start serving", not a stale toggle.
     expect((await getStation(fx, stationId)).serving).toBe(false);
     expect((await getQueue(fx)).servingStations).toBe(0);
+    expect((await getStation(fx, stationId)).activeDeviceId).toBeNull();
   });
 
   it('leaves a recently active queue alone', async () => {

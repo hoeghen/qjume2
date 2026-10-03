@@ -365,8 +365,21 @@ serving and has nobody at it, confirmed inline. `deleteStation` checks the
 same in a transaction and refuses with `station-in-use`; staff may delete as
 well as the owner, the same people who open tills. A new unnamed till takes
 the lowest free number (`nextTillNumber`), not the count, or deleting Till 2
-of three would make the next one a second "Till 3". A device whose
-remembered till was deleted elsewhere drops back to the picker.
+of three would make the next one a second "Till 3".
+
+**A till is held by a device, not a person** (`Station.activeDeviceId`,
+`src/lib/device.ts`): one owner signed in on a PC and a phone is one
+`activeStaffUid` but two devices. The serve screen claims its till for this
+device; claiming lets go of any other till the device held in that queue,
+"Skift kasse" releases it (`releaseStation`), and the abandoned-queue sweep
+clears holds. Deleting a till another device holds is refused with
+`station-held` unless the caller passes `force` — the picker asks "{name} er
+åben på en anden enhed. Slet alligevel?" — because a device that was simply
+closed keeps its hold, and a till must never become undeletable. A serve
+screen whose till disappears from the live list (once seen there, or
+remembered from before the page loaded), or whose call comes back
+`station-not-found`, drops to the picker with "Kassen blev slettet fra en
+anden enhed".
 
 **A customer being served belongs to the till, not to the person behind
 it** (`station.currentTicketId`). So "Change station" asks "Done with
@@ -410,7 +423,8 @@ spec is in `docs/design-system.md`. Things that are easy to undo by accident:
   JavaScript even after a new worker takes over. So it checks every time the
   app returns to the front, and reloads once a new version controls it —
   at once, unless an input is focused or a dialog is open, else when the app
-  is next put away. Without this, a deployed fix could take days to reach a
+  is next put away. A screen that is never put away (the counter PC, the
+  monitor) also checks every 30 minutes. Without this, a deployed fix could take days to reach a
   shop's phone.
 - **Fonts are self-hosted**, not linked from Google. A linked font costs a
   round-trip before first paint and renders nothing offline — wrong for a PWA

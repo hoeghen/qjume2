@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useCollection } from '../../../lib/hooks/useFirestore.js';
 import { stationsOf } from '../../../lib/firestore/queries.js';
 import { claimStation, deleteStation, messageOf } from '../../../lib/functions.js';
+import { deviceId } from '../../../lib/device.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 import { tillLabel } from '../../../lib/tills.js';
 
@@ -11,6 +12,8 @@ interface Props {
   stationId: string | null;
   /** Take the only open station without asking. Off after "Change station". */
   autoPick?: boolean;
+  /** Why the picker is showing, when nobody asked for it. */
+  notice?: string | null;
   onPick: (stationId: string, label: string) => void;
 }
 
@@ -26,6 +29,7 @@ export function StationPicker({
   queueId,
   stationId,
   autoPick = true,
+  notice = null,
   onPick,
 }: Props) {
   const { t, locale } = useT();
@@ -56,6 +60,7 @@ export function StationPicker({
       const result = await claimStation({
         shopId,
         queueId,
+        deviceId: deviceId(),
         ...(existingId ? { stationId: existingId } : {}),
       });
       onPick(result.stationId, result.label);
@@ -66,11 +71,11 @@ export function StationPicker({
     }
   }
 
-  async function remove(id: string) {
+  async function remove(id: string, force: boolean) {
     setBusy(true);
     setError(null);
     try {
-      await deleteStation({ shopId, queueId, stationId: id });
+      await deleteStation({ shopId, queueId, stationId: id, deviceId: deviceId(), force });
       setConfirmDelete(null);
     } catch (e) {
       setError(messageOf(e));
@@ -82,18 +87,39 @@ export function StationPicker({
   return (
     <main className="panel">
       <h1>{t('shop.stationPicker.title')}</h1>
+      {notice && (
+        <p className="notice" role="status">
+          {notice}
+        </p>
+      )}
 
       <div className="stack">
         {stations?.map((s) => {
           const name = tillLabel(s.label, locale);
           // Only a till nobody is using can go; the server checks it again.
           const deletable = !s.serving && !s.currentTicketId;
+          // Open on another device: still deletable — a closed device keeps
+          // its hold, and a till must never get stuck — but only once someone
+          // has read that it is, since that device then loses its till.
+          const heldElsewhere = Boolean(s.activeDeviceId) && s.activeDeviceId !== deviceId();
           if (confirmDelete === s.id) {
             return (
               <div key={s.id} className="till-row till-confirm" role="group">
-                <span>{t('shop.stationPicker.confirmDelete', { name })}</span>
-                <button type="button" className="danger" disabled={busy} onClick={() => void remove(s.id)}>
-                  {t('shop.stationPicker.delete')}
+                <span>
+                  {t(
+                    heldElsewhere
+                      ? 'shop.stationPicker.confirmDeleteHeld'
+                      : 'shop.stationPicker.confirmDelete',
+                    { name },
+                  )}
+                </span>
+                <button
+                  type="button"
+                  className="danger"
+                  disabled={busy}
+                  onClick={() => void remove(s.id, heldElsewhere)}
+                >
+                  {t(heldElsewhere ? 'shop.stationPicker.deleteAnyway' : 'shop.stationPicker.delete')}
                 </button>
                 <button type="button" className="secondary" disabled={busy} onClick={() => setConfirmDelete(null)}>
                   {t('common.cancel')}

@@ -373,6 +373,7 @@ export const da: DeepPartial<typeof en> = {
       close: 'Luk',
       showQr: 'Vis QR',
       changeStation: 'Skift kasse',
+      tillDeleted: 'Kassen blev slettet fra en anden enhed — vælg en kasse.',
     },
 
     switchStation: {
@@ -389,6 +390,8 @@ export const da: DeepPartial<typeof en> = {
       delete: 'Slet',
       deleteNamed: 'Slet {name}',
       confirmDelete: 'Slet {name}?',
+      confirmDeleteHeld: '{name} er åben på en anden enhed. Slet alligevel?',
+      deleteAnyway: 'Slet alligevel',
     },
 
     walkIn: {

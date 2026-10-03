@@ -10,6 +10,10 @@ export interface DeleteStationRequest {
   shopId: string;
   queueId: string;
   stationId: string;
+  /** The deleting device; a till it holds itself is not "held elsewhere". */
+  deviceId?: string;
+  /** Delete even though another device has the till open. */
+  force?: boolean;
 }
 
 /**
@@ -21,6 +25,13 @@ export interface DeleteStationRequest {
  * (`currentTicketId`), and deleting it under them would leave them "being
  * served" somewhere that no longer exists. Inside a transaction, so a "Start
  * serving" or a "Next" landing at the same moment wins rather than racing.
+ *
+ * A till another device has open (`activeDeviceId`) is refused unless the
+ * caller says `force`: that device would otherwise be left pointing at a till
+ * that no longer exists. The UI asks "delete anyway?" rather than making it
+ * impossible, because a device that was simply closed keeps its hold, and a
+ * till must never become undeletable. The other device drops back to its
+ * till picker when its till vanishes (ServingScreen.tsx).
  *
  * Open to staff as well as the owner — the same people who open tills.
  */
@@ -49,6 +60,14 @@ export async function performDeleteStation(
         'failed-precondition',
         'station-in-use',
         'This till is in use. Finish its customer and stop serving first.',
+      );
+    }
+    const holder = station.activeDeviceId ?? null;
+    if (holder && holder !== (input.deviceId || null) && !input.force) {
+      throw fail(
+        'failed-precondition',
+        'station-held',
+        'This till is open on another device.',
       );
     }
     tx.delete(ref);
