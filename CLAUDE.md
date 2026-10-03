@@ -379,7 +379,10 @@ closed keeps its hold, and a till must never become undeletable. A serve
 screen whose till disappears from the live list (once seen there, or
 remembered from before the page loaded), or whose call comes back
 `station-not-found`, drops to the picker with "Kassen blev slettet fra en
-anden enhed".
+anden enhed". Only a server-confirmed list counts: offline, a list served from the
+cache (`Loadable.fromCache`) can lack a till that exists, and treating that
+as a deletion threw the counter out of its till the moment the connection
+dropped.
 
 **Shop settings live at `/shop/settings`** (owner only): the shop's name,
 its staff and "Slet butik". Staff are added with a name and an email, and

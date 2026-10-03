@@ -18,6 +18,7 @@ import {
   stopServing,
 } from '../../lib/functions.js';
 import { deviceId } from '../../lib/device.js';
+import { Spinner } from '../../components/Spinner.js';
 import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
@@ -87,7 +88,11 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     `${shopId}/${queueId}/serving`,
   );
 
-  const { data: stations, loading: stationsLoading } = useCollection(
+  const {
+    data: stations,
+    loading: stationsLoading,
+    fromCache: stationsFromCache,
+  } = useCollection(
     stationsOf(shopId, queueId),
     `${shopId}/${queueId}/serving-stations`,
   );
@@ -127,12 +132,16 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       seen.current = station.id;
       return;
     }
+    // Only the server can say a till is gone. Offline, a list served from the
+    // cache can be missing a till that exists — taking that for a deletion
+    // threw the counter out of its till the moment the connection dropped.
+    if (stationsFromCache) return;
     if (seen.current === station.id || remembered.current === station.id) {
       remembered.current = null;
       seen.current = null;
       tillGone();
     }
-  }, [stations, stationsLoading, station, tillGone]);
+  }, [stations, stationsLoading, stationsFromCache, station, tillGone]);
 
   // This device holds the till it stands at, so another device asks before
   // deleting it. Claimed whenever the hold is not ours — after picking, after
@@ -318,11 +327,18 @@ export function ServingScreen({ shopId }: { shopId: string }) {
             {tn(offline.pending, 'shop.serving.pendingTaps')}
             {t('shop.serving.noConnectionAfter')}
           </span>
+          {/* The connection is retried on its own the whole time; without
+              this the banner looks the same whether it is trying or stuck. */}
+          <span className="loading-row">
+            <Spinner /> {t('shop.serving.reconnecting')}
+          </span>
         </div>
       )}
       {offline.online && offline.pending > 0 && (
         <div className="status-banner status-paused" role="status">
-          <strong>{t('shop.serving.catchingUpTitle')}</strong>
+          <strong className="loading-row">
+            <Spinner /> {t('shop.serving.catchingUpTitle')}
+          </strong>
           <span>{t('shop.serving.catchingUpBody', { count: offline.pending })}</span>
         </div>
       )}

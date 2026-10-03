@@ -372,6 +372,7 @@ export const da: DeepPartial<typeof en> = {
       noConnectionBefore: 'Bliv ved med at betjene — ',
       pendingTaps: { one: '{count} tryk er', other: '{count} tryk er' },
       noConnectionAfter: ' gemt og synkroniseres, når du er tilbage. Ingen nye kan tilslutte sig i mellemtiden.',
+      reconnecting: 'Søger efter forbindelse…',
       catchingUpTitle: 'Indhenter',
       catchingUpBody: 'Sender {count} gemt fra dengang du var offline.',
       allQueues: 'Alle køer',
