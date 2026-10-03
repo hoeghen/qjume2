@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCollection } from '../../../lib/hooks/useFirestore.js';
 import { stationsOf } from '../../../lib/firestore/queries.js';
-import { claimStation, messageOf } from '../../../lib/functions.js';
+import { claimStation, deleteStation, messageOf } from '../../../lib/functions.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 import { tillLabel } from '../../../lib/tills.js';
 
@@ -35,6 +35,7 @@ export function StationPicker({
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   // Exactly one already open: take it rather than making staff choose from a
   // list of one. `busy` guards against re-firing while a claim is in flight.
@@ -65,16 +66,60 @@ export function StationPicker({
     }
   }
 
+  async function remove(id: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteStation({ shopId, queueId, stationId: id });
+      setConfirmDelete(null);
+    } catch (e) {
+      setError(messageOf(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="panel">
       <h1>{t('shop.stationPicker.title')}</h1>
 
       <div className="stack">
-        {stations?.map((s) => (
-          <button key={s.id} type="button" disabled={busy} onClick={() => void claim(s.id)}>
-            {tillLabel(s.label, locale)}
-          </button>
-        ))}
+        {stations?.map((s) => {
+          const name = tillLabel(s.label, locale);
+          // Only a till nobody is using can go; the server checks it again.
+          const deletable = !s.serving && !s.currentTicketId;
+          if (confirmDelete === s.id) {
+            return (
+              <div key={s.id} className="till-row till-confirm" role="group">
+                <span>{t('shop.stationPicker.confirmDelete', { name })}</span>
+                <button type="button" className="danger" disabled={busy} onClick={() => void remove(s.id)}>
+                  {t('shop.stationPicker.delete')}
+                </button>
+                <button type="button" className="secondary" disabled={busy} onClick={() => setConfirmDelete(null)}>
+                  {t('common.cancel')}
+                </button>
+              </div>
+            );
+          }
+          return (
+            <div key={s.id} className="till-row">
+              <button type="button" disabled={busy} onClick={() => void claim(s.id)}>
+                {name}
+              </button>
+              {deletable && (
+                <button
+                  type="button"
+                  className="link"
+                  disabled={busy}
+                  aria-label={t('shop.stationPicker.deleteNamed', { name })}
+                  onClick={() => setConfirmDelete(s.id)}
+                >
+                  {t('shop.stationPicker.delete')}
+                </button>
+              )}
+            </div>
+          );
+        })}
         <button
           type="button"
           className="secondary"

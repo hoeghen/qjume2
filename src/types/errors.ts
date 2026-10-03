@@ -8,6 +8,8 @@ export type QueueErrorReason =
   | 'shop-not-found'
   | 'ticket-not-found'
   | 'station-not-found'
+  /** A till that is serving or has a customer cannot be deleted. */
+  | 'station-in-use'
   | 'queue-not-accepting'
   | 'queue-full'
   | 'free-services-used-up'

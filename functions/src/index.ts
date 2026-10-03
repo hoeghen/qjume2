@@ -28,6 +28,7 @@ export { deleteQueue } from './shop/deleteQueue.js';
 export { deleteShop } from './shop/deleteShop.js';
 export { renameShop } from './shop/renameShop.js';
 export { claimStation } from './shop/claimStation.js';
+export { deleteStation } from './shop/deleteStation.js';
 export { startServing } from './shop/startServing.js';
 export { stopServing } from './shop/stopServing.js';
 export { closeQueue } from './shop/closeQueue.js';

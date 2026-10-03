@@ -383,6 +383,9 @@ export const da: DeepPartial<typeof en> = {
       title: 'Hvilken kasse betjener du fra?',
       openFirst: 'Åbn en kasse',
       openAnother: 'Åbn en ny kasse',
+      delete: 'Slet',
+      deleteNamed: 'Slet {name}',
+      confirmDelete: 'Slet {name}?',
     },
 
     walkIn: {
