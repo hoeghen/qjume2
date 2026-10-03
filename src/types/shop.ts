@@ -46,3 +46,19 @@ export interface Shop {
   /** Customers marked served, ever — counted by `callNext`. Server-owned. */
   servicesUsed?: number;
 }
+
+/**
+ * Who owns a shop, by email, for the platform admin — at
+ * `shopOwners/{shopId}`, beside the shop rather than on it.
+ *
+ * Not a field on `Shop`, because a shop document is public: customers read
+ * it to find the shop, so an email there would be readable by anyone who
+ * looked. This one is readable only by the owner and a platform admin, and
+ * the rules let the owner write nothing but their own signed-in email.
+ * Written by the owner's own app on opening the shop pages, so shops that
+ * predate it fill in on their own and a changed email follows along.
+ */
+export interface ShopOwner {
+  uid: string;
+  email: string;
+}

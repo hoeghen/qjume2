@@ -38,6 +38,9 @@ export async function applyShopDelete(
   authorize(shop);
 
   await firestore.recursiveDelete(shopRef);
+  // Top-level, so the recursive delete does not reach it; an owner's email
+  // must not outlive their shop.
+  await firestore.doc(`shopOwners/${shopId}`).delete();
 
   return { before: shop };
 }

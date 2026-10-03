@@ -175,6 +175,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Who owns a shop, by email, for the platform admin. Beside the shop, not
+    // on it, because a shop document is public. The owner may write only
+    // their own uid and signed-in email — nobody else's address can be
+    // planted here — and only the owner and a platform admin can read it.
+    match /shopOwners/{shopId} {
+      allow read: if isPlatformAdmin() || isShopOwner(shopId);
+      allow create, update: if isShopOwner(shopId)
+        && request.resource.data.keys().hasOnly(['uid', 'email'])
+        && request.resource.data.uid == request.auth.uid
+        && request.auth.token.email != null
+        && request.resource.data.email == request.auth.token.email;
+      allow delete: if false;
+    }
+
     // Reverse index: which shop a uid is staff at, one per person. Exists
     // because Firestore cannot authorize a collection-group `list` query on
     // shops/*/staff by a resource.data match (confirmed against the

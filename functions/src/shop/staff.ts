@@ -10,6 +10,32 @@ import type { StaffMember, StaffMembership } from '../../../src/types/index.js';
 export interface AddStaffRequest {
   shopId: string;
   email: string;
+  /** What the owner calls them, for the staff list. */
+  name?: string;
+}
+
+const STAFF_NAME_MAX = 40;
+
+/**
+ * The account for this email, made if there is none yet.
+ *
+ * It used to have to exist already ("ask them to sign in once first"), which
+ * made adding someone a two-visit errand. Creating it here costs nothing: the
+ * email sign-in link they then use signs them into this same account, since
+ * Firebase matches it by email.
+ */
+async function accountFor(email: string, name: string | null): Promise<string | null> {
+  const auth = getAuth();
+  try {
+    return (await auth.getUserByEmail(email)).uid;
+  } catch (error) {
+    if ((error as { code?: string }).code !== 'auth/user-not-found') return null;
+  }
+  const created = await auth.createUser({
+    email,
+    ...(name ? { displayName: name } : {}),
+  });
+  return created.uid;
 }
 
 export interface RemoveStaffRequest {
@@ -25,31 +51,24 @@ export async function performAddStaff(
   firestore: Firestore,
   callerUid: string,
   input: AddStaffRequest,
-  lookupUid: (email: string) => Promise<string | null> = async (email) => {
-    try {
-      return (await getAuth().getUserByEmail(email)).uid;
-    } catch {
-      return null;
-    }
-  },
+  /** Overridden by tests, which have no Auth emulator behind them. */
+  lookupUid: (email: string, name: string | null) => Promise<string | null> = accountFor,
 ): Promise<{ uid: string }> {
   const { shopId } = input;
   const email = input.email?.trim().toLowerCase();
+  const name = input.name?.trim().slice(0, STAFF_NAME_MAX) || null;
   if (!shopId || !email) {
     throw fail('invalid-argument', 'shop-not-found', 'shopId and email are required.');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw fail('invalid-argument', 'not-shop-staff', 'That is not an email address.');
   }
 
   const shop = await requireOwnerAccess(firestore, shopId, callerUid);
 
-  const uid = await lookupUid(email);
+  const uid = await lookupUid(email, name);
   if (!uid) {
-    // They must have signed in once before they can be given access; there is
-    // no account to attach the permission to otherwise.
-    throw fail(
-      'not-found',
-      'not-shop-staff',
-      'No Qjume account with that email. Ask them to sign in once first.',
-    );
+    throw fail('not-found', 'not-shop-staff', 'Could not find or create an account for that email.');
   }
   if (uid === shop.ownerUid) {
     throw fail(
@@ -61,6 +80,7 @@ export async function performAddStaff(
 
   const member: StaffMember = {
     email,
+    name,
     addedAt: Date.now(),
     addedBy: callerUid,
   };

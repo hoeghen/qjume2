@@ -9,6 +9,7 @@ import { ShopIndex } from './routes/shop/ShopIndex.js';
 import { QueueFormRoute } from './routes/shop/QueueFormRoute.js';
 import { ServingRoute } from './routes/shop/ServingRoute.js';
 import { Billing } from './routes/shop/Billing.js';
+import { ShopSettings } from './routes/shop/ShopSettings.js';
 import { MonitorHome } from './routes/monitor/MonitorHome.js';
 import { Terms } from './routes/legal/Terms.js';
 import { Intro } from './routes/Intro.js';
@@ -46,6 +47,7 @@ const ROUTE_CHILDREN = [
     children: [
       { index: true, element: <ShopIndex /> },
       { path: 'billing', element: <Billing /> },
+      { path: 'settings', element: <ShopSettings /> },
       { path: 'q/new', element: <QueueFormRoute /> },
       { path: 'q/:queueId/settings', element: <QueueFormRoute /> },
       { path: 'q/:queueId/serve', element: <ServingRoute /> },

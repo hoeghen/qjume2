@@ -596,3 +596,40 @@ describe('staff memberships', () => {
     );
   });
 });
+
+// An owner's email sits beside the shop, not on it, because a shop document
+// is public. Only the owner and a platform admin read it, and the owner can
+// write nothing but their own signed-in address.
+describe('shop owner emails', () => {
+  const OWNER_DOC = 'shopOwners/shop1';
+  const ownerDb = () =>
+    env.authenticatedContext(OWNER, { email: 'owner@example.com' }).firestore();
+
+  it('lets the owner record their own email', async () => {
+    await assertSucceeds(
+      setDoc(doc(ownerDb(), OWNER_DOC), { uid: OWNER, email: 'owner@example.com' }),
+    );
+  });
+
+  it('refuses an email that is not the owner’s own', async () => {
+    await assertFails(
+      setDoc(doc(ownerDb(), OWNER_DOC), { uid: OWNER, email: 'someone@else.com' }),
+    );
+  });
+
+  it('refuses anyone but the owner writing it', async () => {
+    const db = env.authenticatedContext(OTHER, { email: 'other@example.com' }).firestore();
+    await assertFails(setDoc(doc(db, OWNER_DOC), { uid: OTHER, email: 'other@example.com' }));
+  });
+
+  it('is readable by the owner and a platform admin, and nobody else', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), OWNER_DOC), { uid: OWNER, email: 'owner@example.com' });
+    });
+    await assertSucceeds(getDoc(doc(ownerDb(), OWNER_DOC)));
+    const admin = env.authenticatedContext('admin-uid', { platformAdmin: true }).firestore();
+    await assertSucceeds(getDoc(doc(admin, OWNER_DOC)));
+    await assertFails(getDoc(doc(env.authenticatedContext(OTHER).firestore(), OWNER_DOC)));
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), OWNER_DOC)));
+  });
+});

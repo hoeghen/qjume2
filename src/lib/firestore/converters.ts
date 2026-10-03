@@ -8,6 +8,7 @@ import type {
   Customer,
   Queue,
   Shop,
+  ShopOwner,
   StaffMember,
   StaffMembership,
   Station,
@@ -32,5 +33,6 @@ export const ticketConverter = converterFor<Ticket>();
 export const stationConverter = converterFor<Station>();
 export const customerConverter = converterFor<Customer>();
 export const staffConverter = converterFor<StaffMember>();
+export const shopOwnerConverter = converterFor<ShopOwner>();
 export const staffMembershipConverter = converterFor<StaffMembership>();
 export const auditEntryConverter = converterFor<AdminAuditEntry>();

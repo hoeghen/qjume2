@@ -31,6 +31,30 @@ describe('addStaff', () => {
     expect((membershipSnap.data() as StaffMembership).shopId).toBe(shopId);
   });
 
+  it('stores the name the owner typed, and hands it to account creation', async () => {
+    const shopId = await seedShop();
+    let seen: [string, string | null] | null = null;
+    await performAddStaff(
+      testDb,
+      OWNER_UID,
+      { shopId, email: ' Marta@Example.com ', name: '  Marta  ' },
+      async (email, name) => {
+        seen = [email, name];
+        return 'staff-uid';
+      },
+    );
+    expect(seen).toEqual(['marta@example.com', 'Marta']);
+    const member = (await testDb.doc(`shops/${shopId}/staff/staff-uid`).get()).data();
+    expect(member).toMatchObject({ name: 'Marta', email: 'marta@example.com' });
+  });
+
+  it('refuses something that is not an email address', async () => {
+    const shopId = await seedShop();
+    await expect(
+      performAddStaff(testDb, OWNER_UID, { shopId, email: 'marta' }, lookupUid('staff-uid')),
+    ).rejects.toMatchObject({ code: 'invalid-argument' });
+  });
+
   it('works for a free-plan shop — the free plan is the whole app', async () => {
     const shopId = await seedShop('free');
     await expect(
@@ -55,7 +79,7 @@ describe('addStaff', () => {
     ).rejects.toThrow(/shop owner/i);
   });
 
-  it('rejects an email with no matching account', async () => {
+  it('reports it when no account can be found or made for the email', async () => {
     const shopId = await seedShop();
     await expect(
       performAddStaff(
@@ -64,7 +88,7 @@ describe('addStaff', () => {
         { shopId, email: 'nobody@example.com' },
         lookupUid(null),
       ),
-    ).rejects.toThrow(/sign in once/i);
+    ).rejects.toThrow(/could not find or create an account/i);
   });
 
   it('moves the reverse index when added somewhere new', async () => {

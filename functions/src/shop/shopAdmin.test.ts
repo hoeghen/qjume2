@@ -642,6 +642,7 @@ describe('deleteQueue', () => {
 describe('deleteShop', () => {
   it('removes the shop, its queues and everyone waiting in them', async () => {
     const fx = await seedQueue();
+    await testDb.doc(`shopOwners/${fx.shopId}`).set({ uid: OWNER_UID, email: 'o@example.com' });
     await performJoinQueue(
       testDb,
       { uid: 'customer-1', isAnonymous: true },
@@ -656,6 +657,8 @@ describe('deleteShop', () => {
       .doc(`shops/${fx.shopId}/queues/${fx.queueId}`)
       .get();
     expect(queueSnap.exists).toBe(false);
+    // Top-level, so the recursive delete would not reach it on its own.
+    expect((await testDb.doc(`shopOwners/${fx.shopId}`).get()).exists).toBe(false);
   });
 
   it('rejects a non-owner', async () => {

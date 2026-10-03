@@ -9,7 +9,16 @@ import { useT } from '../../../lib/i18n/LanguageContext.js';
  * onto every queue for discovery, and only the function changes them all
  * at once. The heading itself updates from the shop doc when it lands.
  */
-export function RenameShop({ shopId, shopName }: { shopId: string; shopName: string }) {
+export function RenameShop({
+  shopId,
+  shopName,
+  heading: Heading = 'h1',
+}: {
+  shopId: string;
+  shopName: string;
+  /** The level the name is shown at; a section of a page uses h2. */
+  heading?: 'h1' | 'h2';
+}) {
   const { t } = useT();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(shopName);
@@ -19,7 +28,7 @@ export function RenameShop({ shopId, shopName }: { shopId: string; shopName: str
   if (!editing) {
     return (
       <div className="rename-shop">
-        <h1>{shopName}</h1>
+        <Heading>{shopName}</Heading>
         <button
           type="button"
           className="link"

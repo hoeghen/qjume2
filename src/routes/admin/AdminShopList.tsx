@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCollection } from '../../lib/hooks/useFirestore.js';
 import { allShops } from '../../lib/firestore/queries.js';
+import { shopOwners } from '../../lib/firestore/paths.js';
 import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import {
@@ -28,6 +29,9 @@ import {
 export function AdminShopList() {
   const { t, tn } = useT();
   const { data: shops, loading } = useCollection(allShops(), 'admin/shops');
+  // Owner emails live beside the shops, not on them (see ShopOwner).
+  const { data: owners } = useCollection(shopOwners(), 'admin/shopOwners');
+  const ownerEmails = new Map(owners?.map((o) => [o.id, o.email]) ?? []);
   const [filters, setFilters] = useState<AdminShopFilterState>(
     ADMIN_FILTER_DEFAULTS,
   );
@@ -35,7 +39,13 @@ export function AdminShopList() {
 
   const needle = filters.search.trim().toLowerCase();
   const filtered = shops?.filter((s) => {
-    if (needle && !s.name.toLowerCase().includes(needle)) return false;
+    if (
+      needle &&
+      !s.name.toLowerCase().includes(needle) &&
+      !(ownerEmails.get(s.id) ?? '').toLowerCase().includes(needle)
+    ) {
+      return false;
+    }
     if (filters.plan !== 'all' && s.plan !== filters.plan) return false;
     if (filters.status === 'active' && s.suspended) return false;
     if (filters.status === 'suspended' && !s.suspended) return false;
@@ -109,7 +119,7 @@ export function AdminShopList() {
               {s.suspended && (
                 <span className="badge status-closed">{t('admin.shopList.suspended')}</span>
               )}
-              <p className="muted">{t('admin.shopList.owner', { uid: s.ownerUid })}</p>
+              <p className="muted">{t('admin.shopList.owner', { who: ownerEmails.get(s.id) ?? s.ownerUid })}</p>
               <p className="muted">
                 {s.plan === 'paid'
                   ? t('admin.shopList.servedPaid', { used: servicesUsed(s) })

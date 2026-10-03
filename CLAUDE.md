@@ -381,6 +381,21 @@ remembered from before the page loaded), or whose call comes back
 `station-not-found`, drops to the picker with "Kassen blev slettet fra en
 anden enhed".
 
+**Shop settings live at `/shop/settings`** (owner only): the shop's name,
+its staff and "Slet butik". Staff are added with a name and an email, and
+`addStaff` creates the Firebase account if there is none, so the email
+sign-in link works for them straight away — no "sign in once first". The
+billing page is about payment only. The queue list shows each queue's tills
+("2 kasser · 1 åben", "Ingen kasser endnu"), open meaning serving now.
+
+**The owner's email is kept beside the shop, not on it**:
+`shopOwners/{shopId}` (`ShopOwner`), because a shop document is publicly
+readable and an email there would be readable by anyone. Only the owner and
+a platform admin can read it; the rules let the owner write only their own
+uid and token email. The owner's own app writes it on opening the shop pages
+(so old shops fill in and a changed email follows), deleting the shop deletes
+it, and the admin pages show it in place of the uid.
+
 **A customer being served belongs to the till, not to the person behind
 it** (`station.currentTicketId`). So "Change station" asks "Done with
 {name}?" first and finishes them with `callNext({ finishOnly: true })` —

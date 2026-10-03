@@ -1,4 +1,4 @@
-export type { Plan, Shop, ShopProfile } from './shop.js';
+export type { Plan, Shop, ShopOwner, ShopProfile } from './shop.js';
 export type {
   NoShowPenalty,
   Queue,
