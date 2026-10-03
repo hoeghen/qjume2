@@ -55,7 +55,11 @@ export async function performClaimTicket(
   const wanted = hashResumeCode(queueId, code);
 
   // The hash lives on each ticket's private document, so the lookup is a
-  // collection group query scoped to this queue's tickets.
+  // collection group query scoped to this queue's tickets. It needs the
+  // collection-group index on `private.resumeCodeHash` in
+  // firestore.indexes.json: without it production refuses the query outright
+  // (FAILED_PRECONDITION), and the emulator, which needs no indexes, never
+  // notices — that is how every code failed for weeks with tests green.
   const matches = await firestore
     .collectionGroup('private')
     .where('resumeCodeHash', '==', wanted)

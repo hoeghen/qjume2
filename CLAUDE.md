@@ -428,6 +428,16 @@ Practical consequence: a meaningful share of iOS customers will never grant push
 in-app live position view and email fallback are load-bearing, not nice-to-haves. Do not
 build a flow that assumes push works.
 
+## Emulator blind spot: indexes
+
+The emulator needs no indexes, so a query that production refuses for want of
+one passes every test. Every resume code failed in production for weeks that
+way (`claimTicket`'s collection-group lookup on `private.resumeCodeHash`).
+Any new `collectionGroup` query, or a compound one, gets its index in
+`firestore.indexes.json` in the same change, and after deploying, the Cloud
+Functions logs are the place to look for `FAILED_PRECONDITION ... requires
+an index`.
+
 ## Conventions
 
 - **Always push and deploy.** Finished work is committed, pushed, opened as a PR and
