@@ -7,6 +7,7 @@ import { JoinQr } from '../../components/JoinQr.js';
 import { counterJoinUrl } from '../../lib/url.js';
 import { formatWaitCompact } from '../../lib/format.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
+import { tillLabel } from '../../lib/tills.js';
 import type { QueueStatus } from '../../types/index.js';
 
 const UPCOMING = 5;
@@ -40,7 +41,7 @@ const CLOSED_TO_JOINERS_KEYS: Partial<Record<QueueStatus, string>> = {
  * screen that puts you in the line.
  */
 export function MonitorHome() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [params] = useSearchParams();
   const shopId = params.get('shop') ?? '';
   const queueId = params.get('queue') ?? '';
@@ -76,11 +77,13 @@ export function MonitorHome() {
   if (queue.loading) return <p>{t('common.loading')}</p>;
   if (!queue.data) return <p>{t('monitor.notFound')}</p>;
 
-  const labelOf = (stationId: string | null) =>
-    stations?.find((s) => s.id === stationId)?.label ?? '';
-  // One counter needs no name — "Till 1" only tells you something when there
-  // is a Till 2 to tell it apart from.
+  // One counter needs no name — "Kasse 1" only tells you something when
+  // there is a Kasse 2 to tell it apart from. With several, every till gets a
+  // tile, staffed or not, so the room can see where to go and which are shut.
   const manyTills = (stations?.length ?? 1) > 1;
+  const tills = [...(stations ?? [])]
+    .map((s) => ({ ...s, name: tillLabel(s.label, locale) }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale, { numeric: true }));
 
   const status = queue.data.status;
   const scannable = SCANNABLE.includes(status);
@@ -101,13 +104,31 @@ export function MonitorHome() {
       <div className="monitor-split">
         <div className="monitor-live">
           <section>
-            <h2>{t('monitor.nowServing')}</h2>
-            {serving && serving.length > 0 ? (
+            <h2>{t(manyTills ? 'monitor.tills' : 'monitor.nowServing')}</h2>
+            {manyTills ? (
+              <ul className="pairings monitor-pairings monitor-tills">
+                {tills.map((till) => {
+                  // Whoever is at the till wins over its flag: staff can stop
+                  // serving with a customer still in front of them.
+                  const here = serving?.find((ticket) => ticket.station === till.id);
+                  const state = here ? 'busy' : till.serving ? 'ready' : 'closed';
+                  return (
+                    <li key={till.id} className={`till-${state}`}>
+                      <span>{till.name}</span>
+                      <strong>
+                        {here
+                          ? here.displayName
+                          : t(till.serving ? 'monitor.tillReady' : 'monitor.tillClosed')}
+                      </strong>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : serving && serving.length > 0 ? (
               <ul className="pairings monitor-pairings">
                 {serving.map((ticket) => (
                   <li key={ticket.id}>
                     <strong>{ticket.displayName}</strong>
-                    {manyTills && <span>{labelOf(ticket.station)}</span>}
                   </li>
                 ))}
               </ul>

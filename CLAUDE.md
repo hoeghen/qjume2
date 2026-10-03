@@ -350,6 +350,15 @@ queue has a single station — a name only tells you something when there is
 another one to tell it apart from — and `ticket.station` is an **id**, so
 anything showing it to a person must look up the label.
 
+**A till is "kasse" in Danish and "till" in English — never "station" on
+screen** (the code still says `Station`). An unnamed till is stored as
+"Till N"; every reader sees it through `tillLabel` (`src/lib/tills.ts`), so
+it reads "Kasse N" in Danish — staff, the monitor, the called customer and
+their notification alike — while a name the shop typed is shown as is. With
+several tills the serve screen names the one you stand at, and the monitor
+shows a tile per till: who is being served there, "Klar", or "Lukket". The
+in-shop screen is called **Monitor** in both languages.
+
 **A customer being served belongs to the till, not to the person behind
 it** (`station.currentTicketId`). So "Change station" asks "Done with
 {name}?" first and finishes them with `callNext({ finishOnly: true })` —

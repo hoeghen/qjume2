@@ -2,6 +2,7 @@ import type { Firestore } from 'firebase-admin/firestore';
 import { notifyTicket, type DispatchTarget } from './dispatch.js';
 import { messagesFor, queueUrl } from './messages.js';
 import type { Channels } from './channels.js';
+import { tillLabel as localTillLabel } from '../../../src/lib/tills.js';
 
 /**
  * The notices that are not about time passing: something happened to a
@@ -50,7 +51,11 @@ export async function notifyCalled(
     firestore,
     target,
     (locale) => ({
-      ...messagesFor(locale).turn(displayName, shopName, tillLabel),
+      ...messagesFor(locale).turn(
+        displayName,
+        shopName,
+        tillLabel === null ? null : localTillLabel(tillLabel, locale),
+      ),
       url: queueUrl(baseUrl, target, locale),
       urgent: true,
     }),
