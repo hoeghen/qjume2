@@ -359,6 +359,15 @@ several tills the serve screen names the one you stand at, and the monitor
 shows a tile per till: who is being served there, "Klar", or "Lukket". The
 in-shop screen is called **Monitor** in both languages.
 
+**Tills are deleted from the picker** ("Hvilken kasse betjener du fra?", so
+reached through "Skift kasse"): a quiet "Slet" beside each till that is not
+serving and has nobody at it, confirmed inline. `deleteStation` checks the
+same in a transaction and refuses with `station-in-use`; staff may delete as
+well as the owner, the same people who open tills. A new unnamed till takes
+the lowest free number (`nextTillNumber`), not the count, or deleting Till 2
+of three would make the next one a second "Till 3". A device whose
+remembered till was deleted elsewhere drops back to the picker.
+
 **A customer being served belongs to the till, not to the person behind
 it** (`station.currentTicketId`). So "Change station" asks "Done with
 {name}?" first and finishes them with `callNext({ finishOnly: true })` —

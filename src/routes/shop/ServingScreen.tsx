@@ -88,6 +88,20 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   };
 
   const myStation = stations?.find((s) => s.id === station?.id);
+
+  // The till this device remembered may have been deleted from another one
+  // since. Only the remembered one: a till just opened here can be missing
+  // from the list for a moment before its snapshot arrives.
+  const remembered = useRef(station?.id ?? null);
+  useEffect(() => {
+    if (stationsLoading || !stations || !station) return;
+    if (station.id !== remembered.current) return;
+    if (!stations.some((s) => s.id === station.id)) {
+      remembered.current = null;
+      rememberStation(queueId, null);
+      setStation(null);
+    }
+  }, [stations, stationsLoading, station, queueId]);
   const iAmServing = myStation?.serving ?? false;
 
   const onPick = useCallback(

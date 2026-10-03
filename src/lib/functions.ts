@@ -175,6 +175,11 @@ export const claimStation = callable<
   { stationId: string; label: string }
 >('claimStation');
 
+export const deleteStation = callable<
+  { shopId: string; queueId: string; stationId: string },
+  void
+>('deleteStation');
+
 export const startServing = callable<
   { shopId: string; queueId: string; stationId: string },
   void

@@ -387,6 +387,9 @@ export const en = {
       title: 'Which till are you serving from?',
       openFirst: 'Open a till',
       openAnother: 'Open another till',
+      delete: 'Delete',
+      deleteNamed: 'Delete {name}',
+      confirmDelete: 'Delete {name}?',
     },
 
     walkIn: {

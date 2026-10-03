@@ -374,6 +374,10 @@ button.link.danger { color: var(--danger); }
   font-size: 0.8rem;
 }
 .called-name { margin: 4px 0; font-size: 2.25rem; font-weight: 700; line-height: 1.15; }
+/* A till on the picker, with its quiet delete beside it. */
+.till-row { display: flex; align-items: center; gap: 12px; }
+.till-row > button:first-child { flex: 1; }
+.till-confirm > span { flex: 1; font-weight: 600; }
 .serving-till { color: var(--orange-on-dark); font-weight: 700; }
 .called-station { margin: 0; color: var(--muted); font-size: 1.1rem; }
 

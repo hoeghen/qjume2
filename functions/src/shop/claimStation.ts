@@ -8,6 +8,7 @@ import {
   type Shop,
   type Station,
 } from '../../../src/types/index.js';
+import { nextTillNumber } from '../../../src/lib/tills.js';
 
 export interface ClaimStationRequest {
   shopId: string;
@@ -67,7 +68,10 @@ export async function performClaimStation(
 
     const existing = await tx.get(stationsRef);
 
-    const label = input.label?.trim() || `Till ${existing.size + 1}`;
+    // Stored in English and worded per reader by `tillLabel`.
+    const label =
+      input.label?.trim() ||
+      `Till ${nextTillNumber(existing.docs.map((d) => (d.data() as Station).label))}`;
     const ref = stationsRef.doc();
     const station: Station = {
       label,

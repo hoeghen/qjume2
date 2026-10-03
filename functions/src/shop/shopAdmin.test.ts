@@ -4,6 +4,7 @@ import { performUpdateQueue } from './updateQueue.js';
 import { performDeleteQueue } from './deleteQueue.js';
 import { performDeleteShop } from './deleteShop.js';
 import { performClaimStation } from './claimStation.js';
+import { performDeleteStation } from './deleteStation.js';
 import { performCloseQueue } from './closeQueue.js';
 import { performAddWalkIn } from '../queue/addWalkIn.js';
 import { performRelinkTicket } from '../queue/relinkTicket.js';
@@ -15,6 +16,7 @@ import {
   getQueue,
   makeShop,
   seedQueue,
+  seedStation,
   testDb,
   ticketContact,
   waitingOrder,
@@ -132,6 +134,53 @@ describe('createQueue', () => {
         name: '   ',
       }),
     ).rejects.toThrow(/name is required/i);
+  });
+});
+
+const ids = (fx: Fixture) => ({ shopId: fx.shopId, queueId: fx.queueId });
+const stationPath = (fx: Fixture, id: string) =>
+  `shops/${fx.shopId}/queues/${fx.queueId}/stations/${id}`;
+
+describe('deleteStation', () => {
+  it('deletes a till nobody is using', async () => {
+    const fx = await seedQueue();
+    const id = await seedStation(fx, 'Till 2', { serving: false });
+
+    await performDeleteStation(testDb, OWNER_UID, { ...ids(fx), stationId: id });
+
+    expect((await testDb.doc(stationPath(fx, id)).get()).exists).toBe(false);
+  });
+
+  it('refuses a till that is serving or has a customer', async () => {
+    const fx = await seedQueue();
+    const serving = await seedStation(fx, 'Till 1', { serving: true });
+    const busy = await seedStation(fx, 'Till 2', { serving: false, currentTicketId: 'someone' });
+
+    for (const stationId of [serving, busy]) {
+      await expect(
+        performDeleteStation(testDb, OWNER_UID, { ...ids(fx), stationId }),
+      ).rejects.toMatchObject({ code: 'failed-precondition' });
+      expect((await testDb.doc(stationPath(fx, stationId)).get()).exists).toBe(true);
+    }
+  });
+
+  it('refuses someone with no serving access', async () => {
+    const fx = await seedQueue();
+    const id = await seedStation(fx, 'Till 2');
+    await expect(
+      performDeleteStation(testDb, 'a-stranger', { ...ids(fx), stationId: id }),
+    ).rejects.toThrow(/not serving this shop/i);
+  });
+
+  it('numbers the next till after the gap a deletion left', async () => {
+    const fx = await seedQueue();
+    await seedStation(fx, 'Till 1');
+    const second = await seedStation(fx, 'Till 2');
+    await seedStation(fx, 'Till 3');
+    await performDeleteStation(testDb, OWNER_UID, { ...ids(fx), stationId: second });
+
+    const opened = await performClaimStation(testDb, OWNER_UID, ids(fx));
+    expect(opened.label).toBe('Till 2');
   });
 });
 
