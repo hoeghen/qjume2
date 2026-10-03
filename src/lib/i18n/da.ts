@@ -220,7 +220,7 @@ export const da: DeepPartial<typeof en> = {
   },
 
   monitor: {
-    helpTitle: 'Skærm i butikken',
+    helpTitle: 'Monitor i butikken',
     helpBefore: 'Åbn denne med en kø, for eksempel ',
     helpAfter: '. Knappen "Vis QR" på betjeningsskærmen har id’erne.',
     notFound: 'Køen blev ikke fundet.',
@@ -230,6 +230,9 @@ export const da: DeepPartial<typeof en> = {
     nobodyServed: 'Der bliver ikke betjent nogen lige nu.',
     comingUp: 'På vej',
     nobodyWaiting: 'Ingen venter.',
+    tills: 'Kasser',
+    tillReady: 'Klar',
+    tillClosed: 'Lukket',
     scanToJoin: 'Scan for at tilslutte dig',
     scanHint: 'Ret kameraet mod koden. Du beholder din plads på din egen telefon, og vi fortæller dig, når du er tæt på.',
   },
@@ -290,7 +293,7 @@ export const da: DeepPartial<typeof en> = {
       waitingAddress: '{count} venter · {address}',
       serve: 'Betjen',
       settings: 'Indstillinger',
-      monitor: 'Skærm',
+      monitor: 'Monitor',
       newQueue: 'Ny kø',
     },
 
@@ -366,27 +369,27 @@ export const da: DeepPartial<typeof en> = {
       openQueue: 'Åbn kø',
       close: 'Luk',
       showQr: 'Vis QR',
-      changeStation: 'Skift station',
+      changeStation: 'Skift kasse',
     },
 
     switchStation: {
       title: 'Færdig med {name}?',
-      body: 'Kunden er stadig i gang ved denne station. Afslut, før du skifter, så de ikke bliver hængende.',
+      body: 'Kunden er stadig i gang ved denne kasse. Afslut, før du skifter, så de ikke bliver hængende.',
       done: 'Færdig',
       cancel: 'Fortryd',
     },
 
     stationPicker: {
-      title: 'Hvilken station betjener du fra?',
-      openFirst: 'Åbn en station',
-      openAnother: 'Åbn en anden station',
+      title: 'Hvilken kasse betjener du fra?',
+      openFirst: 'Åbn en kasse',
+      openAnother: 'Åbn en ny kasse',
     },
 
     walkIn: {
       dialogLabel: 'Tilføj fremmødt',
       ticketNumber: 'Billet {number}',
       giveBefore: 'Giv ',
-      giveAfter: ' dette nummer, og bed dem holde øje med skærmen.',
+      giveAfter: ' dette nummer, og bed dem holde øje med monitoren.',
       hintBefore: 'Har de alligevel en telefon, kan denne kode gøre krav på billetten: ',
       done: 'Færdig',
       nameLabel: 'Navn de skal kaldes ved',
@@ -533,7 +536,7 @@ export const da: DeepPartial<typeof en> = {
       queuesHeading: { one: '{count} kø', other: '{count} køer' },
       waitingAddress: '{count} venter · {address}',
       edit: 'Rediger',
-      monitor: 'Skærm',
+      monitor: 'Monitor',
     },
 
     auditLog: {
@@ -578,7 +581,7 @@ export const da: DeepPartial<typeof en> = {
       s4Body: 'En Butik, der findes at gøre noget af ovenstående, kan blive suspenderet eller fjernet fra søgning, og i alvorlige tilfælde fjernet fra Tjenesten helt, efter vores skøn.',
 
       s5Heading: '5. Indhold, du angiver',
-      s5BodyBefore: 'Du er ansvarlig for det, du indtaster — en Butiks navn, adresse, beskrivelse og kødetaljer; en kundes visningsnavn. Du bevarer ejerskabet af det; ved at angive det giver du os lov til at gemme og vise det, som nødvendigt for at drive Tjenesten (en køs detaljer til kunder, der opdager den; en kundes valgte navn til den Butik, der betjener dem, og til en skærm i den Butik, jf. vores ',
+      s5BodyBefore: 'Du er ansvarlig for det, du indtaster — en Butiks navn, adresse, beskrivelse og kødetaljer; en kundes visningsnavn. Du bevarer ejerskabet af det; ved at angive det giver du os lov til at gemme og vise det, som nødvendigt for at drive Tjenesten (en køs detaljer til kunder, der opdager den; en kundes valgte navn til den Butik, der betjener dem, og til en monitor i den Butik, jf. vores ',
       s5PrivacyLink: 'privatlivspolitik',
       s5BodyAfter: ').',
 
@@ -622,7 +625,7 @@ export const da: DeepPartial<typeof en> = {
 
       s2Heading: '2. Hvorfor vi bruger det, og på hvilket grundlag',
       s2Item1: 'At drive den kø, du tilsluttede dig, og fortælle dig, når det er din tur — nødvendigt for at levere den tjeneste, du bad om.',
-      s2Item2: 'At lade en Butiks personale kalde en ventende kunde ved navn, og lade en kunde tælle sin egen plads — samme nødvendighed, og det er grunden til, at en kundes valgte navn (ikke deres kontaktoplysninger) er synligt for Butikkens personale og for skærmen i butikken.',
+      s2Item2: 'At lade en Butiks personale kalde en ventende kunde ved navn, og lade en kunde tælle sin egen plads — samme nødvendighed, og det er grunden til, at en kundes valgte navn (ikke deres kontaktoplysninger) er synligt for Butikkens personale og for monitoren i butikken.',
       s2Item3: 'At fakturere en Butiks betalte abonnement — nødvendigt for at opfylde den kontrakt.',
       s2Item4: 'At overholde vores egne juridiske forpligtelser, såsom at føre optegnelser, som skattelovgivningen kræver.',
 

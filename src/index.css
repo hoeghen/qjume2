@@ -374,6 +374,7 @@ button.link.danger { color: var(--danger); }
   font-size: 0.8rem;
 }
 .called-name { margin: 4px 0; font-size: 2.25rem; font-weight: 700; line-height: 1.15; }
+.serving-till { color: var(--orange-on-dark); font-weight: 700; }
 .called-station { margin: 0; color: var(--muted); font-size: 1.1rem; }
 
 .serve-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
@@ -934,6 +935,12 @@ button.link.danger { color: var(--danger); }
   text-transform: uppercase;
   color: var(--orange-on-dark);
 }
+/* One tile per till when there are several: the till's name is where to go,
+   so it is read from across the room too, not a caption. */
+.monitor .monitor-tills li span { font-size: clamp(13px, 1.5vw, 17px); }
+.monitor .monitor-tills li.till-ready strong { opacity: 0.75; font-weight: 500; }
+.monitor .monitor-tills li.till-closed { opacity: 0.45; }
+.monitor .monitor-tills li.till-closed strong { font-weight: 500; }
 .monitor .monitor-upcoming { display: flex; flex-direction: column; gap: 6px; list-style: none; padding: 0; }
 .monitor .monitor-upcoming li { font-size: 14.5px; font-weight: 600; }
 

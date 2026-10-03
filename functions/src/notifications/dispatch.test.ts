@@ -466,6 +466,22 @@ describe('the language a notification is written in', () => {
     expect((await ticketContact(fx, second.ticketId)).locale).toBe('en');
   });
 
+  it('calls an automatically named till a kasse in Danish, and keeps a chosen name', async () => {
+    const fx = await seedQueue();
+    await join(fx, 1, 'one@example.com', 'da');
+    await join(fx, 2, 'two@example.com', 'da');
+    const second = await seedStation(fx, 'Till 2');
+    const counter = await seedStation(fx, 'Skranke');
+
+    await call(fx, second);
+    await call(fx, counter);
+
+    const turn = (to: string) =>
+      sent.find((n) => n.to === to && n.title === 'Det er din tur')?.body;
+    expect(turn('one@example.com')).toBe('Customer 1, gå til Kasse 2 hos Test Shop.');
+    expect(turn('two@example.com')).toBe('Customer 2, gå til Skranke hos Test Shop.');
+  });
+
   it('writes the position alerts in Danish too, estimate and all', async () => {
     const fx = await seedQueue({}, { avgServiceTimeSeconds: 300 });
     for (let n = 1; n <= 5; n++) await join(fx, n, `c${n}@example.com`, 'da');

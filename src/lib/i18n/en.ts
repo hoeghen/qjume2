@@ -233,6 +233,9 @@ export const en = {
     nobodyServed: 'Nobody is being served right now.',
     comingUp: 'Coming up',
     nobodyWaiting: 'Nobody waiting.',
+    tills: 'Tills',
+    tillReady: 'Ready',
+    tillClosed: 'Closed',
     scanToJoin: 'Scan to join',
     scanHint: 'Point your camera at the code. You keep your place on your own phone and we tell you when you are near the front.',
   },
@@ -370,27 +373,27 @@ export const en = {
       openQueue: 'Open queue',
       close: 'Close',
       showQr: 'Show QR',
-      changeStation: 'Change station',
+      changeStation: 'Change till',
     },
 
     switchStation: {
       title: 'Done with {name}?',
-      body: "They're still being served at this station. Finish before you switch, so they aren't left hanging.",
+      body: "They're still being served at this till. Finish before you switch, so they aren't left hanging.",
       done: 'Done',
       cancel: 'Cancel',
     },
 
     stationPicker: {
-      title: 'Which station are you serving from?',
-      openFirst: 'Open a station',
-      openAnother: 'Open another station',
+      title: 'Which till are you serving from?',
+      openFirst: 'Open a till',
+      openAnother: 'Open another till',
     },
 
     walkIn: {
       dialogLabel: 'Add a walk-in',
       ticketNumber: 'Ticket {number}',
       giveBefore: 'Give ',
-      giveAfter: ' this number, and tell them to watch the screen.',
+      giveAfter: ' this number, and tell them to watch the monitor.',
       hintBefore: 'If they do have a phone after all, this code claims the ticket: ',
       done: 'Done',
       nameLabel: 'Name to call them by',

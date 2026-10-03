@@ -12,6 +12,7 @@ import { callNext, messageOf, startServing, stopServing } from '../../lib/functi
 import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
+import { tillLabel } from '../../lib/tills.js';
 import { PauseBanner } from './components/PauseBanner.js';
 import { StationPicker } from './components/StationPicker.js';
 import { UpcomingList } from './components/UpcomingList.js';
@@ -43,7 +44,7 @@ function recallStation(queueId: string): string | null {
 }
 
 export function ServingScreen({ shopId }: { shopId: string }) {
-  const { t, tn } = useT();
+  const { t, tn, locale } = useT();
   const { queueId = '' } = useParams();
   const [station, setStation] = useState<{ id: string; label: string } | null>(
     () => {
@@ -81,8 +82,10 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   );
   // With one counter there is nothing to distinguish, so naming it is noise.
   const manyTills = (stations?.length ?? 1) > 1;
-  const tillName = (id: string | null) =>
-    stations?.find((s) => s.id === id)?.label ?? '';
+  const tillName = (id: string | null) => {
+    const label = stations?.find((s) => s.id === id)?.label;
+    return label === undefined ? '' : tillLabel(label, locale);
+  };
 
   const myStation = stations?.find((s) => s.id === station?.id);
   const iAmServing = myStation?.serving ?? false;
@@ -266,7 +269,14 @@ export function ServingScreen({ shopId }: { shopId: string }) {
         <div>
           <h1>{q.name || q.shopName}</h1>
           <p className="muted">
-            {(manyTills && station.label) || t('shop.serving.servingLabel')} ·{' '}
+            {/* Looked up, not taken from `station.label`: a till recalled
+                after a reload has only its id. */}
+            {manyTills ? (
+              <strong className="serving-till">{tillName(station.id)}</strong>
+            ) : (
+              t('shop.serving.servingLabel')
+            )}{' '}
+            ·{' '}
             {t('shop.serving.waitingCount', { count: waitingNow })}
           </p>
         </div>
@@ -280,7 +290,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           <>
             <p className="label">{t('shop.serving.nowServing')}</p>
             <p className="called-name">{currentName}</p>
-            {manyTills && <p className="called-station">{station.label}</p>}
+            {manyTills && <p className="called-station">{tillName(station.id)}</p>}
           </>
         ) : (
           <p className="called-name muted">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { estimatedWaitSeconds } from '../../lib/queue/waitTime.js';
+import { tillLabel } from '../../lib/tills.js';
 import { ticketDoc } from '../../lib/firestore/paths.js';
 import { ticketsAhead } from '../../lib/firestore/queries.js';
 import { leaveQueue, messageOf } from '../../lib/functions.js';
@@ -63,10 +64,11 @@ export function TicketView({
   }
 
   const ticketData = ticket.data;
-  const tillName =
+  const tillStation =
     stations.length > 1 && ticketData.station
-      ? (stations.find((s) => s.id === ticketData.station)?.label ?? null)
-      : null;
+      ? stations.find((s) => s.id === ticketData.station)
+      : undefined;
+  const tillName = tillStation ? tillLabel(tillStation.label, locale) : null;
 
   if (ticketData.state === 'serving') {
     return (

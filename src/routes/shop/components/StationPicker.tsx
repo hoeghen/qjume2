@@ -3,6 +3,7 @@ import { useCollection } from '../../../lib/hooks/useFirestore.js';
 import { stationsOf } from '../../../lib/firestore/queries.js';
 import { claimStation, messageOf } from '../../../lib/functions.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
+import { tillLabel } from '../../../lib/tills.js';
 
 interface Props {
   shopId: string;
@@ -27,7 +28,7 @@ export function StationPicker({
   autoPick = true,
   onPick,
 }: Props) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const { data: stations } = useCollection(
     stationsOf(shopId, queueId),
     `${shopId}/${queueId}/stations`,
@@ -71,7 +72,7 @@ export function StationPicker({
       <div className="stack">
         {stations?.map((s) => (
           <button key={s.id} type="button" disabled={busy} onClick={() => void claim(s.id)}>
-            {s.label}
+            {tillLabel(s.label, locale)}
           </button>
         ))}
         <button
