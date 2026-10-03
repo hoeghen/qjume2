@@ -475,6 +475,9 @@ an index`.
 - **Always push and deploy.** Finished work is committed, pushed, opened as a PR and
   merged to `main`, which is what deploys it (`deploy-firebase.yml`). Do not stop at a
   pushed branch and wait to be asked.
+- **Say when it is live, not when it is merged.** After merging, wait for that
+  commit's `Deploy to Firebase` run to finish and tell the user it is live (or
+  that it failed, and why). "Merged, deploy started" is not done.
 - TypeScript strict mode on.
 - Shared types for Firestore documents in `src/types/`, imported by both the app and
   functions — the two must not drift.
