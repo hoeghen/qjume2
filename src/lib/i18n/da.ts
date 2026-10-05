@@ -385,6 +385,8 @@ export const da: DeepPartial<typeof en> = {
       serviceTimeLearned: 'Betjeningstid {time}, lært af {count} kunder',
       serviceTimeSet: 'Betjeningstid {time} (din indstilling)',
       joinWait: 'ny kunde venter: {wait}',
+      resetServiceTime: 'Nulstil',
+      resetServiceTimeTitle: 'Glem den lærte tid og brug din indstilling igen',
       waitingCount: '{count} venter',
       nowServing: 'Betjener nu',
       readyForNext: 'Klar til næste kunde',
@@ -424,11 +426,6 @@ export const da: DeepPartial<typeof en> = {
 
     walkIn: {
       dialogLabel: 'Tilføj fremmødt',
-      ticketNumber: 'Billet {number}',
-      giveBefore: 'Giv ',
-      giveAfter: ' dette nummer, og bed dem holde øje med monitoren.',
-      hintBefore: 'Har de alligevel en telefon, kan denne kode gøre krav på billetten: ',
-      done: 'Færdig',
       nameLabel: 'Navn de skal kaldes ved',
       addToQueue: 'Tilføj til kø',
     },

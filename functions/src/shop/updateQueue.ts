@@ -140,6 +140,15 @@ async function applyQueueUpdate(
       description: input.description?.trim() || null,
     };
 
+    // A new service time from the owner is a fresh starting point: forget
+    // what was learned, or the learned figure would go on overriding it
+    // (CLAUDE.md decision 18). Re-saving the same figure leaves it alone.
+    const before = fresh.data() as Queue;
+    if (before.avgServiceTimeSeconds !== avgServiceTimeSeconds) {
+      update['observedServiceTimeSeconds'] = null;
+      update['servedSampleCount'] = 0;
+    }
+
     if (needsGeocode) {
       // A failed lookup clears the coordinates rather than leaving the old
       // ones behind, so the queue drops out of distance results instead of

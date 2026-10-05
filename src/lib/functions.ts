@@ -195,6 +195,11 @@ export const stopServing = callable<
   void
 >('stopServing');
 
+export const resetServiceTime = callable<
+  { shopId: string; queueId: string },
+  void
+>('resetServiceTime');
+
 export const closeQueue = callable<
   { shopId: string; queueId: string; mode: 'drain' | 'hard' },
   { clearedCount: number }

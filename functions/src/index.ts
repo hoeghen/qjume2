@@ -32,6 +32,7 @@ export { deleteStation } from './shop/deleteStation.js';
 export { releaseStation } from './shop/releaseStation.js';
 export { startServing } from './shop/startServing.js';
 export { stopServing } from './shop/stopServing.js';
+export { resetServiceTime } from './shop/resetServiceTime.js';
 export { closeQueue } from './shop/closeQueue.js';
 export { addStaff, removeStaff } from './shop/staff.js';
 export { suggestAddresses } from './geocoding/suggest.js';
