@@ -85,7 +85,6 @@ export const en = {
   },
 
   discovery: {
-    eyebrow: '[ CUSTOMER MODE ]',
     nearby: '{count} nearby',
     noCount: '—',
     titleLight: 'Find a queue.',
