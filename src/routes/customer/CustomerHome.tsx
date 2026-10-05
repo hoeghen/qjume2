@@ -43,6 +43,9 @@ const NEAREST = 20;
  */
 const WORKING_SET = 100;
 
+/** How often the Find list re-reads queues, so counts and waits stay current. */
+const REFRESH_MS = 30_000;
+
 /**
  * How many filters are narrowing the results.
  *
@@ -86,10 +89,30 @@ export function CustomerHome() {
   // by name, the same "cut by count, never by distance" cap as the nearby
   // search. Only fires once the browser has actually settled on a refusal,
   // not while it is still `locating` — a real position might still arrive.
+  // The search is a one-off read, not a listener — geohash ranges cannot be
+  // subscribed to cheaply — so it is re-run every 30 seconds and whenever the
+  // page comes back to the front. Without that, a queue's waiting count and
+  // wait stayed at whatever they were when the page opened.
+  const [refreshTick, setRefreshTick] = useState(0);
   useEffect(() => {
+    const bump = () => {
+      if (document.visibilityState === 'visible') setRefreshTick((n) => n + 1);
+    };
+    const timer = window.setInterval(bump, REFRESH_MS);
+    document.addEventListener('visibilitychange', bump);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', bump);
+    };
+  }, []);
+
+  useEffect(() => {
+    // A refresh replaces the list quietly; only the first load shows the
+    // loading state, or the list would blink every 30 seconds.
+    const quiet = refreshTick > 0;
     if (coords) {
       let cancelled = false;
-      setLoading(true);
+      if (!quiet) setLoading(true);
       setError(null);
       findNearest(coords, WORKING_SET)
         .then((found) => {
@@ -108,7 +131,7 @@ export function CustomerHome() {
 
     if (!noLocationPossible) return;
     let cancelled = false;
-    setLoading(true);
+    if (!quiet) setLoading(true);
     setError(null);
     findAllByName(WORKING_SET)
       .then((found) => {
@@ -123,7 +146,7 @@ export function CustomerHome() {
     return () => {
       cancelled = true;
     };
-  }, [coords, noLocationPossible]);
+  }, [coords, noLocationPossible, refreshTick]);
 
   // The list is always in distance order. Name is the fallback for when the
   // browser has actually refused or cannot answer — without a position there
