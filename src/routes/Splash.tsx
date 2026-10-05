@@ -87,8 +87,8 @@ export function Splash() {
       </div>
 
       {/* For the one platform admin, who would otherwise have to type the
-          URL. Deliberately the faintest thing on the page: everyone else
-          should look straight past it, and /admin refuses them anyway. */}
+          URL. Small, in the viewport's bottom-right corner; /admin refuses
+          everyone else anyway. */}
       <LocalizedLink className="splash-admin" to="/admin">
         {t('splash.admin')}
       </LocalizedLink>

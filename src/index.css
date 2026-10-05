@@ -1187,15 +1187,18 @@ button.link.danger { color: var(--danger); }
 .free-services.notice p { margin: 0 0 6px; }
 .free-services.notice .link { color: var(--warn-fg); font-weight: 700; }
 
-/* The faintest thing on the splash: a way in for the platform admin that
-   everyone else should look straight past. */
+/* A way in for the platform admin: pinned to the viewport's bottom-right
+   corner, clear of the page's own content, inside the safe-area insets.
+   Orange-on-dark, the orange that reads on the ink page. */
 .splash-admin {
-  font-size: 11px;
-  color: var(--on-dark-faint);
-  opacity: 0.6;
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right));
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  font-size: 12px;
+  color: var(--orange-on-dark);
   text-decoration: none;
 }
-.splash-admin:hover, .splash-admin:focus-visible { opacity: 1; }
+.splash-admin:hover, .splash-admin:focus-visible { text-decoration: underline; }
 
 /* "I am a business" with no shop yet: two ways forward, side by side when
    there is room. */
