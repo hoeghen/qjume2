@@ -75,7 +75,6 @@ export function JoinQueue({
         value={name}
         onChange={(e) => setName(e.target.value)}
         autoComplete="given-name"
-        autoFocus
         required
       />
 
@@ -89,7 +88,10 @@ export function JoinQueue({
       />
 
       <div className="row">
-        <button type="submit" disabled={busy}>
+        {/* Focus on the button, not the name field: the name and email are
+            usually remembered from last time, so joining is one tap, and a
+            focused field would open the phone's keyboard over the form. */}
+        <button type="submit" disabled={busy} autoFocus>
           {busy ? t('joinQueue.joining') : t('joinQueue.join')}
         </button>
         <button type="button" className="secondary" onClick={onCancel}>
