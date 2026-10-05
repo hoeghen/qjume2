@@ -508,6 +508,9 @@ export function ServingScreen({ shopId }: { shopId: string }) {
           queueId={queueId}
           waiting={upcoming}
           online={offline.online}
+          waitSeconds={(ahead) =>
+            estimatedWaitSeconds(ahead, q, staffedTills(stations))
+          }
         />
       </section>
 

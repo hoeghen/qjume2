@@ -6,6 +6,7 @@ import {
 } from '../../../lib/functions.js';
 import { ticketContactDoc } from '../../../lib/firestore/index.js';
 import { useDoc } from '../../../lib/hooks/useFirestore.js';
+import { formatWaitCompact } from '../../../lib/format.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 import type { Ticket } from '../../../types/index.js';
 
@@ -17,9 +18,21 @@ interface Props {
   waiting: WaitingTicket[];
   /** Both actions call a Cloud Function, so neither works offline. */
   online: boolean;
+  /**
+   * The estimate for someone with this many people ahead — the same figure
+   * that customer's own ticket shows them. Staff only; the monitor does not
+   * use this list.
+   */
+  waitSeconds: (peopleAhead: number) => number;
 }
 
-export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
+export function UpcomingList({
+  shopId,
+  queueId,
+  waiting,
+  online,
+  waitSeconds,
+}: Props) {
   const { t } = useT();
   const [error, setError] = useState<string | null>(null);
   const [relinked, setRelinked] = useState<{ name: string; code: string } | null>(
@@ -47,6 +60,10 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
             <span className="place">{i + 1}</span>
             <span className="name">{ticket.displayName}</span>
             <ResumeCode shopId={shopId} queueId={queueId} ticketId={ticket.id} />
+            {/* Row i has i people ahead of it, as the customer counts it. */}
+            <span className="muted upcoming-wait" title={t('shop.upcomingList.waitTitle')}>
+              {formatWaitCompact(waitSeconds(i), t)}
+            </span>
             {ticket.noShowCount > 0 && (
               <span
                 className="strikes"
