@@ -85,3 +85,19 @@ jobs:
             --only firestore:rules,firestore:indexes,database,functions,hosting \
             --non-interactive \
             --force
+
+      - name: Keep build images from piling up
+        # Every functions deploy leaves a container image per function in
+        # Artifact Registry (gcf-artifacts), billed for storage until deleted.
+        # firebase-tools' own post-deploy cleanup ("Unhandled error cleaning
+        # up build images") fails on every run, so a cleanup policy does it
+        # instead: Artifact Registry deletes images older than a day on its
+        # own. Idempotent — re-setting the same policy each deploy is a no-op,
+        # and it keeps the policy in place if anyone removes it by hand.
+        # Region matches where the functions run (us-central1, the default).
+        run: |
+          npx firebase-tools functions:artifacts:setpolicy \
+            --project "${{ vars.FIREBASE_PROJECT_ID }}" \
+            --location us-central1 \
+            --days 1 \
+            --force
