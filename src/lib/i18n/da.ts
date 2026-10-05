@@ -142,10 +142,8 @@ export const da: DeepPartial<typeof en> = {
   },
 
   joinQueue: {
-    nameLabel: 'Hvad skal vi kalde dig?',
-    nameHint: 'Personalet kalder dette navn op, så et fornavn er rigeligt.',
-    emailLabel: 'E-mail (valgfrit)',
-    emailHint: 'Så vi kan nå dig, hvis notifikationer ikke virker på din telefon.',
+    nameLabel: 'Kaldenavn',
+    emailLabel: 'Email til statusbeskeder (valgfrit)',
     joining: 'Tilslutter…',
     join: 'Tilslut dig køen',
   },

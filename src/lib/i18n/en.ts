@@ -145,10 +145,8 @@ export const en = {
   },
 
   joinQueue: {
-    nameLabel: 'What should we call you?',
-    nameHint: 'Staff will call this out, so a first name is plenty.',
-    emailLabel: 'Email (optional)',
-    emailHint: 'So we can reach you if notifications do not work on your phone.',
+    nameLabel: 'Nickname',
+    emailLabel: 'Email for status updates (optional)',
     joining: 'Joining…',
     join: 'Join the queue',
   },
