@@ -623,6 +623,9 @@ button.link.danger { color: var(--danger); }
 }
 .stat-value { display: block; font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
 .stat-label { display: block; color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+.stats.compact { margin: 12px 0; }
+.stats.compact > div { padding: 10px 12px; }
+.stats.compact .stat-value { font-size: 1.25rem; }
 
 .detail { margin: 16px 0; }
 .detail dt {

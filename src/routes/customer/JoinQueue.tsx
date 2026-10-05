@@ -78,7 +78,6 @@ export function JoinQueue({
         autoFocus
         required
       />
-      <p className="hint">{t('joinQueue.nameHint')}</p>
 
       <label htmlFor="join-email">{t('joinQueue.emailLabel')}</label>
       <input
@@ -88,7 +87,6 @@ export function JoinQueue({
         onChange={(e) => setEmail(e.target.value)}
         autoComplete="email"
       />
-      <p className="hint">{t('joinQueue.emailHint')}</p>
 
       <div className="row">
         <button type="submit" disabled={busy}>

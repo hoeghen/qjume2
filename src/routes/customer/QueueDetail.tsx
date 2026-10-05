@@ -92,7 +92,8 @@ export function QueueDetail() {
           queue-level figures. Showing both invites the reader to compare two
           numbers that answer different questions. */}
       {!ticketId && (
-        <section className="stats">
+        // Compact while joining, so the form and its button fit on a phone.
+        <section className={joining ? 'stats compact' : 'stats'}>
           <div>
             <span className="stat-value">{q.waitingCount}</span>
             <span className="stat-label">
