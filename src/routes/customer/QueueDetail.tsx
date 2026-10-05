@@ -108,8 +108,11 @@ export function QueueDetail() {
 
       {/* In the queue, the place and the wait are the page: they come straight
           after the name, and the details someone needed for deciding where to
-          go — address, category, description — step aside. */}
-      {!ticketId && (
+          go — address, category, description — step aside. They step aside
+          while joining too: the decision is made, and the form and its button
+          should fit on a phone without scrolling (a QR scan opens straight
+          into it). */}
+      {!ticketId && !joining && (
         <>
           {q.description && <p>{q.description}</p>}
 
