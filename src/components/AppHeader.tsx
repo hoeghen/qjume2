@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo.js';
 import { detectLocaleFromPath, isLandingPath, withLocale } from '../lib/i18n/locale.js';
+import { useT } from '../lib/i18n/LanguageContext.js';
 
 /**
  * Each language's own name for itself. The switch shows the language you
@@ -38,10 +40,20 @@ export function AppHeader() {
     </Link>
   );
 
-  // The landing page carries the mark at full size already, so it gets the
-  // language switch alone — every page has a way into the other language.
+  // The landing page carries the mark at full size already, so it gets a
+  // quiet menu instead: the language switch and the platform admin's way in,
+  // kept out of the way of the two audiences the page is actually for.
   if (isLandingPath(pathname)) {
-    return <header className="app-header app-header-landing">{languageSwitch}</header>;
+    return (
+      <header className="app-header app-header-landing">
+        <LandingMenu>
+          {languageSwitch}
+          <Link className="landing-menu-item" to={withLocale('/admin', locale)}>
+            Admin
+          </Link>
+        </LandingMenu>
+      </header>
+    );
   }
 
   return (
@@ -52,5 +64,60 @@ export function AppHeader() {
       </Link>
       {languageSwitch}
     </header>
+  );
+}
+
+/**
+ * A muted three-line icon that opens a small menu. Closes on a second tap, a
+ * tap anywhere else, Escape, or following one of its links.
+ */
+function LandingMenu({ children }: { children: ReactNode }) {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const { pathname } = useLocation();
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="landing-menu" ref={root}>
+      <button
+        type="button"
+        className="landing-menu-button"
+        aria-label={t('splash.menu')}
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M4 7h16M4 12h16M4 17h16"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+      {open && (
+        <nav className="landing-menu-panel" onClick={() => setOpen(false)}>
+          {children}
+        </nav>
+      )}
+    </div>
   );
 }

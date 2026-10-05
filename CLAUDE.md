@@ -327,8 +327,9 @@ kept unedited.
     because it was the Danish prefix while English was the default and old
     links point at it. Build paths with `withLocale`/`stripLocale` in
     `src/lib/i18n/locale.ts`, never by hand. The language switch shows the
-    *other* language's own name, on every page including the landing page,
-    and keeps the query string (the monitor's `?shop=…&queue=…`).
+    *other* language's own name, on every page including the landing page
+    (there inside the quiet ☰ menu, beside the admin link — `LandingMenu` in
+    `AppHeader.tsx`), and keeps the query string (the monitor's `?shop=…&queue=…`).
     **Notifications follow the customer's language**: `TicketContact.locale`
     is set on joining and replaced when they turn notifications on (or the
     app re-registers after a language switch), and every notice and email is
