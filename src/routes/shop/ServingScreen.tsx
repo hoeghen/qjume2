@@ -23,6 +23,12 @@ import { useOfflineServing } from '../../lib/hooks/useOfflineServing.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { tillLabel } from '../../lib/tills.js';
+import { formatWait } from '../../lib/format.js';
+import {
+  estimatedWaitSeconds,
+  serviceTimeSeconds,
+  staffedTills,
+} from '../../lib/queue/waitTime.js';
 import { PauseBanner } from './components/PauseBanner.js';
 import { StationPicker } from './components/StationPicker.js';
 import { UpcomingList } from './components/UpcomingList.js';
@@ -414,6 +420,29 @@ export function ServingScreen({ shopId }: { shopId: string }) {
             ·{' '}
             {t('shop.serving.waitingCount', { count: waitingNow })}
           </p>
+          {/* The figures every wait estimate is built from, so staff can see
+              what customers are told and why (CLAUDE.md decision 18). The
+              join wait uses the same inputs as the queue page a joiner sees. */}
+          <p className="muted serving-estimate">
+            {t(
+              q.observedServiceTimeSeconds != null
+                ? 'shop.serving.serviceTimeLearned'
+                : 'shop.serving.serviceTimeSet',
+              {
+                time: formatServiceTime(serviceTimeSeconds(q)),
+                count: q.servedSampleCount,
+              },
+            )}{' '}
+            ·{' '}
+            {t('shop.serving.joinWait', {
+              wait: lowerFirst(
+                formatWait(
+                  estimatedWaitSeconds(q.waitingCount, q, staffedTills(stations)),
+                  t,
+                ),
+              ),
+            })}
+          </p>
         </div>
         <LocalizedLink to="/shop" className="link">
           {t('shop.serving.allQueues')}
@@ -585,4 +614,17 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       )}
     </main>
   );
+}
+
+/** "2 min 36 sek" — exact enough to check an estimate against by hand. */
+function formatServiceTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  if (m === 0) return `${s} s`;
+  return s === 0 ? `${m} min` : `${m} min ${s} s`;
+}
+
+/** formatWait reads as a sentence on its own; here it follows a colon. */
+function lowerFirst(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1);
 }
