@@ -340,6 +340,13 @@ kept unedited.
     `src/lib/queue/waitTime.ts` and used by every screen and notification.
     The service time is the learned `observedServiceTimeSeconds`, falling back
     to the owner's `avgServiceTimeSeconds` until anything has been learned.
+    The learned figure is forgotten when the owner saves a *different*
+    service time (`applyQueueUpdate`), and by "Nulstil" beside the service
+    time line on the serve screen (`resetServiceTime`, anyone who can serve)
+    — otherwise test runs or an old pace override the owner's figure for
+    good. The serve screen shows that line, the wait a new customer is
+    quoted, and each waiting customer's own estimate, so staff can check
+    what customers are told.
     A till counts only while its `serving` flag is set (minimum one) —
     stations are never deleted, so counting documents divided the wait among
     tills opened days ago. Lists that cannot read every queue's stations use

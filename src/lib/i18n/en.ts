@@ -389,6 +389,8 @@ export const en = {
       serviceTimeLearned: 'Service time {time}, learned from {count} customers',
       serviceTimeSet: 'Service time {time} (your setting)',
       joinWait: 'a new customer waits: {wait}',
+      resetServiceTime: 'Reset',
+      resetServiceTimeTitle: 'Forget the learned time and use your setting again',
       waitingCount: '{count} waiting',
       nowServing: 'Now serving',
       readyForNext: 'Ready for the next customer',
@@ -428,11 +430,6 @@ export const en = {
 
     walkIn: {
       dialogLabel: 'Add a walk-in',
-      ticketNumber: 'Ticket {number}',
-      giveBefore: 'Give ',
-      giveAfter: ' this number, and tell them to watch the monitor.',
-      hintBefore: 'If they do have a phone after all, this code claims the ticket: ',
-      done: 'Done',
       nameLabel: 'Name to call them by',
       addToQueue: 'Add to queue',
     },

@@ -14,6 +14,7 @@ import {
   messageOf,
   reasonOf,
   releaseStation,
+  resetServiceTime,
   startServing,
   stopServing,
 } from '../../lib/functions.js';
@@ -294,6 +295,20 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     }
   }
 
+  // Back to the owner's own service time; learning starts over from the
+  // next completion.
+  async function resetServiceTimeNow() {
+    setServingBusy(true);
+    setError(null);
+    try {
+      await resetServiceTime({ shopId, queueId });
+    } catch (e) {
+      setError(messageOf(e));
+    } finally {
+      setServingBusy(false);
+    }
+  }
+
   // Starting again after a deliberate stop. The automatic start above runs
   // once per till, so without this tap a stopped till stays stopped until
   // the page is reloaded.
@@ -432,6 +447,20 @@ export function ServingScreen({ shopId }: { shopId: string }) {
                 time: formatServiceTime(serviceTimeSeconds(q)),
                 count: q.servedSampleCount,
               },
+            )}
+            {q.observedServiceTimeSeconds != null && (
+              <>
+                {' '}
+                <button
+                  type="button"
+                  className="link"
+                  disabled={servingBusy || !offline.online}
+                  title={t('shop.serving.resetServiceTimeTitle')}
+                  onClick={() => void resetServiceTimeNow()}
+                >
+                  {t('shop.serving.resetServiceTime')}
+                </button>
+              </>
             )}{' '}
             ·{' '}
             {t('shop.serving.joinWait', {

@@ -514,6 +514,38 @@ describe('updateQueue', () => {
     return snap.data() as Queue;
   }
 
+  it('forgets the learned service time when the owner sets a new one', async () => {
+    const { shopId, queueId } = await createdQueue();
+    await testDb
+      .doc(`shops/${shopId}/queues/${queueId}`)
+      .update({ observedServiceTimeSeconds: 156, servedSampleCount: 62 });
+
+    await performUpdateQueue(testDb, OWNER_UID, {
+      shopId,
+      queueId,
+      ...settings,
+      avgServiceTimeSeconds: 600,
+    });
+
+    const queue = await read(shopId, queueId);
+    expect(queue.avgServiceTimeSeconds).toBe(600);
+    expect(queue.observedServiceTimeSeconds).toBeNull();
+    expect(queue.servedSampleCount).toBe(0);
+  });
+
+  it('keeps the learned service time when the setting is saved unchanged', async () => {
+    const { shopId, queueId } = await createdQueue();
+    await testDb
+      .doc(`shops/${shopId}/queues/${queueId}`)
+      .update({ observedServiceTimeSeconds: 156, servedSampleCount: 62 });
+
+    await performUpdateQueue(testDb, OWNER_UID, { shopId, queueId, ...settings });
+
+    const queue = await read(shopId, queueId);
+    expect(queue.observedServiceTimeSeconds).toBe(156);
+    expect(queue.servedSampleCount).toBe(62);
+  });
+
   it('re-geocodes when the address changes', async () => {
     const { shopId, queueId } = await createdQueue();
     const before = await read(shopId, queueId);
