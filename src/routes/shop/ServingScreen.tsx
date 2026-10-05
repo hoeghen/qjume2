@@ -108,6 +108,9 @@ export function ServingScreen({ shopId }: { shopId: string }) {
   // See the start-serving effect below; declared here because `tillGone`
   // resets it too.
   const startAttempted = useRef(false);
+  // The automatic start is in flight; "Start serving" waits it out rather
+  // than flashing up for the moment before the till reads as serving.
+  const [autoStarting, setAutoStarting] = useState(false);
 
   // Back to the picker, saying why, when this till no longer exists —
   // deleted from another device. Clears the start guard so whichever till is
@@ -186,14 +189,17 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     if (!station || stationsLoading || startAttempted.current) return;
     startAttempted.current = true;
     if (iAmServing) return;
-    void startServing({ shopId, queueId, stationId: station.id }).catch((e) => {
-      if (reasonOf(e) === 'station-not-found') {
-        tillGone();
-        return;
-      }
-      setError(messageOf(e));
-      startAttempted.current = false;
-    });
+    setAutoStarting(true);
+    void startServing({ shopId, queueId, stationId: station.id })
+      .catch((e) => {
+        if (reasonOf(e) === 'station-not-found') {
+          tillGone();
+          return;
+        }
+        setError(messageOf(e));
+        startAttempted.current = false;
+      })
+      .finally(() => setAutoStarting(false));
   }, [station, stationsLoading, iAmServing, shopId, queueId, tillGone]);
 
   if (queue.loading) return <p className="panel">{t('common.loading')}</p>;
@@ -282,6 +288,23 @@ export function ServingScreen({ shopId }: { shopId: string }) {
     }
   }
 
+  // Starting again after a deliberate stop. The automatic start above runs
+  // once per till, so without this tap a stopped till stays stopped until
+  // the page is reloaded.
+  async function startServingNow() {
+    if (!station) return;
+    setServingBusy(true);
+    setError(null);
+    try {
+      await startServing({ shopId, queueId, stationId: station.id });
+    } catch (e) {
+      if (reasonOf(e) === 'station-not-found') tillGone();
+      else setError(messageOf(e));
+    } finally {
+      setServingBusy(false);
+    }
+  }
+
   // Leaving a till: finish its customer if asked, stop it serving, and clear
   // the start guard so the next till picked starts serving by itself — the
   // screen does not remount, so without that the new till never would.
@@ -344,7 +367,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       )}
       <PauseBanner status={q.status} />
 
-      {iAmServing && (
+      {iAmServing ? (
         <div className="serving-toggle">
           {/* One word: the banner above already explains being offline. */}
           <span className={offline.online ? 'muted' : 'serving-offline'}>
@@ -359,6 +382,22 @@ export function ServingScreen({ shopId }: { shopId: string }) {
             {t('shop.serving.stopServing')}
           </button>
         </div>
+      ) : (
+        // Stopped — by the button above, another device, or the abandoned
+        // sweep. Not while the automatic start is on its way, and only once
+        // the till is in the live list.
+        myStation && !autoStarting && (
+          <div className="serving-toggle">
+            <span className="muted">{t('shop.serving.stopped')}</span>
+            <button
+              type="button"
+              disabled={servingBusy || !offline.online}
+              onClick={() => void startServingNow()}
+            >
+              {t('shop.serving.startServing')}
+            </button>
+          </div>
+        )
       )}
 
       <header className="serving-header">

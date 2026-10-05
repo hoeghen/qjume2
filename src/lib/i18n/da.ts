@@ -379,6 +379,8 @@ export const da: DeepPartial<typeof en> = {
       ready: 'Klar',
       offline: 'Offline',
       stopServing: 'Stop betjening',
+      stopped: 'Lukket',
+      startServing: 'Start betjening',
       servingLabel: 'Betjener',
       waitingCount: '{count} venter',
       nowServing: 'Betjener nu',

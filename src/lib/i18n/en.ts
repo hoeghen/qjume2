@@ -383,6 +383,8 @@ export const en = {
       ready: 'Ready',
       offline: 'Offline',
       stopServing: 'Stop serving',
+      stopped: 'Closed',
+      startServing: 'Start serving',
       servingLabel: 'Serving',
       waitingCount: '{count} waiting',
       nowServing: 'Now serving',
