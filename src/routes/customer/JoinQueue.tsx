@@ -68,7 +68,7 @@ export function JoinQueue({
   }
 
   return (
-    <form onSubmit={onSubmit} className="stack">
+    <form onSubmit={onSubmit} className="stack join-form">
       <label htmlFor="display-name">{t('joinQueue.nameLabel')}</label>
       <input
         id="display-name"
@@ -87,7 +87,9 @@ export function JoinQueue({
         autoComplete="email"
       />
 
-      <div className="row">
+      {/* Pinned to the bottom of the screen, so joining is always one tap
+          away however the page scrolls or the keyboard pushes it. */}
+      <div className="row join-actions">
         {/* Focus on the button, not the name field: the name and email are
             usually remembered from last time, so joining is one tap, and a
             focused field would open the phone's keyboard over the form. */}

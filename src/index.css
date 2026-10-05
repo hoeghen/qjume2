@@ -1254,3 +1254,22 @@ a.button[aria-busy='true']::before {
 /* The landing page's header: just the language switch, top right, over the
    centred splash. */
 .app-header-landing { justify-content: flex-end; }
+
+/* The join form's buttons, pinned to the bottom of the viewport. A fixed bar
+   sits outside the .app gutter, so it repeats that gutter (and the safe-area
+   insets) itself rather than lining up with nothing. The form keeps room at
+   its foot so the bar never covers the last field. */
+.join-form { padding-bottom: 96px; }
+.join-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding:
+    12px
+    calc(env(safe-area-inset-right) + clamp(16px, 4vw, 56px))
+    calc(env(safe-area-inset-bottom) + 16px)
+    calc(env(safe-area-inset-left) + clamp(16px, 4vw, 56px));
+}
