@@ -121,6 +121,7 @@ export async function performAddWalkIn(
       customerUid: null,
       anonymousId: null,
       resumeCodeHash: hashResumeCode(queueId, resumeCode),
+      resumeCode,
       email: null,
       phone: null,
       fcmTokens: [],

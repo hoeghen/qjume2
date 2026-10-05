@@ -180,6 +180,7 @@ export async function performJoinQueue(
         customerUid: caller.isAnonymous ? null : caller.uid,
         anonymousId: caller.isAnonymous ? caller.uid : null,
         resumeCodeHash: hashResumeCode(queueId, resumeCode),
+        resumeCode,
         email: email?.trim() || null,
         phone: phone?.trim() || null,
         fcmTokens: [],

@@ -13,6 +13,7 @@ import type {
   StaffMembership,
   Station,
   Ticket,
+  TicketContact,
 } from '../../types/index.js';
 
 /**
@@ -30,6 +31,7 @@ function converterFor<T>(): FirestoreDataConverter<T> {
 export const shopConverter = converterFor<Shop>();
 export const queueConverter = converterFor<Queue>();
 export const ticketConverter = converterFor<Ticket>();
+export const ticketContactConverter = converterFor<TicketContact>();
 export const stationConverter = converterFor<Station>();
 export const customerConverter = converterFor<Customer>();
 export const staffConverter = converterFor<StaffMember>();

@@ -14,6 +14,7 @@ import {
   staffConverter,
   staffMembershipConverter,
   stationConverter,
+  ticketContactConverter,
   ticketConverter,
 } from './converters.js';
 import type {
@@ -26,7 +27,9 @@ import type {
   StaffMembership,
   Station,
   Ticket,
+  TicketContact,
 } from '../../types/index.js';
+import { TICKET_CONTACT_DOC } from '../../types/index.js';
 
 /**
  * Every collection path in one place, typed and converter-bound. Components and
@@ -88,6 +91,27 @@ export const ticketDoc = (
     'tickets',
     ticketId,
   ).withConverter(ticketConverter);
+
+/**
+ * A ticket's private half — contact details and the resume code. Readable
+ * only by the shop serving it and the ticket's holder; see `firestore.rules`.
+ */
+export const ticketContactDoc = (
+  shopId: string,
+  queueId: string,
+  ticketId: string,
+): DocumentReference<TicketContact> =>
+  doc(
+    db,
+    'shops',
+    shopId,
+    'queues',
+    queueId,
+    'tickets',
+    ticketId,
+    'private',
+    TICKET_CONTACT_DOC,
+  ).withConverter(ticketContactConverter);
 
 export const stations = (
   shopId: string,

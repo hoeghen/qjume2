@@ -81,6 +81,13 @@ export interface TicketContact {
 
   /** Lets the customer reclaim this ticket on another device. PRD 4.8. */
   resumeCodeHash: string;
+  /**
+   * The same code in plain text, so staff can read it off the serve screen
+   * for whoever asks (CLAUDE.md decision 15). `claimTicket` still matches on
+   * the hash. Absent on tickets issued before codes were kept readable;
+   * "Give code" issues one.
+   */
+  resumeCode?: string;
 
   email: string | null;
   phone: string | null;
