@@ -23,7 +23,7 @@ identity — noted per service so access/recovery isn't a guessing game later.
 |---|---|---|
 | Firebase / Google Cloud (`qjume-d483a`) | Firestore, Realtime Database (presence only), Auth, Cloud Functions, Hosting, Secret Manager | Google email — `carverdk@gmail.com` |
 | OpenCage | Geocoding for discovery/geohash queries | Google email — `carverdk@gmail.com` |
-| Resend | Transactional email (queue notifications), sending domain `bitwork.dk` (verified) | Google email — `carverdk@gmail.com` |
+| Resend | Transactional email (queue notifications), sending domain `qjume.dk`, from `info@qjume.dk` | Google email — `carverdk@gmail.com` |
 | Stripe | Subscription billing for the paid plan | Google email — `carverdk@gmail.com` |
 | GitHub (`hoeghen/qjume2`) | Source control, CI/CD (`deploy-firebase.yml`) | Google email — `carverdk@gmail.com` |
 
