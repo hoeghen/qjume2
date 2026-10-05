@@ -81,7 +81,7 @@ export const en = {
     lede: 'See the wait before you go. Join any queue from anywhere — no login required.',
     join: 'Join a queue',
     createLink: 'I am a business',
-    admin: 'Admin',
+    menu: 'Menu',
   },
 
   discovery: {

@@ -1187,18 +1187,6 @@ button.link.danger { color: var(--danger); }
 .free-services.notice p { margin: 0 0 6px; }
 .free-services.notice .link { color: var(--warn-fg); font-weight: 700; }
 
-/* A way in for the platform admin: pinned to the viewport's bottom-right
-   corner, clear of the page's own content, inside the safe-area insets.
-   Orange-on-dark, the orange that reads on the ink page. */
-.splash-admin {
-  position: fixed;
-  right: calc(16px + env(safe-area-inset-right));
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  font-size: 12px;
-  color: var(--orange-on-dark);
-  text-decoration: none;
-}
-.splash-admin:hover, .splash-admin:focus-visible { text-decoration: underline; }
 
 /* "I am a business" with no shop yet: two ways forward, side by side when
    there is room. */
@@ -1272,4 +1260,52 @@ a.button[aria-busy='true']::before {
     calc(env(safe-area-inset-right) + clamp(16px, 4vw, 56px))
     calc(env(safe-area-inset-bottom) + 16px)
     calc(env(safe-area-inset-left) + clamp(16px, 4vw, 56px));
+}
+
+/* The landing page's quiet menu: language switch and the admin's way in. */
+.landing-menu { position: relative; }
+.landing-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--on-dark-faint);
+  cursor: pointer;
+}
+.landing-menu-button:hover,
+.landing-menu-button[aria-expanded='true'] { color: var(--on-dark-muted); }
+.landing-menu-button:focus-visible {
+  outline: 2px solid var(--orange-on-dark);
+  outline-offset: 2px;
+}
+.landing-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 6px;
+  background: var(--card);
+  color: var(--card-fg);
+  border-radius: var(--r-tile);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+}
+.landing-menu-panel a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--card-fg);
+  font-size: 15px;
+  text-decoration: none;
+}
+.landing-menu-panel a:hover, .landing-menu-panel a:focus-visible {
+  background: var(--cream-tint);
+  outline: none;
 }
