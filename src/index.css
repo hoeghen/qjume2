@@ -119,6 +119,7 @@ body {
  * side padding.
  */
 .app {
+  position: relative;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -780,6 +781,9 @@ button.link.danger { color: var(--danger); }
 /* The queues this device is standing in. Leads the screen when present —
    for someone already in line it is the reason they opened the app. */
 .your-queues { margin: 0 0 20px; }
+/* A row hides itself while its ticket loads, or when it cannot be shown at
+   all; with no row showing, "Dine køer" would stand over an empty list. */
+.your-queues:not(:has(.your-queue-list > li)) { display: none; }
 .your-queues .eyebrow { margin-bottom: 8px; text-transform: uppercase; }
 /* Kept quiet on purpose: one faintly tinted panel on the ink page rather
    than the discovery list's white cards, so it reads as a reminder of where
@@ -1241,7 +1245,21 @@ a.button[aria-busy='true']::before {
 
 /* The landing page's header: just the language switch, top right, over the
    centred splash. */
-.app-header-landing { justify-content: flex-end; }
+/* On the landing page the menu takes no row of its own: it floats in the
+   top-right corner of the gutter, level with the first line of the page
+   ("Dine køer" when there is one), instead of pushing everything down. */
+.app-header-landing {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + clamp(16px, 3vw, 28px) - 4px);
+  right: calc(env(safe-area-inset-right) + clamp(16px, 4vw, 56px) - 8px);
+  margin: 0;
+  z-index: 5;
+}
+/* Someone already in a queue opened the app to see it: start at the top
+   rather than centring, so their place leads the screen. The eyebrow line is
+   as tall as the menu button beside it, so the two share one row. */
+.splash:has(> .your-queues .your-queue-list > li) { justify-content: flex-start; padding-top: 0; }
+.splash > .your-queues .eyebrow { line-height: 32px; margin-bottom: 4px; padding-right: 48px; }
 
 /* The join form's buttons, pinned to the bottom of the viewport. A fixed bar
    sits outside the .app gutter, so it repeats that gutter (and the safe-area
