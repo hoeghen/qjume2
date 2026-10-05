@@ -58,7 +58,7 @@ describe('joinQueue', () => {
     ]);
   });
 
-  it('returns a resume code but stores only its hash', async () => {
+  it('keeps the resume code on the private half only, plain and hashed', async () => {
     const fx = await seedQueue();
     const result = await performJoinQueue(testDb, customer(1), {
       shopId: fx.shopId,
@@ -69,11 +69,13 @@ describe('joinQueue', () => {
     expect(result.resumeCode).toMatch(/^[A-HJKMNP-TV-Z][0-9]$/);
 
     // The code is a credential, so it is kept out of the publicly readable
-    // half of the ticket entirely, and stored only as a hash.
+    // half of the ticket entirely. The private half carries it plain, for
+    // the serve screen, and hashed, for claimTicket's lookup.
     const publicHalf = await ticket(fx, result.ticketId);
     expect(JSON.stringify(publicHalf)).not.toContain(result.resumeCode);
 
     const stored = await ticketContact(fx, result.ticketId);
+    expect(stored.resumeCode).toBe(result.resumeCode);
     expect(stored.resumeCodeHash).not.toContain(result.resumeCode);
     expect(stored.resumeCodeHash).toHaveLength(64);
   });

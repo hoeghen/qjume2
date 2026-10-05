@@ -299,10 +299,20 @@ kept unedited.
     code; nearly nobody needs it — the phone remembers the place — so it was
     noise. No code dialog after joining; entering one is a faint "Got a code
     from staff?" link at the bottom of the queue page. Staff issue a code on
-    demand with "Give code" (`relinkTicket`) when a customer asks. Codes are
-    deliberately **not** shown beside every name on the serve screen: they
-    are stored hashed, and a two-character code anyone can read over a
-    shoulder is a key to that person's place.
+    demand with "Give code" (`relinkTicket`) when a customer asks.
+
+    **Each waiting customer's code is shown beside their name on the serve
+    screen**, so staff can read it out without issuing a new one. This
+    reverses an earlier choice to keep codes hashed-only and off the screen:
+    the owner decided a good experience for customers and staff outweighs
+    the shoulder-surfing risk, and that someone occasionally sneaking a place
+    is survivable. The plain code sits beside the hash on the **private**
+    contact doc (`TicketContact.resumeCode`), read per row on the serve
+    screen; `claimTicket` still matches on the hash. It must never move onto
+    the public ticket doc: anyone can read those (the monitor, position
+    counting), and there a code is a remote key to every place in the queue,
+    not just one read over a shoulder. Tickets from before the change have
+    no plain code until staff tap "Give code".
 
 16. **"Your queues" is the way back to a ticket.** The landing page and Find
     lead with a quiet panel of the queues this device holds (from

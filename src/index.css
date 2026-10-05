@@ -405,6 +405,7 @@ button.link.danger { color: var(--danger); }
   font-variant-numeric: tabular-nums;
 }
 .upcoming .name { flex: 1; font-weight: 600; }
+.upcoming .resume-code { flex-shrink: 0; }
 .upcoming .strikes {
   display: inline-flex;
   flex-shrink: 0;

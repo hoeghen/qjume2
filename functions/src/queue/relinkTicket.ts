@@ -68,7 +68,7 @@ export async function performRelinkTicket(
     // longer claim this ticket.
     tx.set(
       contactRef(firestore, shopId, queueId, ticketId),
-      { resumeCodeHash: hashResumeCode(queueId, resumeCode) },
+      { resumeCodeHash: hashResumeCode(queueId, resumeCode), resumeCode },
       { merge: true },
     );
 

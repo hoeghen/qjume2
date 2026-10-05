@@ -31,9 +31,11 @@ export function generateResumeCode(): string {
 }
 
 /**
- * Codes are stored hashed and scoped to their queue, so the same code issued in
- * two queues does not collide and a database read does not surrender the code
- * itself. The plaintext is returned to the customer once, at join time.
+ * The hash, scoped to its queue, is what `claimTicket` looks a code up by, so
+ * the same code issued in two queues does not collide. The plain code is
+ * stored beside it too, on the private contact doc only staff and the holder
+ * can read, so staff can see it on the serve screen — a deliberate choice
+ * over keeping it unreadable (CLAUDE.md decision 15).
  */
 export function hashResumeCode(queueId: string, code: string): string {
   return createHash('sha256')

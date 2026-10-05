@@ -461,6 +461,7 @@ export const en = {
       noShowTitle: 'No-shows so far',
       noShowCount: '{count} of 3',
       relink: 'Give code',
+      codeTitle: 'Code to get the place back',
       remove: 'Remove',
       newCodeTitle: 'Code for {name}',
       newCodeBody: 'Read this out. On the queue page they tap “Got a code from staff?” and enter it to get their place back on this phone. It replaces any earlier code.',

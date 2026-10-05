@@ -4,6 +4,8 @@ import {
   relinkTicket,
   removeTicket,
 } from '../../../lib/functions.js';
+import { ticketContactDoc } from '../../../lib/firestore/index.js';
+import { useDoc } from '../../../lib/hooks/useFirestore.js';
 import { useT } from '../../../lib/i18n/LanguageContext.js';
 import type { Ticket } from '../../../types/index.js';
 
@@ -44,6 +46,7 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
           <li key={ticket.id}>
             <span className="place">{i + 1}</span>
             <span className="name">{ticket.displayName}</span>
+            <ResumeCode shopId={shopId} queueId={queueId} ticketId={ticket.id} />
             {ticket.noShowCount > 0 && (
               <span
                 className="strikes"
@@ -133,5 +136,30 @@ export function UpcomingList({ shopId, queueId, waiting, online }: Props) {
         </p>
       )}
     </>
+  );
+}
+
+/**
+ * The ticket's resume code, read from its private doc — staff may read it,
+ * the public may not. Shown beside the name on purpose (CLAUDE.md decision
+ * 15). Nothing for a ticket from before codes were kept readable; "Give
+ * code" issues one.
+ */
+function ResumeCode({
+  shopId,
+  queueId,
+  ticketId,
+}: {
+  shopId: string;
+  queueId: string;
+  ticketId: string;
+}) {
+  const { t } = useT();
+  const { data } = useDoc(ticketContactDoc(shopId, queueId, ticketId));
+  if (!data?.resumeCode) return null;
+  return (
+    <span className="code resume-code" title={t('shop.upcomingList.codeTitle')}>
+      {data.resumeCode}
+    </span>
   );
 }

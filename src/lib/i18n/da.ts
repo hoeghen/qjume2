@@ -457,6 +457,7 @@ export const da: DeepPartial<typeof en> = {
       noShowTitle: 'Udeblivelser hidtil',
       noShowCount: '{count} af 3',
       relink: 'Giv kode',
+      codeTitle: 'Kode til at genfinde pladsen',
       remove: 'Fjern',
       newCodeTitle: 'Kode til {name}',
       newCodeBody: 'Læs den op. På køens side trykker de på “Har du fået en kode af personalet?” og indtaster den for at få deres plads tilbage på telefonen. Den erstatter enhver tidligere kode.',

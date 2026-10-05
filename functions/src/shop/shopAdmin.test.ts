@@ -410,6 +410,7 @@ describe('addWalkIn', () => {
     expect(contact.resumeCodeHash).toBe(
       hashResumeCode(fx.queueId, walkIn.resumeCode),
     );
+    expect(contact.resumeCode).toBe(walkIn.resumeCode);
   });
 
   it('still admits a walk-in while the queue is draining', async () => {
@@ -473,6 +474,8 @@ describe('relinkTicket', () => {
     expect(contact.resumeCodeHash).toBe(
       hashResumeCode(fx.queueId, relinked.resumeCode),
     );
+    // The serve screen shows the new code, not the one it replaced.
+    expect(contact.resumeCode).toBe(relinked.resumeCode);
     // Whoever held the old code can no longer claim this ticket.
     expect(contact.resumeCodeHash).not.toBe(
       hashResumeCode(fx.queueId, joined.resumeCode),
