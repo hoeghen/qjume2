@@ -82,7 +82,6 @@ export const da: DeepPartial<typeof en> = {
   },
 
   discovery: {
-    eyebrow: '[ KUNDETILSTAND ]',
     nearby: '{count} i nærheden',
     noCount: '—',
     titleLight: 'Find en kø.',

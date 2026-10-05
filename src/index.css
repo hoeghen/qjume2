@@ -864,7 +864,7 @@ button.link.danger { color: var(--danger); }
 
 .eyebrow-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: baseline;
   gap: 16px;
 }

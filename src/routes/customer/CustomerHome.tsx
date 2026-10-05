@@ -177,7 +177,6 @@ export function CustomerHome() {
       <ContinueFromSafari />
 
       <div className="eyebrow-row">
-        <p className="eyebrow">{t('discovery.eyebrow')}</p>
         <span className="screen-count">
           {queues ? t('discovery.nearby', { count: shown.length }) : t('discovery.noCount')}
         </span>
