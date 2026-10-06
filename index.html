@@ -9,6 +9,25 @@
     <link rel="icon" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <!--seo:start--><title>Qjume</title><!--seo:end-->
+    <!--
+      The page's text sits in #root as plain HTML for anything that reads it
+      without running JavaScript (src/lib/seoBody.ts). A browser that runs
+      JavaScript is about to replace it with the app, so it is hidden there
+      from the first paint rather than flashing up unstyled. If the app has
+      not started within a few seconds, it is shown after all, so a failed
+      load still leaves something to read. The ink background is set here
+      too, so the wait is the app's own colour rather than white.
+    -->
+    <script>
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        document.documentElement.classList.remove('js');
+      }, 4000);
+    </script>
+    <style>
+      html, body { background: #3d3b47; }
+      .js .static-page { display: none; }
+    </style>
   </head>
   <body>
     <div id="root"><!--body:start--><!--body:end--></div>
