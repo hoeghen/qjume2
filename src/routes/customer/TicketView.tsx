@@ -147,12 +147,6 @@ export function TicketView({
         </div>
       </section>
 
-      {queue.status === 'unavailable' && (
-        <p className="status-banner status-unavailable" role="status">
-          <span>{t('ticketView.offlineNotice')}</span>
-        </p>
-      )}
-
       {ticketData.noShowCount > 0 && (
         <p className="notice">
           {t('ticketView.missedCalls', { count: ticketData.noShowCount })}

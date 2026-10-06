@@ -49,11 +49,16 @@ export function QueueDetail() {
   const otherQueues = Math.max(0, (siblings?.length ?? 1) - 1);
   // Out of free services outranks the queue's own status: whatever that
   // says, the shop is not taking new customers until it subscribes.
+  //
+  // Someone already holding a ticket in an offline queue is told once, here,
+  // in words about their own place — "no new joiners" is not news to them.
   const note = q.shopOutOfFreeServices
     ? t('queueDetail.notTakingNewCustomers')
-    : NOTE_STATUSES.includes(q.status)
-      ? t(`status.note.${q.status}`)
-      : null;
+    : ticketId && q.status === 'unavailable'
+      ? t('ticketView.offlineNotice')
+      : NOTE_STATUSES.includes(q.status)
+        ? t(`status.note.${q.status}`)
+        : null;
   // A platform suspension refuses a join regardless of the queue's own
   // status — checked here too so the button doesn't invite a tap that the
   // server would only then refuse. See CLAUDE.md decision 9.
