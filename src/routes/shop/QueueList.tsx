@@ -1,9 +1,9 @@
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
-import { signOut } from '../../lib/auth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { FreeServicesBar } from './components/FreeServicesBar.js';
+import { SignedInAs } from './components/SignedInAs.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
 
 export function QueueList({
@@ -25,23 +25,11 @@ export function QueueList({
 
   return (
     <main className="panel">
-      <header className="serving-header">
+      {/* Shop settings, billing and signing out live in the ☰ menu in the
+          app header (AppHeader), with the language switch. */}
+      <header>
         <h1>{shopName}</h1>
-        <span className="row tight">
-          {isOwner && (
-            <LocalizedLink className="link" to="/shop/settings">
-              {t('shop.queueList.shopSettings')}
-            </LocalizedLink>
-          )}
-          {isOwner && (
-            <LocalizedLink className="link" to="/shop/billing">
-              {t('shop.queueList.plan')}
-            </LocalizedLink>
-          )}
-          <button type="button" className="link" onClick={() => void signOut()}>
-            {t('shop.queueList.signOut')}
-          </button>
-        </span>
+        <SignedInAs shopId={shopId} isOwner={isOwner} />
       </header>
 
       {shop.data && <FreeServicesBar shop={shop.data} isOwner={isOwner} />}
@@ -69,11 +57,6 @@ export function QueueList({
               <LocalizedLink className="button" to={`/shop/q/${q.id}/serve`}>
                 {t('shop.queueList.serve')}
               </LocalizedLink>
-              {isOwner && (
-                <LocalizedLink className="link" to={`/shop/q/${q.id}/settings`}>
-                  {t('shop.queueList.settings')}
-                </LocalizedLink>
-              )}
               {/* The wall display, for this queue. The monitor needs both ids,
                   so it can only be linked from somewhere that knows them —
                   which is here, not a bare link in the footer. */}
@@ -83,6 +66,16 @@ export function QueueList({
               >
                 {t('shop.queueList.monitor')}
               </LocalizedLink>
+              {isOwner && (
+                <LocalizedLink
+                  className="icon-link"
+                  to={`/shop/q/${q.id}/settings`}
+                  aria-label={t('shop.queueList.settings')}
+                  title={t('shop.queueList.settings')}
+                >
+                  <GearIcon />
+                </LocalizedLink>
+              )}
             </span>
           </li>
         ))}
@@ -119,5 +112,16 @@ function TillCount({ shopId, queueId }: { shopId: string; queueId: string }) {
           ? tn(1, 'shop.queueList.tills')
           : `${tn(stations.length, 'shop.queueList.tills')} · ${tn(open, 'shop.queueList.openTills')}`}
     </p>
+  );
+}
+
+/** The queue's settings, as a gear rather than the word. */
+function GearIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
   );
 }

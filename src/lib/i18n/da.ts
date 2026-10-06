@@ -74,11 +74,19 @@ export const da: DeepPartial<typeof en> = {
     create: 'Opret en butik',
   },
 
+  menu: {
+    label: 'Menu',
+    shopSettings: 'Butiksindstillinger',
+    plan: 'Abonnement',
+    signOut: 'Log ud',
+    signedInAs: 'Logget ind som {name}',
+    signedInAsOwner: 'Logget ind som {name} (ejer)',
+  },
+
   splash: {
     lede: 'Se ventetiden, inden du tager af sted. Tilslut dig en kø hvor som helst — ingen login nødvendig.',
     join: 'Tilslut dig en kø',
     createLink: 'Jeg er en forretning',
-    menu: 'Menu',
   },
 
   discovery: {
@@ -287,15 +295,12 @@ export const da: DeepPartial<typeof en> = {
     },
 
     queueList: {
-      plan: 'Abonnement',
-      signOut: 'Log ud',
       noQueues: 'Ingen køer endnu.',
       waitingAddress: '{count} venter · {address}',
       serve: 'Betjen',
       settings: 'Indstillinger',
       monitor: 'Monitor',
       newQueue: 'Ny kø',
-      shopSettings: 'Butiksindstillinger',
       tills: { one: '{count} kasse', other: '{count} kasser' },
       openTills: { one: '{count} åben', other: '{count} åbne' },
       noTills: 'Ingen kasser endnu',

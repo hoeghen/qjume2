@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { queueDoc } from '../../lib/firestore/paths.js';
 import { setQueueStatus } from '../../lib/firestore/writes.js';
@@ -60,7 +60,14 @@ function recallStation(queueId: string): string | null {
   }
 }
 
-export function ServingScreen({ shopId }: { shopId: string }) {
+export function ServingScreen({
+  shopId,
+  signedInAs,
+}: {
+  shopId: string;
+  /** Who is signed in on this device, shown under the queue's name. */
+  signedInAs?: ReactNode;
+}) {
   const { t, tn, locale } = useT();
   const { queueId = '' } = useParams();
   const [station, setStation] = useState<{ id: string; label: string } | null>(
@@ -424,6 +431,7 @@ export function ServingScreen({ shopId }: { shopId: string }) {
       <header className="serving-header">
         <div>
           <h1>{q.name || q.shopName}</h1>
+          {signedInAs}
           <p className="muted">
             {/* Looked up, not taken from `station.label`: a till recalled
                 after a reload has only its id. */}

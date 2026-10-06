@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo.js';
-import { detectLocaleFromPath, isLandingPath, withLocale } from '../lib/i18n/locale.js';
+import {
+  detectLocaleFromPath,
+  isLandingPath,
+  stripLocale,
+  withLocale,
+} from '../lib/i18n/locale.js';
 import { useT } from '../lib/i18n/LanguageContext.js';
+import { useAuth } from '../lib/hooks/useAuth.js';
+import { useCollection } from '../lib/hooks/useFirestore.js';
+import { shopsOwnedBy } from '../lib/firestore/queries.js';
+import { signOut } from '../lib/auth.js';
 
 /**
  * Each language's own name for itself. The switch shows the language you
@@ -40,30 +49,88 @@ export function AppHeader() {
     </Link>
   );
 
-  // The landing page carries the mark at full size already, so it gets a
-  // quiet menu instead: the language switch and the platform admin's way in,
-  // kept out of the way of the two audiences the page is actually for.
+  // The landing page carries the mark at full size already, so it gets the
+  // menu alone: the language switch and the platform admin's way in, kept
+  // out of the way of the two audiences the page is actually for.
   if (isLandingPath(pathname)) {
     return (
       <header className="app-header app-header-landing">
-        <LandingMenu>
+        <AppMenu>
           {languageSwitch}
-          <Link className="landing-menu-item" to={withLocale('/admin', locale)}>
-            Admin
-          </Link>
-        </LandingMenu>
+          <Link to={withLocale('/admin', locale)}>Admin</Link>
+          <SignOutItem />
+        </AppMenu>
+      </header>
+    );
+  }
+
+  const home = (
+    <Link className="home-link" to={withLocale('/', locale)}>
+      <Logo size={26} decorative />
+      <span>QjuMe</span>
+    </Link>
+  );
+
+  // The shop's own pages gather language, the owner's settings and signing
+  // out behind the same menu, instead of a row of links on each screen.
+  if (stripLocale(pathname).startsWith('/shop')) {
+    return (
+      <header className="app-header">
+        {home}
+        <AppMenu>
+          {languageSwitch}
+          <ShopOwnerItems />
+          <SignOutItem />
+        </AppMenu>
       </header>
     );
   }
 
   return (
     <header className="app-header">
-      <Link className="home-link" to={withLocale('/', locale)}>
-        <Logo size={26} decorative />
-        <span>QjuMe</span>
-      </Link>
+      {home}
       {languageSwitch}
     </header>
+  );
+}
+
+/**
+ * Shop settings and billing, for the shop's owner only. Asks the same query
+ * the shop gate (`ShopHome`) already listens to, so it costs no extra read.
+ */
+function ShopOwnerItems() {
+  const { t } = useT();
+  const { pathname } = useLocation();
+  const locale = detectLocaleFromPath(pathname);
+  const { user } = useAuth();
+  const signedIn = user && !user.isAnonymous;
+  const { data: owned } = useCollection(
+    signedIn ? shopsOwnedBy(user.uid) : null,
+    signedIn ? `shops-of/${user.uid}` : 'no-user',
+  );
+  if (!owned || owned.length === 0) return null;
+  return (
+    <>
+      <Link to={withLocale('/shop/settings', locale)}>{t('menu.shopSettings')}</Link>
+      <Link to={withLocale('/shop/billing', locale)}>{t('menu.plan')}</Link>
+    </>
+  );
+}
+
+/**
+ * "Log ud", with the address it signs out of beside it, so whoever holds
+ * the device can see whose account it is. Only for a real sign-in: an
+ * anonymous customer has nothing to sign out of.
+ */
+function SignOutItem() {
+  const { t } = useT();
+  const { user } = useAuth();
+  if (!user || user.isAnonymous) return null;
+  return (
+    <button type="button" className="app-menu-signout" onClick={() => void signOut()}>
+      <span>{t('menu.signOut')}</span>
+      {user.email && <span className="app-menu-email">{user.email}</span>}
+    </button>
   );
 }
 
@@ -71,7 +138,7 @@ export function AppHeader() {
  * A muted three-line icon that opens a small menu. Closes on a second tap, a
  * tap anywhere else, Escape, or following one of its links.
  */
-function LandingMenu({ children }: { children: ReactNode }) {
+function AppMenu({ children }: { children: ReactNode }) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -96,11 +163,11 @@ function LandingMenu({ children }: { children: ReactNode }) {
   }, [open]);
 
   return (
-    <div className="landing-menu" ref={root}>
+    <div className="app-menu" ref={root}>
       <button
         type="button"
-        className="landing-menu-button"
-        aria-label={t('splash.menu')}
+        className="app-menu-button"
+        aria-label={t('menu.label')}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
@@ -114,7 +181,7 @@ function LandingMenu({ children }: { children: ReactNode }) {
         </svg>
       </button>
       {open && (
-        <nav className="landing-menu-panel" onClick={() => setOpen(false)}>
+        <nav className="app-menu-panel" onClick={() => setOpen(false)}>
           {children}
         </nav>
       )}

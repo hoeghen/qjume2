@@ -54,6 +54,12 @@ export const shopOwnerDoc = (shopId: string): DocumentReference<ShopOwner> =>
 export const staff = (shopId: string): CollectionReference<StaffMember> =>
   collection(db, 'shops', shopId, 'staff').withConverter(staffConverter);
 
+export const staffDoc = (
+  shopId: string,
+  uid: string,
+): DocumentReference<StaffMember> =>
+  doc(db, 'shops', shopId, 'staff', uid).withConverter(staffConverter);
+
 /** Reverse index: which shop, if any, this uid is staff at. */
 export const staffMembershipDoc = (
   uid: string,

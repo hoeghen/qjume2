@@ -77,11 +77,19 @@ export const en = {
     create: 'Create a shop',
   },
 
+  menu: {
+    label: 'Menu',
+    shopSettings: 'Shop settings',
+    plan: 'Plan',
+    signOut: 'Sign out',
+    signedInAs: 'Signed in as {name}',
+    signedInAsOwner: 'Signed in as {name} (owner)',
+  },
+
   splash: {
     lede: 'See the wait before you go. Join any queue from anywhere — no login required.',
     join: 'Join a queue',
     createLink: 'I am a business',
-    menu: 'Menu',
   },
 
   discovery: {
@@ -291,15 +299,12 @@ export const en = {
     },
 
     queueList: {
-      plan: 'Plan',
-      signOut: 'Sign out',
       noQueues: 'No queues yet.',
       waitingAddress: '{count} waiting · {address}',
       serve: 'Serve',
       settings: 'Settings',
       monitor: 'Monitor',
       newQueue: 'New queue',
-      shopSettings: 'Shop settings',
       tills: { one: '{count} till', other: '{count} tills' },
       openTills: { one: '{count} open', other: '{count} open' },
       noTills: 'No tills yet',

@@ -1281,8 +1281,8 @@ a.button[aria-busy='true']::before {
 }
 
 /* The landing page's quiet menu: language switch and the admin's way in. */
-.landing-menu { position: relative; }
-.landing-menu-button {
+.app-menu { position: relative; }
+.app-menu-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1295,35 +1295,77 @@ a.button[aria-busy='true']::before {
   color: var(--on-dark-faint);
   cursor: pointer;
 }
-.landing-menu-button:hover,
-.landing-menu-button[aria-expanded='true'] { color: var(--on-dark-muted); }
-.landing-menu-button:focus-visible {
+.app-menu-button:hover,
+.app-menu-button[aria-expanded='true'] { color: var(--on-dark-muted); }
+.app-menu-button:focus-visible {
   outline: 2px solid var(--orange-on-dark);
   outline-offset: 2px;
 }
-.landing-menu-panel {
+.app-menu-panel {
   position: absolute;
   right: 0;
   top: calc(100% + 6px);
   z-index: 20;
   display: flex;
   flex-direction: column;
-  min-width: 160px;
+  min-width: 200px;
+  max-width: min(340px, calc(100vw - 32px));
   padding: 6px;
   background: var(--card);
   color: var(--card-fg);
   border-radius: var(--r-tile);
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
 }
-.landing-menu-panel a {
+.app-menu-panel a,
+.app-menu-panel button {
   display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
   padding: 10px 12px;
   border-radius: 8px;
   color: var(--card-fg);
   font-size: 15px;
   text-decoration: none;
 }
-.landing-menu-panel a:hover, .landing-menu-panel a:focus-visible {
+.app-menu-panel a:hover, .app-menu-panel a:focus-visible,
+.app-menu-panel button:hover, .app-menu-panel button:focus-visible {
   background: var(--cream-tint);
   outline: none;
 }
+
+/* "Log ud" with the signed-in address beside it, set apart by a hairline. */
+.app-menu-panel .app-menu-signout {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 4px;
+  border-top: 1px solid rgb(0 0 0 / 0.08);
+  border-radius: 0 0 8px 8px;
+}
+.app-menu-signout > span:first-child { white-space: nowrap; flex-shrink: 0; }
+.app-menu-email {
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--card-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A bare icon standing in for a text link (the queue's settings gear). */
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  color: var(--on-dark-muted);
+}
+.icon-link:hover { color: var(--fg); }
+.icon-link:focus-visible { outline: 2px solid var(--orange-on-dark); outline-offset: 2px; }
+.signed-in-as { margin: 4px 0 0; font-size: 13px; }
