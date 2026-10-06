@@ -317,8 +317,10 @@ kept unedited.
 16. **"Your queues" is the way back to a ticket.** The landing page and Find
     lead with a quiet panel of the queues this device holds (from
     `myTickets`), with live place and wait; finished tickets drop out and are
-    forgotten. The installed app, opened with exactly one active queue, goes
-    straight to it — once per launch, never in a browser tab. Notification
+    forgotten. The app never jumps from the landing page into a queue by
+    itself, even with only one — that used to happen in the installed app,
+    and the owner asked for it to go: the person chooses, tapping their
+    queue or looking for a new one. Notification
     choice is remembered per ticket, so returning shows "Disable
     notifications" rather than asking again.
 
