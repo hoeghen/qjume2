@@ -490,7 +490,11 @@ served at `/find` by `cleanUrls`) so crawlers and link previews that run no
 JavaScript see the right head — and the page's visible text too, inside
 `#root` (`src/lib/seoBody.ts`, built from the same `da.ts`/`en.ts` strings
 the page shows), which React replaces on start. An SEO checker that runs no
-JavaScript saw "0 words, no H1" without it. Every other path is rewritten to `app.html`,
+JavaScript saw "0 words, no H1" without it. That text is wrapped in
+`.static-page`, which `index.html` hides from the first paint in any browser
+that runs JavaScript (a `js` class on `<html>`), so visitors do not see it
+flash up unstyled before the app replaces it; it is shown after four seconds
+anyway, in case the app never starts. Every other path is rewritten to `app.html`,
 which has **no canonical** — it stands for many pages, and a canonical to the
 home page would tell Google a shop's page is a copy of it. `public/robots.txt`
 keeps `/shop`, `/admin` and `/monitor` out. A new public page goes in

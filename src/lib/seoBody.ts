@@ -89,5 +89,5 @@ function nav(path: string, locale: Locale): string {
 }
 
 export function staticBodyHtml(path: string, locale: Locale): string {
-  return `<main>${main(path, locale)}</main>${nav(path, locale)}`;
+  return `<div class="static-page"><main>${main(path, locale)}</main>${nav(path, locale)}</div>`;
 }
