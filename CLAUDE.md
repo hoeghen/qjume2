@@ -330,8 +330,8 @@ kept unedited.
     links point at it. Build paths with `withLocale`/`stripLocale` in
     `src/lib/i18n/locale.ts`, never by hand. The language switch shows the
     *other* language's own name, on every page including the landing page
-    (there inside the quiet ☰ menu, beside the admin link — `LandingMenu` in
-    `AppHeader.tsx`), and keeps the query string (the monitor's `?shop=…&queue=…`).
+    (there, and on every `/shop` page, inside the quiet ☰ menu — `AppMenu`
+    in `AppHeader.tsx`), and keeps the query string (the monitor's `?shop=…&queue=…`).
     **Notifications follow the customer's language**: `TicketContact.locale`
     is set on joining and replaced when they turn notifications on (or the
     app re-registers after a language switch), and every notice and email is
@@ -403,6 +403,15 @@ anden enhed". Only a server-confirmed list counts: offline, a list served from t
 cache (`Loadable.fromCache`) can lack a till that exists, and treating that
 as a deletion threw the counter out of its till the moment the connection
 dropped.
+
+**The ☰ menu is the way to the shop's own pages.** On every `/shop` page
+the app header carries it (`AppMenu`): the language switch, "Butiksindstillinger"
+and "Abonnement" for the owner, and "Log ud" with the signed-in email beside
+it — the landing page's menu has the same "Log ud" row when someone is
+signed in. The queue list shows Betjen · Monitor · a gear for the queue's
+settings (owner only), and both it and the serve screen say who is signed in
+(`SignedInAs`: the staff name the owner gave them, else the email; the
+owner is marked as such).
 
 **Shop settings live at `/shop/settings`** (owner only): the shop's name,
 its staff and "Slet butik". Staff are added with a name and an email, and
