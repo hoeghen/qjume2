@@ -357,6 +357,39 @@ kept unedited.
     `stopServing` and `sweepAbandonedQueues`. Till *labels* still show
     whenever a queue has more than one station at all, staffed or not.
 
+12. **MobilePay is the first live provider; Stripe stays supported beside
+    it.** `mobilepayProvider` (`functions/src/billing/mobilepay.ts`) uses
+    Vipps MobilePay's Recurring API: the owner accepts a monthly DKK
+    agreement in the MobilePay app, with the first month as its initial
+    charge. `PAYMENTS_PROVIDER` picks where **new** checkouts go and nothing
+    else — a returning session is routed by its id (`providerForSession`),
+    and a cancellation goes to whoever actually charges the shop, so moving
+    the setting to Stripe later strands no MobilePay subscriber.
+
+    **MobilePay never charges an agreement by itself.** Unlike Stripe, the
+    merchant creates every month's charge, so `chargeMobilePaySubscriptions`
+    runs daily and creates each charge a few days before it is due, with an
+    `orderId` built from the shop and the period — MobilePay will not create
+    the same one twice, which is what makes a retried run safe. Remove that
+    function and every MobilePay shop pays for its first month only.
+
+    The agreement id and charge schedule live in `subscriptions/{shopId}`,
+    and checkouts in flight in `billingSessions/{sessionId}` — both
+    server-only in `firestore.rules`, not on the public shop document,
+    because what a shop is charged must not be readable or writable by a
+    client. `mobilepayWebhook` is authenticated by MobilePay's HMAC
+    signature alone, checked against the URL it was registered with
+    (`MOBILEPAY_WEBHOOK_URL`), not the request's own path. Activation
+    upgrades the shop even if the owner never returns from the app — the
+    redirect is unreliable, MobilePay says so — and a stopped or expired
+    agreement, or a month whose charge fails after its retries, downgrades
+    it, as Stripe's webhook does. `verifyCheckout` must stay free of side
+    effects: it runs before `performCompleteCheckout` checks who is asking.
+
+    `MOBILEPAY_PRICE_ORE` is what is charged, VAT included — set separately
+    from `SUBSCRIPTION_PRICE_DKK`, which is the price before VAT that the UI
+    shows. Setup order is in `functions/.env.qjume-d483a`.
+
 ## Architecture notes
 
 **`/s/:shopId` is the public shop page**, listing every queue at one shop. It
