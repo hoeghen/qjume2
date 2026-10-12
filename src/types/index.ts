@@ -25,3 +25,4 @@ export { FREE_SERVICES_DEFAULT, SUBSCRIPTION_PRICE_DKK } from './limits.js';
 export type { QueueErrorReason } from './errors.js';
 export type { ShopAccess, StaffMember, StaffMembership } from './staff.js';
 export type { AdminAction, AdminAuditEntry, AdminFieldChange } from './admin.js';
+export type { MobilePayBillingSession, MobilePaySubscription } from './billing.js';

@@ -1,13 +1,18 @@
 import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
-import { logger } from 'firebase-functions';
-import { type Firestore, type Transaction } from 'firebase-admin/firestore';
+import { type Firestore } from 'firebase-admin/firestore';
 import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
-import { syncFreeServicesFlag } from '../lib/freeServices.js';
 import { requireCaller } from '../lib/auth.js';
-import { STRIPE_SECRETS_IF_ENABLED } from '../lib/secrets.js';
-import { providerFromEnv, type PaymentProvider } from './index.js';
+import { PAYMENT_SECRETS_IF_ENABLED } from '../lib/secrets.js';
 import {
+  mobilepayProvider,
+  providerForSession,
+  providerFromEnv,
+  type PaymentProvider,
+} from './index.js';
+import { applyPlanChange } from './applyPlan.js';
+import {
+  type MobilePaySubscription,
   type Plan,
   type Shop,
 } from '../../../src/types/index.js';
@@ -44,7 +49,7 @@ export async function performStartCheckout(
   firestore: Firestore,
   callerUid: string,
   input: StartCheckoutRequest,
-  provider: PaymentProvider = providerFromEnv(),
+  provider?: PaymentProvider,
 ): Promise<{ url: string }> {
   const { shopId, plan } = input;
   if (!shopId || (plan !== 'free' && plan !== 'paid')) {
@@ -52,8 +57,25 @@ export async function performStartCheckout(
   }
 
   await requireOwner(firestore, shopId, callerUid);
-  const session = await provider.createCheckout(shopId, plan);
+  const chosen =
+    provider ??
+    (plan === 'free' ? await providerHoldingShop(firestore, shopId) : providerFromEnv());
+  const session = await chosen.createCheckout(shopId, plan);
   return { url: session.url };
+}
+
+/**
+ * Who to cancel with: whoever is actually charging the shop. New checkouts
+ * follow `PAYMENTS_PROVIDER`, but a shop that subscribed through MobilePay
+ * stays MobilePay's to cancel even after that setting moves on.
+ */
+async function providerHoldingShop(
+  firestore: Firestore,
+  shopId: string,
+): Promise<PaymentProvider> {
+  const snap = await firestore.doc(`subscriptions/${shopId}`).get();
+  const subscription = snap.data() as MobilePaySubscription | undefined;
+  return subscription?.status === 'active' ? mobilepayProvider() : providerFromEnv();
 }
 
 /**
@@ -67,14 +89,15 @@ export async function performCompleteCheckout(
   firestore: Firestore,
   callerUid: string,
   input: CompleteCheckoutRequest,
-  provider: PaymentProvider = providerFromEnv(),
+  provider?: PaymentProvider,
 ): Promise<{ plan: Plan }> {
   const sessionId = input.sessionId?.trim();
   if (!sessionId) {
     throw fail('invalid-argument', 'shop-not-found', 'A sessionId is required.');
   }
 
-  const completed = await provider.verifyCheckout(sessionId);
+  const chosen = provider ?? providerForSession(sessionId);
+  const completed = await chosen.verifyCheckout(sessionId);
   if (!completed) {
     throw fail(
       'permission-denied',
@@ -84,43 +107,13 @@ export async function performCompleteCheckout(
   }
 
   await requireOwner(firestore, completed.shopId, callerUid);
-
-  const shopRef = firestore.doc(`shops/${completed.shopId}`);
-
-  await firestore.runTransaction(async (tx: Transaction) => {
-    const snap = await tx.get(shopRef);
-    const shop = snap.data() as Shop | undefined;
-    if (!shop) throw fail('not-found', 'shop-not-found', 'Shop not found.');
-
-    const update: Partial<Shop> = { plan: completed.plan };
-    // Only Stripe hands these back, and only on an upgrade — a downgrade's
-    // completed checkout has nothing new to record. Leaving them out of the
-    // update rather than writing `undefined` keeps whatever a previous
-    // upgrade already stored.
-    if (completed.stripeCustomerId !== undefined) {
-      update.stripeCustomerId = completed.stripeCustomerId;
-    }
-    if (completed.stripeSubscriptionId !== undefined) {
-      update.stripeSubscriptionId = completed.stripeSubscriptionId;
-    }
-    tx.update(shopRef, update);
-  });
-
-  // A subscription lifts the free-services count, and losing one brings it
-  // back: either way the queues' discovery copy may need to change.
-  await syncFreeServicesFlag(firestore, completed.shopId);
-
-  logger.info('Plan changed', {
-    shopId: completed.shopId,
-    plan: completed.plan,
-    provider: provider.name,
-  });
+  await applyPlanChange(firestore, completed, chosen.name);
 
   return { plan: completed.plan };
 }
 
 export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string }>>(
-  { secrets: STRIPE_SECRETS_IF_ENABLED },
+  { secrets: PAYMENT_SECRETS_IF_ENABLED },
   (request: CallableRequest<StartCheckoutRequest>) =>
     performStartCheckout(db, requireCaller(request).uid, request.data),
 );
@@ -128,6 +121,6 @@ export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string 
 export const completeCheckout = onCall<
   CompleteCheckoutRequest,
   Promise<{ plan: Plan }>
->({ secrets: STRIPE_SECRETS_IF_ENABLED }, (request: CallableRequest<CompleteCheckoutRequest>) =>
+>({ secrets: PAYMENT_SECRETS_IF_ENABLED }, (request: CallableRequest<CompleteCheckoutRequest>) =>
   performCompleteCheckout(db, requireCaller(request).uid, request.data),
 );

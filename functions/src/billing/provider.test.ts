@@ -25,6 +25,22 @@ describe('payment provider selection', () => {
     ).toThrow(/STRIPE_PRICE_ID/);
   });
 
+  it('selects MobilePay, and refuses it without its keys or price', () => {
+    const env = {
+      PAYMENTS_PROVIDER: 'mobilepay',
+      MOBILEPAY_CLIENT_ID: 'id',
+      MOBILEPAY_CLIENT_SECRET: 'secret',
+      MOBILEPAY_SUBSCRIPTION_KEY: 'key',
+      MOBILEPAY_MSN: '123456',
+      MOBILEPAY_PRICE_ORE: '12500',
+    };
+    expect(providerFromEnv(env).name).toBe('mobilepay');
+    expect(() => providerFromEnv({ ...env, MOBILEPAY_PRICE_ORE: '' })).toThrow(
+      /MOBILEPAY_PRICE_ORE/,
+    );
+    expect(() => providerFromEnv({ ...env, MOBILEPAY_MSN: '' })).toThrow(/MOBILEPAY_MSN/);
+  });
+
   it('rejects an unknown provider rather than guessing', () => {
     expect(() => providerFromEnv({ PAYMENTS_PROVIDER: 'wat' })).toThrow(
       /Unknown/,

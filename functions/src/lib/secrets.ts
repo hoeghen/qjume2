@@ -12,6 +12,12 @@ export const GEOCODING_SECRETS = ['GEOCODING_API_KEY'];
 export const EMAIL_SECRETS = ['EMAIL_API_KEY'];
 export const STRIPE_SECRETS = ['STRIPE_SECRET_KEY'];
 export const STRIPE_WEBHOOK_SECRETS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+export const MOBILEPAY_SECRETS = [
+  'MOBILEPAY_CLIENT_ID',
+  'MOBILEPAY_CLIENT_SECRET',
+  'MOBILEPAY_SUBSCRIPTION_KEY',
+];
+export const MOBILEPAY_WEBHOOK_SECRETS = [...MOBILEPAY_SECRETS, 'MOBILEPAY_WEBHOOK_SECRET'];
 
 /**
  * Firebase validates every bound secret's existence in Secret Manager at
@@ -29,3 +35,22 @@ export const STRIPE_SECRETS_IF_ENABLED = stripeSelected ? STRIPE_SECRETS : [];
 export const STRIPE_WEBHOOK_SECRETS_IF_ENABLED = stripeSelected
   ? STRIPE_WEBHOOK_SECRETS
   : [];
+
+/**
+ * MobilePay stays enabled while it is configured at all (`MOBILEPAY_MSN`
+ * set), not only while it takes new checkouts: shops that subscribed through
+ * it still need charging every month and cancelling on request after
+ * `PAYMENTS_PROVIDER` moves to Stripe. See CLAUDE.md decision 12.
+ */
+const mobilepayEnabled =
+  process.env['PAYMENTS_PROVIDER'] === 'mobilepay' || Boolean(process.env['MOBILEPAY_MSN']);
+export const MOBILEPAY_SECRETS_IF_ENABLED = mobilepayEnabled ? MOBILEPAY_SECRETS : [];
+export const MOBILEPAY_WEBHOOK_SECRETS_IF_ENABLED = mobilepayEnabled
+  ? MOBILEPAY_WEBHOOK_SECRETS
+  : [];
+
+/** For the checkout callables, which may hand off to either provider. */
+export const PAYMENT_SECRETS_IF_ENABLED = [
+  ...STRIPE_SECRETS_IF_ENABLED,
+  ...MOBILEPAY_SECRETS_IF_ENABLED,
+];

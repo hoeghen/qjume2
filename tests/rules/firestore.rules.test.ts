@@ -633,3 +633,56 @@ describe('shop owner emails', () => {
     await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), OWNER_DOC)));
   });
 });
+
+// ---------------------------------------------------------------------------
+// MobilePay billing state decides what a shop gets charged, so no client —
+// not even the owner — may read or write it. See CLAUDE.md decision 12.
+// ---------------------------------------------------------------------------
+describe('MobilePay billing state is server-only', () => {
+  const SUBSCRIPTION = 'subscriptions/shop1';
+  const SESSION = 'billingSessions/mobilepay_abc';
+
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await setDoc(doc(db, SUBSCRIPTION), {
+        provider: 'mobilepay',
+        shopId: 'shop1',
+        agreementId: 'agr_1',
+        status: 'active',
+        nextChargeDue: '2026-11-01',
+        billingDay: 1,
+        activatedAt: '2026-10-01T00:00:00.000Z',
+      });
+      await setDoc(doc(db, SESSION), {
+        provider: 'mobilepay',
+        shopId: 'shop1',
+        agreementId: 'agr_1',
+        createdAt: '2026-10-01T00:00:00.000Z',
+      });
+    });
+  });
+
+  it("refuses the owner reading their shop's subscription or checkout", async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(getDoc(doc(db, SUBSCRIPTION)));
+    await assertFails(getDoc(doc(db, SESSION)));
+  });
+
+  it('refuses the owner postponing their next charge', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(updateDoc(doc(db, SUBSCRIPTION), { nextChargeDue: '2099-01-01' }));
+  });
+
+  it('refuses anyone planting a checkout that would activate a shop', async () => {
+    const db = env.authenticatedContext(OTHER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'billingSessions/mobilepay_forged'), {
+        provider: 'mobilepay',
+        shopId: 'shop1',
+        agreementId: 'agr_theirs',
+        createdAt: '2026-10-01T00:00:00.000Z',
+      }),
+    );
+  });
+});

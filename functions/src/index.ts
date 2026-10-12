@@ -44,6 +44,8 @@ export { reverseGeocode } from './geocoding/reverse.js';
  */
 export { startCheckout, completeCheckout } from './billing/checkout.js';
 export { stripeWebhook } from './billing/webhook.js';
+export { mobilepayWebhook } from './billing/mobilepayWebhook.js';
+export { chargeMobilePaySubscriptions } from './billing/mobilepayCharges.js';
 
 /**
  * The abandoned-queue backstop. Whether a queue is available is now driven
