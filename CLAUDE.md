@@ -357,7 +357,7 @@ kept unedited.
     `stopServing` and `sweepAbandonedQueues`. Till *labels* still show
     whenever a queue has more than one station at all, staffed or not.
 
-12. **MobilePay is the first live provider; Stripe stays supported beside
+19. **MobilePay is the first live provider; Stripe stays supported beside
     it.** `mobilepayProvider` (`functions/src/billing/mobilepay.ts`) uses
     Vipps MobilePay's Recurring API: the owner accepts a monthly DKK
     agreement in the MobilePay app, with the first month as its initial
