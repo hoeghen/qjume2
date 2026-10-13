@@ -195,6 +195,11 @@ kept unedited.
     bound now. Secrets must exist in the project (`firebase
     functions:secrets:set`) *before* the first deploy that references them,
     or that deploy fails.
+    **Which secrets are bound is a constant in `secrets.ts`, never `.env`.**
+    firebase-tools analyses the functions code with only its own variables,
+    not `.env.<project>`, so a binding conditioned on `PAYMENTS_PROVIDER`
+    is always off — it was, silently, and MobilePay ran without its keys.
+    Create a provider's secrets first, then flip its constant.
 
     **`.github/workflows/deploy-firebase.yml`** ships the app to Firebase
     Hosting/Functions/rules on every push to `main`. It skips itself cleanly

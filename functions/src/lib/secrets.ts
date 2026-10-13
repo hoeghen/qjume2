@@ -20,32 +20,38 @@ export const MOBILEPAY_SECRETS = [
 export const MOBILEPAY_WEBHOOK_SECRETS = [...MOBILEPAY_SECRETS, 'MOBILEPAY_WEBHOOK_SECRET'];
 
 /**
+ * Which providers' secrets are bound. A constant in code, deliberately — not
+ * read from `.env`.
+ *
  * Firebase validates every bound secret's existence in Secret Manager at
- * deploy time, for every function, whether or not that function's code path
- * will run today. That means the Stripe callables can't declare
- * `STRIPE_SECRETS` unconditionally without Stripe's real secrets already
- * existing — which blocks deploying everything else while payments are still
- * on the stub provider (`PAYMENTS_PROVIDER=stub`, CLAUDE.md decision 10).
- * These read `process.env` at deploy-time analysis (firebase-tools loads
- * `.env.<project>` before requiring this code), so switching the provider
- * back to `stripe` and setting the real secrets is what re-enables them.
+ * deploy time, so a provider whose secrets do not exist yet must not be
+ * bound, or every deploy fails. That choice was once read from
+ * `process.env`, on the belief that firebase-tools loads `.env.<project>`
+ * before analysing this code. It does not: discovery runs with only
+ * Firebase's own variables (`discoverBuild(runtimeConfig, firebaseEnvs)` in
+ * firebase-tools' deploy/functions/prepare.js), so the condition was always
+ * false, nothing was bound, and MobilePay's functions ran without their keys
+ * despite them being set. `.env` decides runtime behaviour only.
+ *
+ * To switch a provider on: create its secrets in Secret Manager first, then
+ * flip it here.
  */
-const stripeSelected = process.env['PAYMENTS_PROVIDER'] === 'stripe';
-export const STRIPE_SECRETS_IF_ENABLED = stripeSelected ? STRIPE_SECRETS : [];
-export const STRIPE_WEBHOOK_SECRETS_IF_ENABLED = stripeSelected
+const STRIPE_SECRETS_EXIST = false;
+const MOBILEPAY_SECRETS_EXIST = true;
+
+export const STRIPE_SECRETS_IF_ENABLED = STRIPE_SECRETS_EXIST ? STRIPE_SECRETS : [];
+export const STRIPE_WEBHOOK_SECRETS_IF_ENABLED = STRIPE_SECRETS_EXIST
   ? STRIPE_WEBHOOK_SECRETS
   : [];
 
 /**
- * MobilePay stays enabled while it is configured at all (`MOBILEPAY_MSN`
- * set), not only while it takes new checkouts: shops that subscribed through
- * it still need charging every month and cancelling on request after
- * `PAYMENTS_PROVIDER` moves to Stripe. See CLAUDE.md decision 12.
+ * Bound for as long as any shop might be on MobilePay, not only while it
+ * takes new checkouts: those shops still need charging every month and
+ * cancelling on request after `PAYMENTS_PROVIDER` moves to Stripe. See
+ * CLAUDE.md decision 19.
  */
-const mobilepayEnabled =
-  process.env['PAYMENTS_PROVIDER'] === 'mobilepay' || Boolean(process.env['MOBILEPAY_MSN']);
-export const MOBILEPAY_SECRETS_IF_ENABLED = mobilepayEnabled ? MOBILEPAY_SECRETS : [];
-export const MOBILEPAY_WEBHOOK_SECRETS_IF_ENABLED = mobilepayEnabled
+export const MOBILEPAY_SECRETS_IF_ENABLED = MOBILEPAY_SECRETS_EXIST ? MOBILEPAY_SECRETS : [];
+export const MOBILEPAY_WEBHOOK_SECRETS_IF_ENABLED = MOBILEPAY_SECRETS_EXIST
   ? MOBILEPAY_WEBHOOK_SECRETS
   : [];
 
