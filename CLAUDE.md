@@ -388,7 +388,11 @@ kept unedited.
 
     `MOBILEPAY_PRICE_ORE` is what is charged, VAT included — set separately
     from `SUBSCRIPTION_PRICE_DKK`, which is the price before VAT that the UI
-    shows. Setup order is in `functions/.env.qjume-d483a`.
+    shows. Setup order is in `functions/.env.qjume-d483a`. The webhook is
+    registered from `/admin/payments` (`adminRegisterMobilePayWebhook`), not
+    a command line: it runs where the keys already are, replaces any earlier
+    registration for the same URL, and shows the secret once — it is never
+    stored or logged by the app, only pasted into Secret Manager by hand.
 
 ## Architecture notes
 

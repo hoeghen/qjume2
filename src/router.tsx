@@ -19,6 +19,7 @@ import { AdminShopList } from './routes/admin/AdminShopList.js';
 import { AdminShopDetail } from './routes/admin/AdminShopDetail.js';
 import { AdminQueueEditRoute } from './routes/admin/AdminQueueEditRoute.js';
 import { AdminAuditLog } from './routes/admin/AdminAuditLog.js';
+import { AdminPayments } from './routes/admin/AdminPayments.js';
 
 // A portable build has to run from a path it cannot know at build time, on a
 // host with no rewrite rule to send deep links back to index.html. Putting the
@@ -66,6 +67,7 @@ const ROUTE_CHILDREN = [
     children: [
       { index: true, element: <AdminShopList /> },
       { path: 'log', element: <AdminAuditLog /> },
+      { path: 'payments', element: <AdminPayments /> },
       { path: 'shops/:shopId', element: <AdminShopDetail /> },
       {
         path: 'shops/:shopId/q/:queueId',

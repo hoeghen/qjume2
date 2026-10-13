@@ -524,6 +524,7 @@ export const en = {
       servedPaid: 'Subscription · {used} served',
       title: 'Shops',
       auditLog: 'Audit log',
+      payments: 'Payments',
       signOut: 'Sign out',
       searchAndFilter: 'Search and filter',
       clearFilters: { one: 'Clear {count} filter', other: 'Clear {count} filters' },
@@ -573,6 +574,22 @@ export const en = {
       waitingAddress: '{count} waiting · {address}',
       edit: 'Edit',
       monitor: 'Monitor',
+    },
+
+    payments: {
+      title: 'Payments',
+      webhookTitle: 'MobilePay webhook',
+      webhookBody:
+        'MobilePay calls this when an agreement becomes active, is stopped, or a charge fails. Register it once for the test environment and again when going to production. An earlier registration for the same URL is replaced.',
+      register: 'Register webhook with MobilePay',
+      confirm:
+        'Register the webhook with MobilePay? An existing registration is replaced, and its old secret stops working.',
+      registered: 'Registered in the {environment} environment for {url}.',
+      secretLabel: 'Webhook secret (shown only now)',
+      copy: 'Copy',
+      copied: 'Copied',
+      nextStep:
+        'Go to Secret Manager, open MOBILEPAY_WEBHOOK_SECRET, click "+ New version", paste the value and save. It is used from the next deploy.',
     },
 
     auditLog: {
