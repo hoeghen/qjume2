@@ -44,9 +44,12 @@ export function AdminAuditLog() {
                 </p>
               )}
             </div>
-            <LocalizedLink className="link" to={`/admin/shops/${entry.shopId}`}>
-              {t('admin.auditLog.shop')}
-            </LocalizedLink>
+            {/* Platform-wide actions name no shop. */}
+            {entry.shopId && (
+              <LocalizedLink className="link" to={`/admin/shops/${entry.shopId}`}>
+                {t('admin.auditLog.shop')}
+              </LocalizedLink>
+            )}
           </li>
         ))}
       </ul>

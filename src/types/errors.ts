@@ -26,4 +26,6 @@ export type QueueErrorReason =
   | 'payment-unverified'
   | 'not-shop-staff'
   | 'not-platform-admin'
-  | 'address-not-found';
+  | 'address-not-found'
+  /** A payment setting the action needs is missing from the functions config. */
+  | 'payments-not-configured';

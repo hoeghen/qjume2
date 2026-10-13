@@ -266,6 +266,17 @@ export const adminDeleteShop = callable<{ shopId: string }, void>(
   'adminDeleteShop',
 );
 
+export const adminRegisterMobilePayWebhook = callable<
+  void,
+  {
+    webhookId: string;
+    secret: string;
+    url: string;
+    environment: 'test' | 'production';
+    replaced: number;
+  }
+>('adminRegisterMobilePayWebhook');
+
 export const adminDeleteQueue = callable<
   { shopId: string; queueId: string },
   void

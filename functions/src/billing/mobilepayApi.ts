@@ -31,6 +31,20 @@ export interface CreateChargeRequest {
   orderId: string;
 }
 
+/** The Recurring API events `mobilepayWebhook` acts on or logs. */
+export const MOBILEPAY_WEBHOOK_EVENTS = [
+  'recurring.agreement-activated.v1',
+  'recurring.agreement-stopped.v1',
+  'recurring.agreement-expired.v1',
+  'recurring.charge-failed.v1',
+  'recurring.charge-creation-failed.v1',
+];
+
+export interface RegisteredWebhook {
+  id: string;
+  url: string;
+}
+
 export interface MobilePayApi {
   createAgreement(
     request: CreateAgreementRequest,
@@ -39,6 +53,10 @@ export interface MobilePayApi {
   /** Idempotent: stopping a stopped agreement succeeds. */
   stopAgreement(agreementId: string): Promise<void>;
   createCharge(agreementId: string, request: CreateChargeRequest): Promise<void>;
+  listWebhooks(): Promise<RegisteredWebhook[]>;
+  /** Returns the secret MobilePay signs this webhook's deliveries with — shown once. */
+  registerWebhook(url: string, events: string[]): Promise<{ id: string; secret: string }>;
+  deleteWebhook(id: string): Promise<void>;
 }
 
 export interface MobilePayConfig {
@@ -128,7 +146,7 @@ export function mobilePayApi(config: MobilePayConfig, fetchImpl: Fetch = fetch):
 
   async function call(
     what: string,
-    method: 'GET' | 'POST' | 'PATCH',
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     path: string,
     body?: unknown,
     idempotencyKey?: string,
@@ -204,6 +222,26 @@ export function mobilePayApi(config: MobilePayConfig, fetchImpl: Fetch = fetch):
         },
         request.orderId,
       );
+    },
+
+    async listWebhooks() {
+      const response = await call('list webhooks', 'GET', '/webhooks/v1/webhooks');
+      const body = (await response.json()) as
+        | RegisteredWebhook[]
+        | { webhooks?: RegisteredWebhook[] };
+      return Array.isArray(body) ? body : (body.webhooks ?? []);
+    },
+
+    async registerWebhook(url, events) {
+      const response = await call('register webhook', 'POST', '/webhooks/v1/webhooks', {
+        url,
+        events,
+      });
+      return (await response.json()) as { id: string; secret: string };
+    },
+
+    async deleteWebhook(id) {
+      await call('delete webhook', 'DELETE', `/webhooks/v1/webhooks/${encodeURIComponent(id)}`);
     },
   };
 }

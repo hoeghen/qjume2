@@ -11,6 +11,7 @@ import {
 } from './mobilepayApi.js';
 import { performMobilePayWebhookEvent } from './mobilepayWebhook.js';
 import { performChargeMobilePaySubscriptions } from './mobilepayCharges.js';
+import { performRegisterMobilePayWebhook } from '../admin/registerMobilePayWebhook.js';
 import { OWNER_UID, clearFirestore, makeShop, testDb } from '../test/harness.js';
 import type {
   MobilePayBillingSession,
@@ -28,6 +29,7 @@ function fakeMobilePay() {
   const created: CreateAgreementRequest[] = [];
   const charges: (CreateChargeRequest & { agreementId: string })[] = [];
   const stopped: string[] = [];
+  const webhooks: { id: string; url: string }[] = [];
   let refuseCharges = false;
   let n = 0;
 
@@ -49,10 +51,22 @@ function fakeMobilePay() {
       if (refuseCharges) throw new MobilePayApiError(400, 'refused', 'create charge');
       charges.push({ agreementId, ...request });
     },
+    async listWebhooks() {
+      return [...webhooks];
+    },
+    async registerWebhook(url) {
+      const id = `wh_${++n}`;
+      webhooks.push({ id, url });
+      return { id, secret: `secret-${id}` };
+    },
+    async deleteWebhook(id) {
+      webhooks.splice(webhooks.findIndex((w) => w.id === id), 1);
+    },
   };
 
   return {
     api,
+    webhooks,
     agreements,
     created,
     charges,
@@ -384,5 +398,40 @@ describe('the monthly charging run', () => {
     expect(result.failed).toEqual([shopId]);
     expect((await shopOf(shopId)).plan).toBe('paid');
     expect((await subscriptionOf(shopId))!.nextChargeDue).toBe('2026-11-01');
+  });
+});
+
+describe('registering the webhook from the admin console', () => {
+  const ADMIN = { uid: 'admin-uid', email: 'admin@qjume.dk' };
+  const URL_ = 'https://us-central1-qjume.cloudfunctions.net/mobilepayWebhook';
+
+  it('registers, hands back the secret once, and logs it without the secret', async () => {
+    const mp = fakeMobilePay();
+    const result = await performRegisterMobilePayWebhook(testDb, ADMIN, mp.api, URL_, 'test');
+
+    expect(result).toMatchObject({ url: URL_, environment: 'test', replaced: 0 });
+    expect(result.secret).toBeTruthy();
+    const log = (await testDb.collection('adminAuditLog').get()).docs.map((d) => d.data());
+    expect(log).toHaveLength(1);
+    expect(log[0]).toMatchObject({ action: 'billing.registerWebhook', shopId: '' });
+    expect(JSON.stringify(log[0])).not.toContain(result.secret);
+  });
+
+  it('replaces an earlier registration for the same URL, and leaves others', async () => {
+    const mp = fakeMobilePay();
+    mp.webhooks.push({ id: 'wh_old', url: URL_ }, { id: 'wh_other', url: 'https://elsewhere' });
+
+    const result = await performRegisterMobilePayWebhook(testDb, ADMIN, mp.api, URL_, 'test');
+
+    expect(result.replaced).toBe(1);
+    expect(mp.webhooks.map((w) => w.id).sort()).toEqual([result.webhookId, 'wh_other'].sort());
+  });
+
+  it('refuses without a configured webhook URL', async () => {
+    const mp = fakeMobilePay();
+    await expect(
+      performRegisterMobilePayWebhook(testDb, ADMIN, mp.api, undefined, 'test'),
+    ).rejects.toThrow(/MOBILEPAY_WEBHOOK_URL/);
+    expect(mp.webhooks).toEqual([]);
   });
 });

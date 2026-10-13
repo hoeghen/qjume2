@@ -62,6 +62,9 @@ export function AdminShopList() {
           <LocalizedLink className="link" to="/admin/log">
             {t('admin.shopList.auditLog')}
           </LocalizedLink>
+          <LocalizedLink className="link" to="/admin/payments">
+            {t('admin.shopList.payments')}
+          </LocalizedLink>
           <button type="button" className="link" onClick={() => void signOut()}>
             {t('admin.shopList.signOut')}
           </button>

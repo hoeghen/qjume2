@@ -68,3 +68,4 @@ export { adminGrantFreeServices } from './admin/grantFreeServices.js';
 export { adminUpdateQueue } from './admin/updateQueue.js';
 export { adminDeleteQueue } from './admin/deleteQueue.js';
 export { adminDeleteShop } from './admin/deleteShop.js';
+export { adminRegisterMobilePayWebhook } from './admin/registerMobilePayWebhook.js';

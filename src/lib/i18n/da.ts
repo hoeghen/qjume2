@@ -520,6 +520,7 @@ export const da: DeepPartial<typeof en> = {
       servedPaid: 'Abonnement · {used} betjent',
       title: 'Butikker',
       auditLog: 'Aktivitetslog',
+      payments: 'Betaling',
       signOut: 'Log ud',
       searchAndFilter: 'Søg og filtrer',
       clearFilters: { one: 'Ryd {count} filter', other: 'Ryd {count} filtre' },
@@ -569,6 +570,22 @@ export const da: DeepPartial<typeof en> = {
       waitingAddress: '{count} venter · {address}',
       edit: 'Rediger',
       monitor: 'Monitor',
+    },
+
+    payments: {
+      title: 'Betaling',
+      webhookTitle: 'MobilePay-webhook',
+      webhookBody:
+        'MobilePay giver besked her, når en aftale bliver aktiv, stoppes, eller et træk fejler. Registrér webhooken én gang for testmiljøet og igen, når du skifter til produktion. En tidligere registrering for samme adresse bliver erstattet.',
+      register: 'Registrér webhook hos MobilePay',
+      confirm:
+        'Registrér webhooken hos MobilePay? En eksisterende registrering bliver erstattet, og den gamle secret holder op med at virke.',
+      registered: 'Registreret i {environment}-miljøet for {url}.',
+      secretLabel: 'Webhook-secret (vises kun nu)',
+      copy: 'Kopiér',
+      copied: 'Kopieret',
+      nextStep:
+        'Gå til Secret Manager, åbn MOBILEPAY_WEBHOOK_SECRET, klik "+ New version", indsæt værdien og gem. Den bruges fra næste deploy.',
     },
 
     auditLog: {
