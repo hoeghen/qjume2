@@ -110,7 +110,7 @@ export const relinkTicket = callable<
 >('relinkTicket');
 
 export const startCheckout = callable<
-  { shopId: string; plan: 'free' | 'paid' },
+  { shopId: string; plan: 'free' | 'paid'; acceptedTerms?: boolean },
   { url: string }
 >('startCheckout');
 

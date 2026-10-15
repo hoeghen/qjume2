@@ -211,6 +211,11 @@ service cloud.firestore {
     match /billingSessions/{sessionId} {
       allow read, write: if false;
     }
+    // Who accepted which terms version, before subscribing. Evidence, so no
+    // client may write or read it — not even the owner it is about.
+    match /termsAcceptances/{id} {
+      allow read, write: if false;
+    }
 
     // Anything not matched above stays closed.
     match /{document=**} {

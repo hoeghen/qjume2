@@ -26,3 +26,5 @@ export type { QueueErrorReason } from './errors.js';
 export type { ShopAccess, StaffMember, StaffMembership } from './staff.js';
 export type { AdminAction, AdminAuditEntry, AdminFieldChange } from './admin.js';
 export type { MobilePayBillingSession, MobilePaySubscription } from './billing.js';
+export type { TermsAcceptance } from './legal.js';
+export { TERMS_VERSION } from './legal.js';

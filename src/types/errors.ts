@@ -28,4 +28,6 @@ export type QueueErrorReason =
   | 'not-platform-admin'
   | 'address-not-found'
   /** A payment setting the action needs is missing from the functions config. */
-  | 'payments-not-configured';
+  | 'payments-not-configured'
+  /** A subscription was started without ticking "I accept the terms". */
+  | 'terms-not-accepted';

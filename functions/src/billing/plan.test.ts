@@ -19,7 +19,7 @@ import {
   seedStation,
   testDb,
 } from '../test/harness.js';
-import type { Shop } from '../../../src/types/index.js';
+import { TERMS_VERSION, type Shop } from '../../../src/types/index.js';
 
 const payments = stubPayments('test-secret');
 const STAFF_UID = 'staff-uid';
@@ -54,7 +54,7 @@ describe('a plan changes only through a verified payment', () => {
     const { url } = await performStartCheckout(
       testDb,
       OWNER_UID,
-      { shopId, plan: 'paid' },
+      { shopId, plan: 'paid', acceptedTerms: true },
       payments,
     );
     const sessionId = new URL(url, 'http://x').searchParams.get('session')!;
@@ -92,7 +92,7 @@ describe('a plan changes only through a verified payment', () => {
     const { url } = await performStartCheckout(
       testDb,
       OWNER_UID,
-      { shopId: theirs, plan: 'paid' },
+      { shopId: theirs, plan: 'paid', acceptedTerms: true },
       payments,
     );
     const sessionId = new URL(url, 'http://x').searchParams.get('session')!;
@@ -105,7 +105,7 @@ describe('a plan changes only through a verified payment', () => {
   it('refuses to start checkout for a shop you do not own', async () => {
     const shopId = await seedShop('free');
     await expect(
-      performStartCheckout(testDb, 'someone-else', { shopId, plan: 'paid' }, payments),
+      performStartCheckout(testDb, 'someone-else', { shopId, plan: 'paid', acceptedTerms: true }, payments),
     ).rejects.toThrow(/shop owner/i);
   });
 
@@ -114,7 +114,7 @@ describe('a plan changes only through a verified payment', () => {
     const { url } = await performStartCheckout(
       testDb,
       OWNER_UID,
-      { shopId, plan: 'paid' },
+      { shopId, plan: 'paid', acceptedTerms: true },
       payments,
     );
     const sessionId = new URL(url, 'http://x').searchParams.get('session')!;
@@ -296,5 +296,57 @@ describe('staff can serve but not change anything', () => {
         displayName: 'Walk-in',
       }),
     ).rejects.toThrow(/not serving this shop/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Subscribing is agreeing to a recurring charge, so the owner must accept the
+// terms — checked on the server, and recorded with the version they saw.
+// ---------------------------------------------------------------------------
+describe('accepting the terms', () => {
+  it('refuses to start a subscription without them', async () => {
+    const shopId = await seedShop('free');
+    await expect(
+      performStartCheckout(testDb, OWNER_UID, { shopId, plan: 'paid' }, payments),
+    ).rejects.toThrow(/accept the terms/i);
+    expect((await testDb.collection('termsAcceptances').get()).size).toBe(0);
+  });
+
+  it('records who accepted which version, and when', async () => {
+    const shopId = await seedShop('free');
+    await performStartCheckout(
+      testDb,
+      OWNER_UID,
+      { shopId, plan: 'paid', acceptedTerms: true },
+      payments,
+    );
+    const docs = (await testDb.collection('termsAcceptances').get()).docs;
+    expect(docs).toHaveLength(1);
+    expect(docs[0]!.data()).toMatchObject({
+      shopId,
+      uid: OWNER_UID,
+      termsVersion: TERMS_VERSION,
+    });
+    expect(typeof docs[0]!.data()['acceptedAt']).toBe('number');
+  });
+
+  it('does not record an acceptance for someone who is not the owner', async () => {
+    const shopId = await seedShop('free');
+    await expect(
+      performStartCheckout(
+        testDb,
+        'someone-else',
+        { shopId, plan: 'paid', acceptedTerms: true },
+        payments,
+      ),
+    ).rejects.toThrow();
+    expect((await testDb.collection('termsAcceptances').get()).size).toBe(0);
+  });
+
+  it('is not needed to cancel', async () => {
+    const shopId = await seedShop('paid');
+    await expect(
+      performStartCheckout(testDb, OWNER_UID, { shopId, plan: 'free' }, payments),
+    ).resolves.toHaveProperty('url');
   });
 });
