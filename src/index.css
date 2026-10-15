@@ -187,6 +187,15 @@ input, select, textarea {
 input::placeholder, textarea::placeholder { color: var(--card-muted); }
 .checkbox { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
 .checkbox input { width: auto; margin-top: 4px; }
+/* The accept-terms tick and the subscribe button: room above, between and
+   below, so the button does not sit jammed against the line it depends on. */
+.subscribe-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  margin: 20px 0 28px;
+}
 
 .address-field { position: relative; }
 .address-suggestions {

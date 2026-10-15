@@ -98,27 +98,29 @@ export function Billing() {
           <p className="hint">{t('shop.billing.subscriptionHint')}</p>
           {/* The terms open in a new tab, so reading them never loses the
               tick or the page. */}
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-            />
-            <span>
-              {t('shop.billing.acceptBefore')}
-              <LocalizedLink to="/terms" target="_blank" rel="noopener">
-                {t('shop.billing.terms')}
-              </LocalizedLink>
-              {t('shop.billing.acceptAfter')}
-            </span>
-          </label>
-          <button
-            type="button"
-            disabled={busy || !acceptedTerms}
-            onClick={() => changePlan('paid')}
-          >
-            {t('shop.billing.subscribe', { price: SUBSCRIPTION_PRICE_DKK })}
-          </button>
+          <div className="subscribe-confirm">
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <span>
+                {t('shop.billing.acceptBefore')}
+                <LocalizedLink to="/terms" target="_blank" rel="noopener">
+                  {t('shop.billing.terms')}
+                </LocalizedLink>
+                {t('shop.billing.acceptAfter')}
+              </span>
+            </label>
+            <button
+              type="button"
+              disabled={busy || !acceptedTerms}
+              onClick={() => changePlan('paid')}
+            >
+              {t('shop.billing.subscribe', { price: SUBSCRIPTION_PRICE_DKK })}
+            </button>
+          </div>
         </>
       )}
 
