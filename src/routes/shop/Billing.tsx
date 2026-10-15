@@ -21,6 +21,8 @@ export function Billing() {
   const shop = useDoc(shopDoc(shopId));
 
   const [busy, setBusy] = useState(false);
+  // Subscribing needs the terms ticked; the server checks it too.
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Returning from the provider. The session id is a lookup key, not proof —
@@ -45,7 +47,11 @@ export function Billing() {
     setError(null);
     void (async () => {
       try {
-        const { url } = await startCheckout({ shopId, plan });
+        const { url } = await startCheckout({
+          shopId,
+          plan,
+          ...(plan === 'paid' ? { acceptedTerms } : {}),
+        });
         // An absolute URL is a real provider's own hosted page — the whole
         // page is about to unload, so nothing here needs to run again. A
         // relative one (the stub, or a cancellation, which has no
@@ -89,14 +95,30 @@ export function Billing() {
           )}
           <h2>{t('shop.billing.subscriptionTitle')}</h2>
           <p>{t('shop.billing.subscriptionBody', { price: SUBSCRIPTION_PRICE_DKK })}</p>
-          <button type="button" disabled={busy} onClick={() => changePlan('paid')}>
+          <p className="hint">{t('shop.billing.subscriptionHint')}</p>
+          {/* The terms open in a new tab, so reading them never loses the
+              tick or the page. */}
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+            />
+            <span>
+              {t('shop.billing.acceptBefore')}
+              <LocalizedLink to="/terms" target="_blank" rel="noopener">
+                {t('shop.billing.terms')}
+              </LocalizedLink>
+              {t('shop.billing.acceptAfter')}
+            </span>
+          </label>
+          <button
+            type="button"
+            disabled={busy || !acceptedTerms}
+            onClick={() => changePlan('paid')}
+          >
             {t('shop.billing.subscribe', { price: SUBSCRIPTION_PRICE_DKK })}
           </button>
-          <p className="hint">
-            {t('shop.billing.subscriptionHintBefore')}
-            <LocalizedLink to="/terms">{t('shop.billing.terms')}</LocalizedLink>
-            {t('shop.billing.subscriptionHintAfter')}
-          </p>
         </>
       )}
 

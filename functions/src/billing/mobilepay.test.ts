@@ -92,7 +92,7 @@ async function startPaid(mp: ReturnType<typeof fakeMobilePay>, shopId: string) {
   const { url } = await performStartCheckout(
     testDb,
     OWNER_UID,
-    { shopId, plan: 'paid' },
+    { shopId, plan: 'paid', acceptedTerms: true },
     mp.provider(),
   );
   const sessions = await testDb.collection('billingSessions').where('shopId', '==', shopId).get();
@@ -185,7 +185,7 @@ describe('subscribing through MobilePay', () => {
     const { url } = await performStartCheckout(
       testDb,
       'someone-else',
-      { shopId, plan: 'paid' },
+      { shopId, plan: 'paid', acceptedTerms: true },
       mp.provider(),
     );
     const agreementId = url.split('/').pop()!;

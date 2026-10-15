@@ -162,6 +162,13 @@ kept unedited.
     plan (see "Billing" below), not just wording. Linked from the two moments
     someone is actually agreeing to something — shop sign-in and the upgrade
     button — not stapled to every screen.
+    **Subscribing needs a ticked "I accept the terms" box.** The terms link
+    beside it opens in a new tab, and the subscribe button stays disabled
+    until it is ticked. `startCheckout` refuses a paid plan without
+    `acceptedTerms` (`terms-not-accepted`) and records each acceptance —
+    shop, uid, `TERMS_VERSION`, time — in `termsAcceptances`, which no
+    client can read or write. Bump `TERMS_VERSION` (`src/types/legal.ts`)
+    whenever the terms' wording changes.
 
     **Payments are Stripe, in subscription mode** (`functions/src/billing/
     stripe.ts`), with Google Pay and Apple Pay offered automatically as

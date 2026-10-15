@@ -12,14 +12,18 @@ import {
 } from './index.js';
 import { applyPlanChange } from './applyPlan.js';
 import {
+  TERMS_VERSION,
   type MobilePaySubscription,
   type Plan,
   type Shop,
+  type TermsAcceptance,
 } from '../../../src/types/index.js';
 
 export interface StartCheckoutRequest {
   shopId: string;
   plan: Plan;
+  /** The owner ticked "I accept the terms". Required to subscribe, not to cancel. */
+  acceptedTerms?: boolean;
 }
 
 export interface CompleteCheckoutRequest {
@@ -56,7 +60,30 @@ export async function performStartCheckout(
     throw fail('invalid-argument', 'shop-not-found', 'shopId and a plan are required.');
   }
 
+  if (plan === 'paid' && input.acceptedTerms !== true) {
+    // Checked here, not only by the disabled button: a subscription is a
+    // recurring charge, and agreeing to it must not depend on the client.
+    throw fail(
+      'failed-precondition',
+      'terms-not-accepted',
+      'Accept the terms before starting a subscription.',
+    );
+  }
+
   await requireOwner(firestore, shopId, callerUid);
+
+  if (plan === 'paid') {
+    // Recorded before the owner is sent to pay, so every subscription that
+    // follows has its acceptance on file — which version, who, and when.
+    const acceptance: TermsAcceptance = {
+      shopId,
+      uid: callerUid,
+      termsVersion: TERMS_VERSION,
+      acceptedAt: Date.now(),
+    };
+    await firestore.collection('termsAcceptances').add(acceptance);
+  }
+
   const chosen =
     provider ??
     (plan === 'free' ? await providerHoldingShop(firestore, shopId) : providerFromEnv());

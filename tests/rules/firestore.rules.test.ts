@@ -686,3 +686,18 @@ describe('MobilePay billing state is server-only', () => {
     );
   });
 });
+
+describe('terms acceptances are server-only evidence', () => {
+  it('refuses the owner forging or reading an acceptance', async () => {
+    const db = env.authenticatedContext(OWNER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'termsAcceptances/forged'), {
+        shopId: 'shop1',
+        uid: OWNER,
+        termsVersion: '2026-10-15',
+        acceptedAt: 1,
+      }),
+    );
+    await assertFails(getDoc(doc(db, 'termsAcceptances/forged')));
+  });
+});
