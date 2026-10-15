@@ -605,11 +605,27 @@ export const en = {
     },
   },
 
+  contact: {
+    title: 'Contact',
+    intro: 'Qjume is run by {company}. Write to us about anything — a shop, a subscription, an invoice or your data.',
+    company: 'Company',
+    cvr: 'CVR no.',
+    address: 'Address',
+    email: 'Email',
+    reply: 'We usually reply within a couple of working days.',
+  },
+
+  footer: {
+    contact: 'Contact',
+    terms: 'Terms',
+    privacy: 'Privacy policy',
+  },
+
   legal: {
     terms: {
       title: 'Terms of Service',
-      lastUpdated: 'Last updated: [date of launch]',
-      intro: 'These Terms govern use of Qjume (the “Service”), operated by Bitwork.dk (“Bitwork.dk”, “we”, “us”). By creating a queue, joining one, or otherwise using the Service, you agree to these Terms. If you are accepting them on behalf of a business, you confirm you have the authority to do so.',
+      lastUpdated: 'Last updated: 15 October 2026',
+      intro: 'These Terms govern use of Qjume (the “Service”), operated by Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) (“Bitwork”, “we”, “us”). By creating a queue, joining one, or otherwise using the Service, you agree to these Terms. If you are accepting them on behalf of a business, you confirm you have the authority to do so.',
 
       s1Heading: '1. What the Service is',
       s1Body: 'Qjume lets a business (a “Shop”) run one or more waiting lines (“Queues”) that customers can see and join remotely, and lets a customer join a Queue, track their place in it, and be notified as their turn approaches. A Shop is run by its owner and any staff the owner adds. A customer does not need an account to join a Queue.',
@@ -622,7 +638,7 @@ export const en = {
       s3Heading: '3. Plans, fees and billing',
       s3Body1Before: 'Qjume offers a free plan, with every feature, that covers a number of free services (customers marked served) shown in the app; once those are used, the Shop’s queues take no new customers until it subscribes. The subscription removes that limit and is billed on a ',
       s3Body1Strong: 'recurring subscription',
-      s3Body1After: ' at the price and interval shown at checkout, charged automatically until cancelled. Payment is processed by Vipps MobilePay or Stripe, depending on how you pay; Bitwork.dk never receives or stores your card or account details.',
+      s3Body1After: ' at the price and interval shown at checkout, charged automatically until cancelled. Payment is processed by Vipps MobilePay or Stripe, depending on how you pay; Bitwork never receives or stores your card or account details.',
       s3Body2: 'You can cancel at any time from your billing settings. Cancelling takes effect immediately: no further payments are taken, and the Shop returns at once to the free plan with whatever free services it has left. The same happens if you stop the agreement directly with the payment provider (for example in the MobilePay app), or if a payment cannot be completed. The period already paid for is not refunded, including any unused part of it, except where the law gives you a right to a refund. We may change plan pricing with reasonable notice; continuing to use the paid plan after a price change takes effect means you accept it.',
 
       s4Heading: '4. Acceptable use',
@@ -643,7 +659,7 @@ export const en = {
       s6Body: 'We aim to keep the Service running but do not guarantee it will be uninterrupted or error-free. If a Shop’s connection drops, its Queue is marked unavailable to new joiners until it reconnects, and picks up service from where it left off — we are not responsible for a Shop’s own network or device failing.',
 
       s7Heading: '7. Disclaimers and liability',
-      s7Body: 'The Service is provided “as is”, without warranties of any kind beyond those the law does not allow us to exclude. To the fullest extent permitted by law, Bitwork.dk is not liable for indirect or consequential losses arising from use of the Service, including lost business or lost custom from a Queue being unavailable. Nothing in these Terms limits liability for death, personal injury, or fraud, where the law does not allow it to be limited.',
+      s7Body: 'The Service is provided “as is”, without warranties of any kind beyond those the law does not allow us to exclude. To the fullest extent permitted by law, Bitwork is not liable for indirect or consequential losses arising from use of the Service, including lost business or lost custom from a Queue being unavailable. Nothing in these Terms limits liability for death, personal injury, or fraud, where the law does not allow it to be limited.',
 
       s8Heading: '8. Suspension and termination',
       s8Body: 'We may suspend or close a Shop’s account for breach of these Terms, non-payment, or where the law requires it. You may stop using the Service, or close your Shop, at any time. Sections that by their nature should survive ending your use of the Service — including billing already due and the limitation of liability — continue to apply.',
@@ -657,14 +673,14 @@ export const en = {
       s10BodyAfter: ' platform.',
 
       s11Heading: '11. Contact',
-      s11BodyBefore: 'Bitwork.dk — ',
+      s11BodyBefore: 'Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) — ',
       s11BodyAfter: '.',
     },
 
     privacy: {
       title: 'Privacy Policy',
-      lastUpdated: 'Last updated: [date of launch]',
-      introBefore: 'Bitwork.dk (“we”, “us”) is the data controller for personal data collected through Qjume. This policy explains what we collect, why, and what you can do about it. Questions or requests: ',
+      lastUpdated: 'Last updated: 15 October 2026',
+      introBefore: 'Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) (“we”, “us”) is the data controller for personal data collected through Qjume. This policy explains what we collect, why, and what you can do about it. Questions or requests: ',
       introAfter: '.',
 
       s1Heading: '1. What we collect',

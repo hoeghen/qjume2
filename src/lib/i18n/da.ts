@@ -601,11 +601,27 @@ export const da: DeepPartial<typeof en> = {
     },
   },
 
+  contact: {
+    title: 'Kontakt',
+    intro: 'Qjume drives af {company}. Skriv til os om alt — en butik, et abonnement, en faktura eller dine data.',
+    company: 'Firma',
+    cvr: 'CVR-nr.',
+    address: 'Adresse',
+    email: 'E-mail',
+    reply: 'Vi svarer normalt inden for et par hverdage.',
+  },
+
+  footer: {
+    contact: 'Kontakt',
+    terms: 'Vilkår',
+    privacy: 'Privatlivspolitik',
+  },
+
   legal: {
     terms: {
       title: 'Vilkår for brug',
-      lastUpdated: 'Sidst opdateret: [lanceringsdato]',
-      intro: 'Disse vilkår regulerer brugen af Qjume ("Tjenesten"), som drives af Bitwork.dk ("Bitwork.dk", "vi", "os"). Ved at oprette en kø, tilslutte dig en, eller på anden måde bruge Tjenesten, accepterer du disse vilkår. Hvis du accepterer dem på vegne af en virksomhed, bekræfter du, at du har bemyndigelse til det.',
+      lastUpdated: 'Sidst opdateret: 15. oktober 2026',
+      intro: 'Disse vilkår regulerer brugen af Qjume ("Tjenesten"), som drives af Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) ("Bitwork", "vi", "os"). Ved at oprette en kø, tilslutte dig en, eller på anden måde bruge Tjenesten, accepterer du disse vilkår. Hvis du accepterer dem på vegne af en virksomhed, bekræfter du, at du har bemyndigelse til det.',
 
       s1Heading: '1. Hvad Tjenesten er',
       s1Body: 'Qjume lader en virksomhed ("Butik") drive en eller flere ventelinjer ("Køer"), som kunder kan se og tilslutte sig eksternt, og lader en kunde tilslutte sig en kø, følge sin plads i den, og få besked, når deres tur nærmer sig. En Butik drives af sin ejer og det personale, ejeren tilføjer. En kunde behøver ingen konto for at tilslutte sig en kø.',
@@ -618,7 +634,7 @@ export const da: DeepPartial<typeof en> = {
       s3Heading: '3. Abonnementer, gebyrer og fakturering',
       s3Body1Before: 'Qjume tilbyder en gratis plan med alle funktioner, der dækker et antal gratis betjeninger (kunder markeret som betjent), vist i appen; når de er brugt, tager Butikkens køer ikke nye kunder ind, før den starter et abonnement. Abonnementet fjerner den grænse og faktureres som et ',
       s3Body1Strong: 'tilbagevendende abonnement',
-      s3Body1After: ' til den pris og det interval, der vises ved betaling, og opkræves automatisk, indtil det opsiges. Betaling behandles af Vipps MobilePay eller Stripe, alt efter hvad du betaler med; Bitwork.dk modtager eller opbevarer aldrig dine kort- eller kontooplysninger.',
+      s3Body1After: ' til den pris og det interval, der vises ved betaling, og opkræves automatisk, indtil det opsiges. Betaling behandles af Vipps MobilePay eller Stripe, alt efter hvad du betaler med; Bitwork modtager eller opbevarer aldrig dine kort- eller kontooplysninger.',
       s3Body2: 'Du kan opsige når som helst fra dine faktureringsindstillinger. Opsigelsen træder i kraft med det samme: der trækkes ikke flere betalinger, og Butikken går straks tilbage til den gratis plan med de gratis betjeninger, den har tilbage. Det samme sker, hvis du stopper aftalen direkte hos betalingsudbyderen (for eksempel i MobilePay-appen), eller hvis en betaling ikke kan gennemføres. Den periode, der allerede er betalt for, refunderes ikke, heller ikke den del af den, der ikke er brugt, bortset fra hvor loven giver dig ret til det. Vi kan ændre abonnementspriser med rimeligt varsel; fortsat brug af det betalte abonnement, efter en prisændring træder i kraft, betyder, at du accepterer den.',
 
       s4Heading: '4. Acceptabel brug',
@@ -639,7 +655,7 @@ export const da: DeepPartial<typeof en> = {
       s6Body: 'Vi bestræber os på at holde Tjenesten kørende, men garanterer ikke, at den vil være uafbrudt eller fejlfri. Hvis en Butiks forbindelse afbrydes, markeres dens kø som utilgængelig for nye deltagere, indtil den genopretter forbindelsen, og fortsætter betjeningen, hvor den slap — vi er ikke ansvarlige for, at en Butiks eget netværk eller enhed svigter.',
 
       s7Heading: '7. Ansvarsfraskrivelser og ansvar',
-      s7Body: 'Tjenesten leveres "som den er", uden garantier af nogen art ud over dem, loven ikke tillader os at udelukke. I det videst mulige omfang, loven tillader, er Bitwork.dk ikke ansvarlig for indirekte tab eller følgeskader som følge af brug af Tjenesten, herunder tabt forretning eller tabte kunder som følge af, at en kø er utilgængelig. Intet i disse vilkår begrænser ansvar for død, personskade eller svig, hvor loven ikke tillader, at det begrænses.',
+      s7Body: 'Tjenesten leveres "som den er", uden garantier af nogen art ud over dem, loven ikke tillader os at udelukke. I det videst mulige omfang, loven tillader, er Bitwork ikke ansvarlig for indirekte tab eller følgeskader som følge af brug af Tjenesten, herunder tabt forretning eller tabte kunder som følge af, at en kø er utilgængelig. Intet i disse vilkår begrænser ansvar for død, personskade eller svig, hvor loven ikke tillader, at det begrænses.',
 
       s8Heading: '8. Suspension og ophør',
       s8Body: 'Vi kan suspendere eller lukke en Butiks konto ved brud på disse vilkår, manglende betaling, eller hvor loven kræver det. Du kan til enhver tid stoppe med at bruge Tjenesten eller lukke din Butik. Afsnit, der efter deres natur bør overleve afslutningen af din brug af Tjenesten — herunder allerede forfalden fakturering og ansvarsbegrænsningen — fortsætter med at gælde.',
@@ -653,14 +669,14 @@ export const da: DeepPartial<typeof en> = {
       s10BodyAfter: '.',
 
       s11Heading: '11. Kontakt',
-      s11BodyBefore: 'Bitwork.dk — ',
+      s11BodyBefore: 'Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) — ',
       s11BodyAfter: '.',
     },
 
     privacy: {
       title: 'Privatlivspolitik',
-      lastUpdated: 'Sidst opdateret: [lanceringsdato]',
-      introBefore: 'Bitwork.dk ("vi", "os") er dataansvarlig for personoplysninger indsamlet gennem Qjume. Denne politik forklarer, hvad vi indsamler, hvorfor, og hvad du kan gøre ved det. Spørgsmål eller anmodninger: ',
+      lastUpdated: 'Sidst opdateret: 15. oktober 2026',
+      introBefore: 'Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) ("vi", "os") er dataansvarlig for personoplysninger indsamlet gennem Qjume. Denne politik forklarer, hvad vi indsamler, hvorfor, og hvad du kan gøre ved det. Spørgsmål eller anmodninger: ',
       introAfter: '.',
 
       s1Heading: '1. Hvad vi indsamler',

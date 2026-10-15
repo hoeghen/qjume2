@@ -2,6 +2,7 @@ import { en } from './i18n/en.js';
 import { da } from './i18n/da.js';
 import type { Locale } from './i18n/locale.js';
 import { localizedUrl, SEO_PAGES } from './seo.js';
+import { COMPANY, COMPANY_LINE } from './company.js';
 
 /**
  * The visible content of each public page, as plain HTML, for the build to put
@@ -71,6 +72,10 @@ function main(path: string, locale: Locale): string {
       return legal(locale, 'terms');
     case '/privacy':
       return legal(locale, 'privacy');
+    case '/contact':
+      return `<h1>${t(locale, 'contact.title')}</h1>
+<p>${esc((text(locale, 'contact.intro') ?? '').replace('{company}', COMPANY.name))}</p>
+<p>${esc(COMPANY_LINE)} · <a href="mailto:${COMPANY.email}">${COMPANY.email}</a></p>`;
     default:
       return '';
   }

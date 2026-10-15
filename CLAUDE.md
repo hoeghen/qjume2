@@ -156,8 +156,12 @@ kept unedited.
     `/privacy` (`src/routes/legal/`) — a first draft, not lawyer-reviewed,
     written against what the app actually collects (see the `Ticket`/
     `TicketContact` split, `useGeolocation`) rather than generic boilerplate,
-    so it can't silently drift from the code. Operator is Bitwork.dk, under
-    Danish/EU law, contact `info@qjume.dk`. The paid plan is described as
+    so it can't silently drift from the code. Operator is Bitwork (CVR
+    37653837, Raagaards Alle 15, 2791 Dragør), under Danish/EU law, contact
+    `info@qjume.dk` — written once in `src/lib/company.ts` and read from
+    there by the footer on every page (not the monitor), the `/contact` page,
+    the structured data and the build's static text, because e-handelsloven
+    § 7 wants name, address, email and CVR permanently reachable. The paid plan is described as
     a recurring subscription, billed until cancelled — that is the actual
     plan (see "Billing" below), not just wording. Linked from the two moments
     someone is actually agreeing to something — shop sign-in and the upgrade
