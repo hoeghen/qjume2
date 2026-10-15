@@ -37,7 +37,7 @@ function legal(locale: Locale, doc: 'terms' | 'privacy'): string {
   const intro =
     doc === 'terms'
       ? t(locale, `${base}.intro`)
-      : `${t(locale, `${base}.introBefore`)}bitwork@gmail.com${t(locale, `${base}.introAfter`)}`;
+      : `${t(locale, `${base}.introBefore`)}info@qjume.dk${t(locale, `${base}.introAfter`)}`;
   const sections: string[] = [];
   for (let n = 1; n <= 20; n++) {
     const heading = text(locale, `${base}.s${n}Heading`);
