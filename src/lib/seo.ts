@@ -1,4 +1,5 @@
 import type { Locale } from './i18n/locale.js';
+import { COMPANY } from './company.js';
 
 /**
  * What search engines and link previews see, written once and used twice: by
@@ -67,6 +68,16 @@ export const SEO_PAGES: Record<string, Words> = {
     da: { title: 'Vilkår — Qjume', description: 'Vilkårene for at bruge Qjume.' },
     en: { title: 'Terms — Qjume', description: 'The terms for using Qjume.' },
   },
+  '/contact': {
+    da: {
+      title: 'Kontakt — Qjume',
+      description: 'Qjume drives af Bitwork, CVR 37653837, Raagaards Alle 15, 2791 Dragør. Skriv til info@qjume.dk.',
+    },
+    en: {
+      title: 'Contact — Qjume',
+      description: 'Qjume is run by Bitwork, CVR 37653837, Raagaards Alle 15, 2791 Dragør, Denmark. Write to info@qjume.dk.',
+    },
+  },
   '/privacy': {
     da: {
       title: 'Privatlivspolitik — Qjume',
@@ -111,7 +122,19 @@ export function structuredData(locale: Locale): string {
     operatingSystem: 'Web',
     inLanguage: locale,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'DKK' },
-    publisher: { '@type': 'Organization', name: 'Bitwork.dk', email: 'info@qjume.dk' },
+    publisher: {
+      '@type': 'Organization',
+      name: COMPANY.name,
+      email: COMPANY.email,
+      vatID: `DK${COMPANY.cvr}`,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: COMPANY.street,
+        postalCode: COMPANY.postcode,
+        addressLocality: COMPANY.city,
+        addressCountry: 'DK',
+      },
+    },
   });
 }
 
