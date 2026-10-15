@@ -49,14 +49,19 @@ export function AppHeader() {
     </Link>
   );
 
+  // Who runs Qjume — company, CVR, address, email — one tap from every
+  // page, which is what e-handelsloven § 7 asks of "permanently reachable".
+  const info = <InfoItem />;
+
   // The landing page carries the mark at full size already, so it gets the
-  // menu alone: the language switch and the platform admin's way in, kept
-  // out of the way of the two audiences the page is actually for.
+  // menu alone: the language switch, Info and the platform admin's way in,
+  // kept out of the way of the two audiences the page is actually for.
   if (isLandingPath(pathname)) {
     return (
       <header className="app-header app-header-landing">
         <AppMenu>
           {languageSwitch}
+          {info}
           <Link to={withLocale('/admin', locale)}>Admin</Link>
           <SignOutItem />
         </AppMenu>
@@ -79,6 +84,7 @@ export function AppHeader() {
         {home}
         <AppMenu>
           {languageSwitch}
+          {info}
           <ShopOwnerItems />
           <SignOutItem />
         </AppMenu>
@@ -86,12 +92,25 @@ export function AppHeader() {
     );
   }
 
+  // Every other page — the customer's included — has the same menu, so
+  // language and Info are found in one place wherever someone is.
   return (
     <header className="app-header">
       {home}
-      {languageSwitch}
+      <AppMenu>
+        {languageSwitch}
+        {info}
+        <SignOutItem />
+      </AppMenu>
     </header>
   );
+}
+
+/** The company details page, from the menu on every page. */
+function InfoItem() {
+  const { t } = useT();
+  const locale = detectLocaleFromPath(useLocation().pathname);
+  return <Link to={withLocale('/info', locale)}>{t('menu.info')}</Link>;
 }
 
 /**

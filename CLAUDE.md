@@ -159,9 +159,10 @@ kept unedited.
     so it can't silently drift from the code. Operator is Bitwork (CVR
     37653837, Raagaards Alle 15, 2791 Dragør), under Danish/EU law, contact
     `info@qjume.dk` — written once in `src/lib/company.ts` and read from
-    there by the footer on every page (not the monitor), the `/contact` page,
-    the structured data and the build's static text, because e-handelsloven
-    § 7 wants name, address, email and CVR permanently reachable. The paid plan is described as
+    there by the `/info` page ("Info" in the ☰ menu on every page), the
+    structured data and the build's static text, because e-handelsloven § 7
+    wants name, address, email and CVR permanently reachable — one tap away
+    is enough, so they are not printed at the foot of every page. The paid plan is described as
     a recurring subscription, billed until cancelled — that is the actual
     plan (see "Billing" below), not just wording. Linked from the two moments
     someone is actually agreeing to something — shop sign-in and the upgrade
@@ -346,8 +347,8 @@ kept unedited.
     links point at it. Build paths with `withLocale`/`stripLocale` in
     `src/lib/i18n/locale.ts`, never by hand. The language switch shows the
     *other* language's own name, on every page including the landing page
-    (there, and on every `/shop` page, inside the quiet ☰ menu — `AppMenu`
-    in `AppHeader.tsx`), and keeps the query string (the monitor's `?shop=…&queue=…`).
+    (inside the ☰ menu — `AppMenu` in
+    `AppHeader.tsx` — which every page carries), and keeps the query string (the monitor's `?shop=…&queue=…`).
     **Notifications follow the customer's language**: `TicketContact.locale`
     is set on joining and replaced when they turn notifications on (or the
     app re-registers after a language switch), and every notice and email is
@@ -457,8 +458,9 @@ cache (`Loadable.fromCache`) can lack a till that exists, and treating that
 as a deletion threw the counter out of its till the moment the connection
 dropped.
 
-**The ☰ menu is the way to the shop's own pages.** On every `/shop` page
-the app header carries it (`AppMenu`): the language switch, "Butiksindstillinger"
+**The ☰ menu is on every page** — language and "Info" everywhere, the
+platform admin's way in on the landing page only. On every `/shop` page
+it also carries the shop's own pages (`AppMenu`): "Butiksindstillinger"
 and "Abonnement" for the owner, and "Log ud" with the signed-in email beside
 it — the landing page's menu has the same "Log ud" row when someone is
 signed in. The queue list shows Betjen · Monitor · a gear for the queue's

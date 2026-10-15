@@ -68,13 +68,13 @@ export const SEO_PAGES: Record<string, Words> = {
     da: { title: 'Vilkår — Qjume', description: 'Vilkårene for at bruge Qjume.' },
     en: { title: 'Terms — Qjume', description: 'The terms for using Qjume.' },
   },
-  '/contact': {
+  '/info': {
     da: {
-      title: 'Kontakt — Qjume',
+      title: 'Info — Qjume',
       description: 'Qjume drives af Bitwork, CVR 37653837, Raagaards Alle 15, 2791 Dragør. Skriv til info@qjume.dk.',
     },
     en: {
-      title: 'Contact — Qjume',
+      title: 'Info — Qjume',
       description: 'Qjume is run by Bitwork, CVR 37653837, Raagaards Alle 15, 2791 Dragør, Denmark. Write to info@qjume.dk.',
     },
   },

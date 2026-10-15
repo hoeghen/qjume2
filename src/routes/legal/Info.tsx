@@ -5,10 +5,10 @@ import { useT } from '../../lib/i18n/LanguageContext.js';
 /**
  * Who runs Qjume and how to reach them — the company details e-handelsloven
  * requires and MobilePay checks for, on a page of their own and linked from
- * the footer of every page. Worded from `COMPANY`, so it cannot disagree with
- * the footer or the terms.
+ * the ☰ menu on every page as "Info". Worded from `COMPANY`, so it cannot
+ * disagree with the terms.
  */
-export function Contact() {
+export function Info() {
   const { t } = useT();
   return (
     <main className="screen">
@@ -38,9 +38,9 @@ export function Contact() {
 
         <p>{t('contact.reply')}</p>
         <p>
-          <LocalizedLink to="/terms">{t('footer.terms')}</LocalizedLink>
+          <LocalizedLink to="/terms">{t('contact.terms')}</LocalizedLink>
           {' · '}
-          <LocalizedLink to="/privacy">{t('footer.privacy')}</LocalizedLink>
+          <LocalizedLink to="/privacy">{t('contact.privacy')}</LocalizedLink>
         </p>
       </div>
     </main>
