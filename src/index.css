@@ -48,6 +48,11 @@
   --orange: oklch(0.62 0.19 38);
   --orange-cta: oklch(0.5 0.17 42);
   --orange-on-dark: oklch(0.68 0.19 38);
+  /* Text links on ink. --orange-cta is for white (1.7:1 on ink) and
+     --orange-on-dark only reaches 3.5:1; this one clears 4.5:1 for body
+     text. Visited links take it too: the browser's default visited purple
+     is 1:1 on ink — invisible. */
+  --link-on-dark: oklch(0.8 0.12 50);
 
   --surface: #ffffff;
   --on-dark: #ffffff;
@@ -245,10 +250,14 @@ button.secondary, .button.secondary {
   border-color: var(--card-fg);
 }
 button.danger { background: var(--danger); color: #fff; }
+/* Every link reads the same before and after a visit: ink is the page, so
+   the light orange. Zero specificity, so any component colouring its own
+   links (cards, the build line) still wins. */
+:where(a), :where(a:visited) { color: var(--link-on-dark); }
 button.link, .link {
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--link-on-dark);
   padding: 4px;
   min-height: auto;
   text-decoration: underline;
@@ -256,6 +265,11 @@ button.link, .link {
   font-weight: 500;
 }
 button.link.danger { color: var(--danger); }
+/* On a white surface the light orange would vanish instead: back to the
+   contrast-safe one there. */
+.dialog-body a, .dialog-body .link,
+.monitor-qr-card a, .monitor-qr-card .link,
+.notice.warn a { color: var(--orange-cta); }
 
 /* A destructive action set apart from the controls above it, so a tap
    meant for "New queue" or "Save" can't land on it by proximity. */

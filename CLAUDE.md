@@ -486,6 +486,13 @@ spec is in `docs/design-system.md`. Things that are easy to undo by accident:
 - **Two oranges, not one.** `--orange` (bright) fails contrast below 24px and is
   for large or decorative use only. `--orange-cta` is the 4.5:1-safe text and
   button colour. Never swap one for the other to "match" something.
+- **Links on ink are `--link-on-dark`, visited or not.** Neither orange is
+  legible as small text on ink (`--orange-cta` 1.7:1, `--orange-on-dark`
+  3.5:1), and the browser's default visited purple is 1:1 — a clicked link
+  simply disappeared. A base `:where(a)` rule sets it with zero specificity,
+  so components that colour their own links still win; inside white
+  surfaces (dialogs, the QR card, warn notices) links go back to
+  `--orange-cta`.
 - **One committed look, not a light/dark pair.** Ink fills the viewport; there
   is no dark-mode variant because the design defines one world and inverting it
   would invent a scheme nobody drew.
