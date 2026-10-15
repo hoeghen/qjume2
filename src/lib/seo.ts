@@ -111,7 +111,7 @@ export function structuredData(locale: Locale): string {
     operatingSystem: 'Web',
     inLanguage: locale,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'DKK' },
-    publisher: { '@type': 'Organization', name: 'Bitwork.dk', email: 'bitwork@gmail.com' },
+    publisher: { '@type': 'Organization', name: 'Bitwork.dk', email: 'info@qjume.dk' },
   });
 }
 

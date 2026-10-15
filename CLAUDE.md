@@ -157,7 +157,7 @@ kept unedited.
     written against what the app actually collects (see the `Ticket`/
     `TicketContact` split, `useGeolocation`) rather than generic boilerplate,
     so it can't silently drift from the code. Operator is Bitwork.dk, under
-    Danish/EU law, contact `bitwork@gmail.com`. The paid plan is described as
+    Danish/EU law, contact `info@qjume.dk`. The paid plan is described as
     a recurring subscription, billed until cancelled — that is the actual
     plan (see "Billing" below), not just wording. Linked from the two moments
     someone is actually agreeing to something — shop sign-in and the upgrade

@@ -30,7 +30,7 @@ export function Terms() {
         <p>{t('legal.terms.s2Body1')}</p>
         <p>
           {t('legal.terms.s2Body2Before')}
-          <a href="mailto:bitwork@gmail.com">bitwork@gmail.com</a>
+          <a href="mailto:info@qjume.dk">info@qjume.dk</a>
           {t('legal.terms.s2Body2After')}
         </p>
 
@@ -84,7 +84,7 @@ export function Terms() {
         <h2>{t('legal.terms.s11Heading')}</h2>
         <p>
           {t('legal.terms.s11BodyBefore')}
-          <a href="mailto:bitwork@gmail.com">bitwork@gmail.com</a>
+          <a href="mailto:info@qjume.dk">info@qjume.dk</a>
           {t('legal.terms.s11BodyAfter')}
         </p>
       </div>

@@ -22,7 +22,7 @@ export function Privacy() {
 
         <p>
           {t('legal.privacy.introBefore')}
-          <a href="mailto:bitwork@gmail.com">bitwork@gmail.com</a>
+          <a href="mailto:info@qjume.dk">info@qjume.dk</a>
           {t('legal.privacy.introAfter')}
         </p>
 
@@ -81,7 +81,7 @@ export function Privacy() {
         <h2>{t('legal.privacy.s5Heading')}</h2>
         <p>
           {t('legal.privacy.s5BodyBefore')}
-          <a href="mailto:bitwork@gmail.com">bitwork@gmail.com</a>
+          <a href="mailto:info@qjume.dk">info@qjume.dk</a>
           {t('legal.privacy.s5BodyMiddle')}
           <a href="https://www.datatilsynet.dk" target="_blank" rel="noreferrer">
             {t('legal.privacy.s5DatatilsynetLink')}
