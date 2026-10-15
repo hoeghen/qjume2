@@ -81,6 +81,7 @@ export const en = {
     label: 'Menu',
     shopSettings: 'Shop settings',
     plan: 'Plan',
+    info: 'Info',
     signOut: 'Sign out',
     signedInAs: 'Signed in as {name}',
     signedInAsOwner: 'Signed in as {name} (owner)',
@@ -606,17 +607,13 @@ export const en = {
   },
 
   contact: {
-    title: 'Contact',
+    title: 'Info',
     intro: 'Qjume is run by {company}. Write to us about anything — a shop, a subscription, an invoice or your data.',
     company: 'Company',
     cvr: 'CVR no.',
     address: 'Address',
     email: 'Email',
     reply: 'We usually reply within a couple of working days.',
-  },
-
-  footer: {
-    contact: 'Contact',
     terms: 'Terms',
     privacy: 'Privacy policy',
   },

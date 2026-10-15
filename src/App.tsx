@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider } from './lib/hooks/useAuth.js';
 import { AppHeader } from './components/AppHeader.js';
-import { SiteFooter } from './components/SiteFooter.js';
 import { LanguageProvider } from './lib/i18n/LanguageContext.js';
 import { detectLocaleFromPath, stripLocale } from './lib/i18n/locale.js';
 import { applyPageMeta, defaultPageMeta } from './lib/pageMeta.js';
@@ -35,7 +34,6 @@ export function App() {
         <div className="app">
           <AppHeader />
           <Outlet />
-          <SiteFooter />
         </div>
       </LanguageProvider>
     </AuthProvider>

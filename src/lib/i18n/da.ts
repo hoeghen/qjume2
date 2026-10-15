@@ -78,6 +78,7 @@ export const da: DeepPartial<typeof en> = {
     label: 'Menu',
     shopSettings: 'Butiksindstillinger',
     plan: 'Abonnement',
+    info: 'Info',
     signOut: 'Log ud',
     signedInAs: 'Logget ind som {name}',
     signedInAsOwner: 'Logget ind som {name} (ejer)',
@@ -602,17 +603,13 @@ export const da: DeepPartial<typeof en> = {
   },
 
   contact: {
-    title: 'Kontakt',
+    title: 'Info',
     intro: 'Qjume drives af {company}. Skriv til os om alt — en butik, et abonnement, en faktura eller dine data.',
     company: 'Firma',
     cvr: 'CVR-nr.',
     address: 'Adresse',
     email: 'E-mail',
     reply: 'Vi svarer normalt inden for et par hverdage.',
-  },
-
-  footer: {
-    contact: 'Kontakt',
     terms: 'Vilkår',
     privacy: 'Privatlivspolitik',
   },

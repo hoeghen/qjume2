@@ -14,7 +14,7 @@ import { MonitorHome } from './routes/monitor/MonitorHome.js';
 import { Terms } from './routes/legal/Terms.js';
 import { Intro } from './routes/Intro.js';
 import { Privacy } from './routes/legal/Privacy.js';
-import { Contact } from './routes/legal/Contact.js';
+import { Info } from './routes/legal/Info.js';
 import { AdminHome } from './routes/admin/AdminHome.js';
 import { AdminShopList } from './routes/admin/AdminShopList.js';
 import { AdminShopDetail } from './routes/admin/AdminShopDetail.js';
@@ -59,7 +59,7 @@ const ROUTE_CHILDREN = [
   { path: 'intro', element: <Intro /> },
   { path: 'terms', element: <Terms /> },
   { path: 'privacy', element: <Privacy /> },
-  { path: 'contact', element: <Contact /> },
+  { path: 'info', element: <Info /> },
   {
     // Not linked from anywhere in the app, the same as /monitor — the
     // one person who needs this reaches it by URL. See CLAUDE.md

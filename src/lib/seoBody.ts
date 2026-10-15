@@ -72,7 +72,7 @@ function main(path: string, locale: Locale): string {
       return legal(locale, 'terms');
     case '/privacy':
       return legal(locale, 'privacy');
-    case '/contact':
+    case '/info':
       return `<h1>${t(locale, 'contact.title')}</h1>
 <p>${esc((text(locale, 'contact.intro') ?? '').replace('{company}', COMPANY.name))}</p>
 <p>${esc(COMPANY_LINE)} · <a href="mailto:${COMPANY.email}">${COMPANY.email}</a></p>`;
