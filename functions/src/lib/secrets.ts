@@ -30,7 +30,7 @@ export const STRIPE_WEBHOOK_SECRETS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECR
  * To switch a provider on: create its secrets in Secret Manager first, then
  * flip it here.
  */
-const STRIPE_SECRETS_EXIST = false;
+const STRIPE_SECRETS_EXIST = true;
 
 export const STRIPE_SECRETS_IF_ENABLED = STRIPE_SECRETS_EXIST ? STRIPE_SECRETS : [];
 export const STRIPE_WEBHOOK_SECRETS_IF_ENABLED = STRIPE_SECRETS_EXIST
