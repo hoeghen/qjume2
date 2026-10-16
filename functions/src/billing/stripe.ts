@@ -37,6 +37,8 @@ export function stripeProvider(
 
   const stripe = new Stripe(secretKey);
   const app = baseUrl(env);
+  // Found or created on first use, then kept for the life of the instance.
+  let vatRate: Promise<string> | undefined;
 
   return {
     name: 'stripe',
@@ -44,9 +46,17 @@ export function stripeProvider(
     async createCheckout(shopId, plan): Promise<CheckoutSession> {
       if (plan === 'free') return cancelSubscription(firestore, stripe, shopId);
 
+      vatRate ??= danishVatRate(stripe, env['STRIPE_TAX_RATE_ID']);
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
-        line_items: [{ price: priceId, quantity: 1 }],
+        // The price is the subscription before VAT (SUBSCRIPTION_PRICE_DKK);
+        // 25 % Danish VAT goes on top, so the invoice shows price, VAT and
+        // total separately, as a business customer needs for its books.
+        line_items: [{ price: priceId, quantity: 1, tax_rates: [await vatRate] }],
+        // Every customer is a business: ask for its name and CVR/VAT number,
+        // and its address, so they are on the invoice.
+        tax_id_collection: { enabled: true },
+        billing_address_collection: 'required',
         // How performCompleteCheckout finds its way back to a shop: Stripe
         // hands this back unchanged on the session it later verifies.
         client_reference_id: shopId,
@@ -88,6 +98,41 @@ export function stripeProvider(
 }
 
 const CANCEL_PREFIX = 'cancelled_';
+
+/** The slice of the Stripe client `danishVatRate` uses, so it can be tested. */
+export interface TaxRateApi {
+  taxRates: {
+    list(params: { active: boolean; limit: number }): Promise<{ data: Stripe.TaxRate[] }>;
+    create(params: Stripe.TaxRateCreateParams): Promise<Stripe.TaxRate>;
+  };
+}
+
+/**
+ * The Stripe tax rate for 25 % Danish VAT added on top of the price.
+ *
+ * `STRIPE_TAX_RATE_ID` pins one if set. Otherwise an existing active,
+ * exclusive 25 % DK rate is reused, and only if there is none is one created
+ * — so test and live mode each get theirs on the first checkout, with no
+ * step in the Stripe dashboard. Two first checkouts at once may both create
+ * one; that leaves a duplicate rate, never a wrong amount.
+ */
+export async function danishVatRate(stripe: TaxRateApi, pinned?: string): Promise<string> {
+  if (pinned) return pinned;
+  const { data } = await stripe.taxRates.list({ active: true, limit: 100 });
+  const existing = data.find(
+    (rate) => rate.percentage === 25 && !rate.inclusive && rate.country === 'DK',
+  );
+  if (existing) return existing.id;
+  const created = await stripe.taxRates.create({
+    display_name: 'Moms',
+    description: 'Dansk moms 25 %',
+    percentage: 25,
+    inclusive: false,
+    country: 'DK',
+    tax_type: 'vat',
+  });
+  return created.id;
+}
 
 /** Stripe returns either an expanded object or a bare id; either way, the id. */
 function idOf(value: string | { id: string } | null | undefined): string | null {

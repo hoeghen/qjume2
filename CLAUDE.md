@@ -195,6 +195,12 @@ kept unedited.
     authentication this endpoint has) shipped alongside the provider, not as
     a later add-on: `customer.subscription.deleted` and
     `invoice.payment_failed` both downgrade `shop.plan` to `free`.
+    **VAT goes on top, and the customer is a business.** The Stripe price
+    (`STRIPE_PRICE_ID`) is 100 kr before VAT; every checkout adds a 25 %
+    exclusive DK tax rate (`danishVatRate`, found or created on first use,
+    or pinned by `STRIPE_TAX_RATE_ID`), so invoices show price, VAT and
+    total. Checkout also collects the business's name and CVR/VAT number
+    (`tax_id_collection`) and billing address for the invoice.
 
     **Secret Manager secrets need to be bound per function, or they are not
     there.** Firebase Functions v2 does not put a secret set with `firebase
@@ -272,8 +278,6 @@ kept unedited.
       so Apple's and Google's in-app cuts do not apply; Apple Pay and Google
       Pay arrive as ordinary Stripe Checkout payment methods. Wrapping it as
       a store app would change that — don't, without deciding to pay it.
-      Payments still run on the stub provider (`PAYMENTS_PROVIDER=stub`)
-      until real Stripe keys are set.
 
 13. **Notifications count people, not minutes.** The 15/10/5/1-minute
     milestones are gone: minutes drift with the average service time, a
