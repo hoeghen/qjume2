@@ -477,7 +477,7 @@ export const da: DeepPartial<typeof en> = {
 
     freeServices: {
       left: '{left} af {of} gratis betjeninger tilbage',
-      subscribed: 'abonnement aktivt',
+      subscribed: 'Abonnement aktivt',
       subscribe: 'Start abonnement — {price} kr/md ekskl. moms',
       usedUpOwner: 'Dine gratis betjeninger er brugt op, så dine køer tager ikke nye kunder ind. Du kan stadig betjene alle, der allerede venter.',
       usedUpStaff: 'Butikkens gratis betjeninger er brugt op, så køerne tager ikke nye kunder ind. Du kan stadig betjene alle, der allerede venter.',
@@ -495,7 +495,8 @@ export const da: DeepPartial<typeof en> = {
       subscriptionTitle: 'Abonnement',
       subscriptionBody: '{price} kr om måneden ekskl. moms, uden grænse for betjeninger. Alt andet er det samme — den gratis plan er allerede hele appen.',
       subscribe: 'Start abonnement — {price} kr/md ekskl. moms',
-      paidSummary: 'Dit abonnement er aktivt: {price} kr om måneden ekskl. moms, uden grænse for betjeninger. {served} kunder betjent indtil nu.',
+      activeTitle: 'Abonnement aktivt',
+      paidSummary: '{price} kr om måneden ekskl. moms, uden grænse for betjeninger. {served} kunder betjent indtil nu.',
       subscriptionHint: 'Et tilbagevendende abonnement, der fornyes automatisk hver måned, indtil du opsiger det. Opsiger du, går butikken straks tilbage til den gratis plan.',
       acceptBefore: 'Jeg har læst og accepterer ',
       terms: 'vilkårene for brug',

@@ -307,6 +307,31 @@ button.link.danger { color: var(--danger); }
 .billing-confirming .spinner { width: 1.5em; height: 1.5em; margin-top: 2px; }
 .billing-confirming p { margin: 4px 0 0; font-size: 0.9rem; }
 .billing-done { border-left: 4px solid var(--link-on-dark); }
+/* An active subscription, stated plainly at the top of the billing page. */
+.plan-active {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 8px 0 20px;
+  padding: 16px 18px;
+  border: 2px solid var(--link-on-dark);
+  border-radius: var(--r-panel);
+  background: var(--dark-inset);
+}
+.plan-active strong { font-size: 1.15rem; }
+.plan-active p { margin: 4px 0 0; color: var(--on-dark-muted); }
+.plan-active-check {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--link-on-dark);
+  color: var(--ink);
+  font-weight: 800;
+}
+.plan-active-badge { color: var(--link-on-dark); font-weight: 600; font-size: 0.9rem; }
 /* The install suggestion sits above the notification controls it is about,
    ruled off so it reads as advice rather than another button row. */
 .install-hint {

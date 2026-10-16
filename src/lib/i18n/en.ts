@@ -481,7 +481,7 @@ export const en = {
 
     freeServices: {
       left: '{left} of {of} free services left',
-      subscribed: 'subscription active',
+      subscribed: 'Subscription active',
       subscribe: 'Start subscription — {price} kr/month excl. VAT',
       usedUpOwner: 'Your free services are used up, so your queues take no new customers. You can still serve everyone already waiting.',
       usedUpStaff: 'The shop’s free services are used up, so the queues take no new customers. You can still serve everyone already waiting.',
@@ -499,7 +499,8 @@ export const en = {
       subscriptionTitle: 'Subscription',
       subscriptionBody: '{price} kr a month, excluding VAT, with no limit on services. Everything else is the same — the free plan is already the whole app.',
       subscribe: 'Start subscription — {price} kr/month excl. VAT',
-      paidSummary: 'Your subscription is active: {price} kr a month, excluding VAT, with no limit on services. {served} customers served so far.',
+      activeTitle: 'Subscription active',
+      paidSummary: '{price} kr a month, excluding VAT, with no limit on services. {served} customers served so far.',
       subscriptionHint: 'A recurring subscription that renews automatically every month until you cancel. Cancelling puts the shop back on the free plan at once.',
       acceptBefore: 'I have read and accept the ',
       terms: 'Terms of Service',
