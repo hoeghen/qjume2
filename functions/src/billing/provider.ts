@@ -26,12 +26,6 @@ export interface CompletedCheckout {
    */
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
-  /**
-   * The MobilePay agreement this checkout activated. Kept server-side in
-   * `subscriptions/{shopId}`, not on the public shop document, because
-   * MobilePay — unlike Stripe — needs us to create every charge ourselves.
-   */
-  mobilePayAgreementId?: string;
 }
 
 export interface PaymentProvider {

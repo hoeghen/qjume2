@@ -4,7 +4,7 @@ import { useT } from '../../lib/i18n/LanguageContext.js';
 
 /**
  * Who runs Qjume and how to reach them — the company details e-handelsloven
- * requires and MobilePay checks for, on a page of their own and linked from
+ * requires, on a page of their own and linked from
  * the ☰ menu on every page as "Info". Worded from `COMPANY`, so it cannot
  * disagree with the terms.
  */

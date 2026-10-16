@@ -3,7 +3,7 @@
  * subscribe. Bump it whenever the terms' wording changes (`legal.terms.*`
  * in the i18n files) so every recorded acceptance says which text it was.
  */
-export const TERMS_VERSION = '2026-10-15';
+export const TERMS_VERSION = '2026-10-16';
 
 /**
  * One owner ticking "I accept the terms" before a subscription, at

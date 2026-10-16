@@ -200,17 +200,6 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // MobilePay billing: which agreement a shop is charged on, when its next
-    // month falls due, and checkouts in flight. Written and read only by
-    // Cloud Functions — a shop document is public, and nothing a client can
-    // touch may decide what gets charged. Spelled out rather than left to
-    // the catch-all below, so nobody opens it by accident.
-    match /subscriptions/{shopId} {
-      allow read, write: if false;
-    }
-    match /billingSessions/{sessionId} {
-      allow read, write: if false;
-    }
     // Who accepted which terms version, before subscribing. Evidence, so no
     // client may write or read it — not even the owner it is about.
     match /termsAcceptances/{id} {

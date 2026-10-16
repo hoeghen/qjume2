@@ -522,7 +522,6 @@ export const da: DeepPartial<typeof en> = {
       servedPaid: 'Abonnement · {used} betjent',
       title: 'Butikker',
       auditLog: 'Aktivitetslog',
-      payments: 'Betaling',
       signOut: 'Log ud',
       searchAndFilter: 'Søg og filtrer',
       clearFilters: { one: 'Ryd {count} filter', other: 'Ryd {count} filtre' },
@@ -574,21 +573,6 @@ export const da: DeepPartial<typeof en> = {
       monitor: 'Monitor',
     },
 
-    payments: {
-      title: 'Betaling',
-      webhookTitle: 'MobilePay-webhook',
-      webhookBody:
-        'MobilePay giver besked her, når en aftale bliver aktiv, stoppes, eller et træk fejler. Registrér webhooken én gang for testmiljøet og igen, når du skifter til produktion. En tidligere registrering for samme adresse bliver erstattet.',
-      register: 'Registrér webhook hos MobilePay',
-      confirm:
-        'Registrér webhooken hos MobilePay? En eksisterende registrering bliver erstattet, og den gamle secret holder op med at virke.',
-      registered: 'Registreret i {environment}-miljøet for {url}.',
-      secretLabel: 'Webhook-secret (vises kun nu)',
-      copy: 'Kopiér',
-      copied: 'Kopieret',
-      nextStep:
-        'Gå til Secret Manager, åbn MOBILEPAY_WEBHOOK_SECRET, klik "+ New version", indsæt værdien og gem. Den bruges fra næste deploy.',
-    },
 
     auditLog: {
       title: 'Administratoraktivitet',
@@ -617,7 +601,7 @@ export const da: DeepPartial<typeof en> = {
   legal: {
     terms: {
       title: 'Vilkår for brug',
-      lastUpdated: 'Sidst opdateret: 15. oktober 2026',
+      lastUpdated: 'Sidst opdateret: 16. oktober 2026',
       intro: 'Disse vilkår regulerer brugen af Qjume ("Tjenesten"), som drives af Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) ("Bitwork", "vi", "os"). Ved at oprette en kø, tilslutte dig en, eller på anden måde bruge Tjenesten, accepterer du disse vilkår. Hvis du accepterer dem på vegne af en virksomhed, bekræfter du, at du har bemyndigelse til det.',
 
       s1Heading: '1. Hvad Tjenesten er',
@@ -631,8 +615,8 @@ export const da: DeepPartial<typeof en> = {
       s3Heading: '3. Abonnementer, gebyrer og fakturering',
       s3Body1Before: 'Qjume tilbyder en gratis plan med alle funktioner, der dækker et antal gratis betjeninger (kunder markeret som betjent), vist i appen; når de er brugt, tager Butikkens køer ikke nye kunder ind, før den starter et abonnement. Abonnementet fjerner den grænse og faktureres som et ',
       s3Body1Strong: 'tilbagevendende abonnement',
-      s3Body1After: ' til den pris og det interval, der vises ved betaling, og opkræves automatisk, indtil det opsiges. Betaling behandles af Vipps MobilePay eller Stripe, alt efter hvad du betaler med; Bitwork modtager eller opbevarer aldrig dine kort- eller kontooplysninger.',
-      s3Body2: 'Du kan opsige når som helst fra dine faktureringsindstillinger. Opsigelsen træder i kraft med det samme: der trækkes ikke flere betalinger, og Butikken går straks tilbage til den gratis plan med de gratis betjeninger, den har tilbage. Det samme sker, hvis du stopper aftalen direkte hos betalingsudbyderen (for eksempel i MobilePay-appen), eller hvis en betaling ikke kan gennemføres. Den periode, der allerede er betalt for, refunderes ikke, heller ikke den del af den, der ikke er brugt, bortset fra hvor loven giver dig ret til det. Vi kan ændre abonnementspriser med rimeligt varsel; fortsat brug af det betalte abonnement, efter en prisændring træder i kraft, betyder, at du accepterer den.',
+      s3Body1After: ' til den pris og det interval, der vises ved betaling, og opkræves automatisk, indtil det opsiges. Betaling behandles af Stripe; Bitwork modtager eller opbevarer aldrig dine kortoplysninger.',
+      s3Body2: 'Du kan opsige når som helst fra dine faktureringsindstillinger. Opsigelsen træder i kraft med det samme: der trækkes ikke flere betalinger, og Butikken går straks tilbage til den gratis plan med de gratis betjeninger, den har tilbage. Det samme sker, hvis du opsiger direkte hos betalingsudbyderen, eller hvis en betaling ikke kan gennemføres. Den periode, der allerede er betalt for, refunderes ikke, heller ikke den del af den, der ikke er brugt, bortset fra hvor loven giver dig ret til det. Vi kan ændre abonnementspriser med rimeligt varsel; fortsat brug af det betalte abonnement, efter en prisændring træder i kraft, betyder, at du accepterer den.',
 
       s4Heading: '4. Acceptabel brug',
       s4Intro: 'Du accepterer ikke at:',
@@ -672,7 +656,7 @@ export const da: DeepPartial<typeof en> = {
 
     privacy: {
       title: 'Privatlivspolitik',
-      lastUpdated: 'Sidst opdateret: 15. oktober 2026',
+      lastUpdated: 'Sidst opdateret: 16. oktober 2026',
       introBefore: 'Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) ("vi", "os") er dataansvarlig for personoplysninger indsamlet gennem Qjume. Denne politik forklarer, hvad vi indsamler, hvorfor, og hvad du kan gøre ved det. Spørgsmål eller anmodninger: ',
       introAfter: '.',
 
@@ -696,8 +680,8 @@ export const da: DeepPartial<typeof en> = {
       s3Intro: 'Vi bruger et lille antal databehandlere til at drive Tjenesten, hver bundet af sine egne databehandlingsvilkår:',
       s3Item1Strong: 'Google (Firebase / Google Cloud)',
       s3Item1Rest: ' — hoster databasen, appen, og sender push-notifikationer og login-e-mails.',
-      s3Item2Strong: 'Vipps MobilePay og Stripe',
-      s3Item2Rest: ' — behandler betalinger for det betalte abonnement. De modtager og gemmer dine betalingsoplysninger direkte; det gør vi ikke.',
+      s3Item2Strong: 'Stripe',
+      s3Item2Rest: ' — behandler betalinger for det betalte abonnement. Stripe modtager og gemmer dine betalingsoplysninger direkte; det gør vi ikke.',
       s3Item3Strong: 'Resend',
       s3Item3Rest: ' — sender de e-mailnotifikationer, du bad om (en statusopdatering, en kvittering).',
       s3Item4Strong: 'OpenCage',

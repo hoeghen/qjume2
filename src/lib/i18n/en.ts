@@ -526,7 +526,6 @@ export const en = {
       servedPaid: 'Subscription · {used} served',
       title: 'Shops',
       auditLog: 'Audit log',
-      payments: 'Payments',
       signOut: 'Sign out',
       searchAndFilter: 'Search and filter',
       clearFilters: { one: 'Clear {count} filter', other: 'Clear {count} filters' },
@@ -578,21 +577,6 @@ export const en = {
       monitor: 'Monitor',
     },
 
-    payments: {
-      title: 'Payments',
-      webhookTitle: 'MobilePay webhook',
-      webhookBody:
-        'MobilePay calls this when an agreement becomes active, is stopped, or a charge fails. Register it once for the test environment and again when going to production. An earlier registration for the same URL is replaced.',
-      register: 'Register webhook with MobilePay',
-      confirm:
-        'Register the webhook with MobilePay? An existing registration is replaced, and its old secret stops working.',
-      registered: 'Registered in the {environment} environment for {url}.',
-      secretLabel: 'Webhook secret (shown only now)',
-      copy: 'Copy',
-      copied: 'Copied',
-      nextStep:
-        'Go to Secret Manager, open MOBILEPAY_WEBHOOK_SECRET, click "+ New version", paste the value and save. It is used from the next deploy.',
-    },
 
     auditLog: {
       title: 'Admin activity',
@@ -621,7 +605,7 @@ export const en = {
   legal: {
     terms: {
       title: 'Terms of Service',
-      lastUpdated: 'Last updated: 15 October 2026',
+      lastUpdated: 'Last updated: 16 October 2026',
       intro: 'These Terms govern use of Qjume (the “Service”), operated by Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) (“Bitwork”, “we”, “us”). By creating a queue, joining one, or otherwise using the Service, you agree to these Terms. If you are accepting them on behalf of a business, you confirm you have the authority to do so.',
 
       s1Heading: '1. What the Service is',
@@ -635,8 +619,8 @@ export const en = {
       s3Heading: '3. Plans, fees and billing',
       s3Body1Before: 'Qjume offers a free plan, with every feature, that covers a number of free services (customers marked served) shown in the app; once those are used, the Shop’s queues take no new customers until it subscribes. The subscription removes that limit and is billed on a ',
       s3Body1Strong: 'recurring subscription',
-      s3Body1After: ' at the price and interval shown at checkout, charged automatically until cancelled. Payment is processed by Vipps MobilePay or Stripe, depending on how you pay; Bitwork never receives or stores your card or account details.',
-      s3Body2: 'You can cancel at any time from your billing settings. Cancelling takes effect immediately: no further payments are taken, and the Shop returns at once to the free plan with whatever free services it has left. The same happens if you stop the agreement directly with the payment provider (for example in the MobilePay app), or if a payment cannot be completed. The period already paid for is not refunded, including any unused part of it, except where the law gives you a right to a refund. We may change plan pricing with reasonable notice; continuing to use the paid plan after a price change takes effect means you accept it.',
+      s3Body1After: ' at the price and interval shown at checkout, charged automatically until cancelled. Payment is processed by Stripe; Bitwork never receives or stores your card details.',
+      s3Body2: 'You can cancel at any time from your billing settings. Cancelling takes effect immediately: no further payments are taken, and the Shop returns at once to the free plan with whatever free services it has left. The same happens if you cancel directly with the payment provider, or if a payment cannot be completed. The period already paid for is not refunded, including any unused part of it, except where the law gives you a right to a refund. We may change plan pricing with reasonable notice; continuing to use the paid plan after a price change takes effect means you accept it.',
 
       s4Heading: '4. Acceptable use',
       s4Intro: 'You agree not to:',
@@ -676,7 +660,7 @@ export const en = {
 
     privacy: {
       title: 'Privacy Policy',
-      lastUpdated: 'Last updated: 15 October 2026',
+      lastUpdated: 'Last updated: 16 October 2026',
       introBefore: 'Bitwork (CVR 37653837, Raagaards Alle 15, 2791 Dragør) (“we”, “us”) is the data controller for personal data collected through Qjume. This policy explains what we collect, why, and what you can do about it. Questions or requests: ',
       introAfter: '.',
 
@@ -700,8 +684,8 @@ export const en = {
       s3Intro: 'We use a small number of processors to run the Service, each bound by its own data processing terms:',
       s3Item1Strong: 'Google (Firebase / Google Cloud)',
       s3Item1Rest: ' — hosts the database, the app, and sends push notifications and sign-in emails.',
-      s3Item2Strong: 'Vipps MobilePay and Stripe',
-      s3Item2Rest: ' — process payments for the paid plan. They receive and store your payment details directly; we do not.',
+      s3Item2Strong: 'Stripe',
+      s3Item2Rest: ' — processes payments for the paid plan. Stripe receives and stores your payment details directly; we do not.',
       s3Item3Strong: 'Resend',
       s3Item3Rest: ' — sends the email notifications you asked for (a milestone update, a receipt).',
       s3Item4Strong: 'OpenCage',
