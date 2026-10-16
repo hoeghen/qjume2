@@ -12,9 +12,7 @@ export type AdminAction =
   | 'shop.grantFreeServices'
   | 'shop.delete'
   | 'queue.update'
-  | 'queue.delete'
-  /** Platform-wide, not about one shop: `shopId` is empty. */
-  | 'billing.registerWebhook';
+  | 'queue.delete';
 
 /** One field's value before and after an edit, for the entries that changed. */
 export interface AdminFieldChange {

@@ -210,8 +210,13 @@ kept unedited.
     **Which secrets are bound is a constant in `secrets.ts`, never `.env`.**
     firebase-tools analyses the functions code with only its own variables,
     not `.env.<project>`, so a binding conditioned on `PAYMENTS_PROVIDER`
-    is always off — it was, silently, and MobilePay ran without its keys.
-    Create a provider's secrets first, then flip its constant.
+    is always off — it was, silently, and a provider ran without its keys.
+    Create a provider's secrets first, then flip its constant
+    (`STRIPE_SECRETS_EXIST`).
+
+    **No MobilePay.** A Vipps MobilePay Recurring integration was built and
+    then removed: MobilePay does not support B2B payments, and every Qjume
+    customer is a business. Stripe is the only real provider.
 
     **`.github/workflows/deploy-firebase.yml`** ships the app to Firebase
     Hosting/Functions/rules on every push to `main`. It skips itself cleanly
@@ -373,43 +378,6 @@ kept unedited.
     `Queue.servingStations`, a server-owned count kept by `startServing`,
     `stopServing` and `sweepAbandonedQueues`. Till *labels* still show
     whenever a queue has more than one station at all, staffed or not.
-
-19. **MobilePay is the first live provider; Stripe stays supported beside
-    it.** `mobilepayProvider` (`functions/src/billing/mobilepay.ts`) uses
-    Vipps MobilePay's Recurring API: the owner accepts a monthly DKK
-    agreement in the MobilePay app, with the first month as its initial
-    charge. `PAYMENTS_PROVIDER` picks where **new** checkouts go and nothing
-    else — a returning session is routed by its id (`providerForSession`),
-    and a cancellation goes to whoever actually charges the shop, so moving
-    the setting to Stripe later strands no MobilePay subscriber.
-
-    **MobilePay never charges an agreement by itself.** Unlike Stripe, the
-    merchant creates every month's charge, so `chargeMobilePaySubscriptions`
-    runs daily and creates each charge a few days before it is due, with an
-    `orderId` built from the shop and the period — MobilePay will not create
-    the same one twice, which is what makes a retried run safe. Remove that
-    function and every MobilePay shop pays for its first month only.
-
-    The agreement id and charge schedule live in `subscriptions/{shopId}`,
-    and checkouts in flight in `billingSessions/{sessionId}` — both
-    server-only in `firestore.rules`, not on the public shop document,
-    because what a shop is charged must not be readable or writable by a
-    client. `mobilepayWebhook` is authenticated by MobilePay's HMAC
-    signature alone, checked against the URL it was registered with
-    (`MOBILEPAY_WEBHOOK_URL`), not the request's own path. Activation
-    upgrades the shop even if the owner never returns from the app — the
-    redirect is unreliable, MobilePay says so — and a stopped or expired
-    agreement, or a month whose charge fails after its retries, downgrades
-    it, as Stripe's webhook does. `verifyCheckout` must stay free of side
-    effects: it runs before `performCompleteCheckout` checks who is asking.
-
-    `MOBILEPAY_PRICE_ORE` is what is charged, VAT included — set separately
-    from `SUBSCRIPTION_PRICE_DKK`, which is the price before VAT that the UI
-    shows. Setup order is in `functions/.env.qjume-d483a`. The webhook is
-    registered from `/admin/payments` (`adminRegisterMobilePayWebhook`), not
-    a command line: it runs where the keys already are, replaces any earlier
-    registration for the same URL, and shows the secret once — it is never
-    stored or logged by the app, only pasted into Secret Manager by hand.
 
 ## Architecture notes
 

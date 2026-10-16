@@ -4,16 +4,10 @@ import { db } from '../lib/admin.js';
 import { fail } from '../lib/errors.js';
 import { requireCaller } from '../lib/auth.js';
 import { PAYMENT_SECRETS_IF_ENABLED } from '../lib/secrets.js';
-import {
-  mobilepayProvider,
-  providerForSession,
-  providerFromEnv,
-  type PaymentProvider,
-} from './index.js';
+import { providerFromEnv, type PaymentProvider } from './index.js';
 import { applyPlanChange } from './applyPlan.js';
 import {
   TERMS_VERSION,
-  type MobilePaySubscription,
   type Plan,
   type Shop,
   type TermsAcceptance,
@@ -84,26 +78,11 @@ export async function performStartCheckout(
     await firestore.collection('termsAcceptances').add(acceptance);
   }
 
-  const chosen =
-    provider ??
-    (plan === 'free' ? await providerHoldingShop(firestore, shopId) : providerFromEnv());
+  const chosen = provider ?? providerFromEnv();
   const session = await chosen.createCheckout(shopId, plan);
   return { url: session.url };
 }
 
-/**
- * Who to cancel with: whoever is actually charging the shop. New checkouts
- * follow `PAYMENTS_PROVIDER`, but a shop that subscribed through MobilePay
- * stays MobilePay's to cancel even after that setting moves on.
- */
-async function providerHoldingShop(
-  firestore: Firestore,
-  shopId: string,
-): Promise<PaymentProvider> {
-  const snap = await firestore.doc(`subscriptions/${shopId}`).get();
-  const subscription = snap.data() as MobilePaySubscription | undefined;
-  return subscription?.status === 'active' ? mobilepayProvider() : providerFromEnv();
-}
 
 /**
  * Apply a plan change, having asked the provider whether it was really paid.
@@ -123,7 +102,7 @@ export async function performCompleteCheckout(
     throw fail('invalid-argument', 'shop-not-found', 'A sessionId is required.');
   }
 
-  const chosen = provider ?? providerForSession(sessionId);
+  const chosen = provider ?? providerFromEnv();
   const completed = await chosen.verifyCheckout(sessionId);
   if (!completed) {
     throw fail(
