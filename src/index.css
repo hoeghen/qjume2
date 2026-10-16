@@ -898,6 +898,64 @@ button.link.danger { color: var(--danger); }
 .continue-from-safari .hint { margin: 8px 0 0; }
 .splash .continue-from-safari { width: min(100%, 560px); margin: 0; }
 
+/* The words a search lands on, under the wordmark — present, not shouting. */
+.splash-title {
+  margin: 0;
+  font-size: clamp(19px, 2.6vw, 24px);
+  font-weight: 700;
+  line-height: 1.25;
+  max-width: 460px;
+  text-wrap: balance;
+}
+
+/*
+ * For a business, after the customer's button: a customer never has to read
+ * past it, a shop owner scrolls into it. Left-aligned prose in white cards,
+ * three across where there is room for them.
+ */
+.splash-business {
+  width: 100%;
+  margin-top: clamp(32px, 8vh, 72px);
+  padding-top: clamp(28px, 5vh, 48px);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.splash-business > h2 {
+  margin: 0;
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  max-width: 620px;
+  text-wrap: balance;
+}
+.splash-business-lede {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--on-dark-muted);
+  max-width: 560px;
+}
+.splash-business-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+  text-align: left;
+}
+.splash-business-card { padding: 22px; background: var(--card); color: var(--card-fg); border-radius: var(--r-panel); }
+.splash-business-cards h2 { margin: 0 0 10px; font-size: 17px; font-weight: 700; line-height: 1.3; }
+.splash-business-cards p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--card-fg); }
+.splash-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.splash-checks li { position: relative; padding-left: 24px; font-size: 14px; line-height: 1.5; }
+.splash-checks li::before { content: '✓'; position: absolute; left: 0; color: var(--orange-cta); font-weight: 800; }
+.splash-business-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 18px; }
+.splash-business-actions a:not(.button) { color: var(--orange-cta); font-weight: 600; font-size: 14px; }
+
 /* Deliberately quiet: a shop owner needs to find this once, a customer never. */
 .splash-secondary {
   font-size: 13px;
@@ -979,6 +1037,26 @@ button.link.danger { color: var(--danger); }
 }
 .contact-details dt { color: var(--on-dark-muted); }
 .contact-details dd { margin: 0; color: var(--on-dark); }
+
+/* /koesystemer — a guide, read like the legal pages, with a price table. */
+.guide-kind h2 { margin-top: 28px; }
+.guide-proscons { list-style: none; padding: 0 !important; display: flex; flex-direction: column; gap: 6px; }
+.guide-proscons li { position: relative; padding-left: 24px; }
+.guide-proscons li::before { position: absolute; left: 0; font-weight: 800; }
+.guide-proscons .pro::before { content: '+'; color: var(--orange-on-dark); }
+.guide-proscons .con::before { content: '–'; color: var(--on-dark-faint); }
+.guide-table-wrap { overflow-x: auto; margin: 8px 0 4px; border-radius: var(--r-panel); background: var(--card); color: var(--card-fg); }
+.guide-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.45; }
+.guide-table th, .guide-table td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--card-line); }
+.guide-table thead th { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--card-muted); font-weight: 500; }
+.guide-table tbody tr:last-child > * { border-bottom: 0; }
+.guide-table tbody th { font-weight: 700; white-space: nowrap; }
+.guide-table a { color: var(--orange-cta); }
+.guide-table tr.ours { background: var(--cream-tint); }
+.legal .guide-note { font-size: 12.5px; color: var(--on-dark-faint); margin: 4px 0 0; }
+.guide-faq { margin: 4px 0 0; display: flex; flex-direction: column; gap: 14px; }
+.guide-faq dt { font-weight: 700; font-size: 15px; color: var(--on-dark); }
+.guide-faq dd { margin: 4px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--on-dark-muted); }
 
 .legal .legal-updated { font-size: 12.5px; color: var(--on-dark-faint); margin: 0 0 8px; }
 

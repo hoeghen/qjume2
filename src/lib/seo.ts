@@ -1,5 +1,8 @@
 import type { Locale } from './i18n/locale.js';
 import { COMPANY } from './company.js';
+import { en } from './i18n/en.js';
+import { da as daStrings } from './i18n/da.js';
+import { FREE_SERVICES_DEFAULT, SUBSCRIPTION_PRICE_DKK } from '../types/limits.js';
 
 /**
  * What search engines and link previews see, written once and used twice: by
@@ -30,14 +33,14 @@ type Words = Record<Locale, PageMeta>;
 export const SEO_PAGES: Record<string, Words> = {
   '/': {
     da: {
-      title: 'Qjume — stil dig i kø hvor som helst fra',
+      title: 'Digitalt køsystem uden app og papir | Qjume',
       description:
-        'Se ventetiden, stil dig i kø fra telefonen og få besked, når det er din tur. Gratis for kunder — og nemt for butikker at styre deres kø.',
+        'Qjume er et digitalt køsystem til butikker og klinikker. Kunder scanner en QR-kode og venter hvor de vil. Gratis for de første 1000 kunder, derefter 100 kr/md.',
     },
     en: {
-      title: 'Qjume — join the queue from anywhere',
+      title: 'Digital queue system, no app or paper | Qjume',
       description:
-        'See the wait, join the queue from your phone and get told when it is your turn. Free for customers — and easy for shops to run their queue.',
+        'Qjume is a digital queue system for shops and clinics. Customers scan a QR code and wait wherever they like. Free for the first 1000 customers, then 100 kr/month.',
     },
   },
   '/find': {
@@ -62,6 +65,18 @@ export const SEO_PAGES: Record<string, Words> = {
       title: 'A digital queue system for your shop — Qjume',
       description:
         'Customers wait wherever they like and are told when it is their turn. For shops, clinics and events. Free for the first 1000 services.',
+    },
+  },
+  '/koesystemer': {
+    da: {
+      title: 'Køsystemer i Danmark — guide og priser | Qjume',
+      description:
+        'Sammenlign kønummersystemer, elektronisk køstyring og digitale køsystemer. Priser, fordele og ulemper — og hvad der passer til din butik eller klinik.',
+    },
+    en: {
+      title: 'Queue systems in Denmark — guide and prices | Qjume',
+      description:
+        'Compare ticket number systems, electronic queue management and digital queue systems. Prices, pros and cons — and what suits your shop or clinic.',
     },
   },
   '/terms': {
@@ -109,32 +124,136 @@ export function localizedUrl(path: string, locale: Locale): string {
   return `${SITE_URL}/en${path === '/' ? '' : path}`;
 }
 
-/** Search engines' description of the service, on the home page. */
+const ORGANIZATION_ID = `${SITE_URL}/#organization`;
+
+/**
+ * Search engines' and AI models' description of the service, on the home
+ * page. No `aggregateRating`: there is none to give yet, and an invented one
+ * breaks Google's rules. The free services are a count, not a trial period,
+ * so they are an offer of their own at 0 with an `eligibleQuantity`.
+ */
 export function structuredData(locale: Locale): string {
-  const meta = SEO_PAGES['/']![locale];
+  const da = locale === 'da';
   return JSON.stringify({
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
-    name: SITE_NAME,
-    url: localizedUrl('/', locale),
-    description: meta.description,
-    applicationCategory: 'BusinessApplication',
-    operatingSystem: 'Web',
-    inLanguage: locale,
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'DKK' },
-    publisher: {
-      '@type': 'Organization',
-      name: COMPANY.name,
-      email: COMPANY.email,
-      vatID: `DK${COMPANY.cvr}`,
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: COMPANY.street,
-        postalCode: COMPANY.postcode,
-        addressLocality: COMPANY.city,
-        addressCountry: 'DK',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': ORGANIZATION_ID,
+        name: COMPANY.name,
+        brand: { '@type': 'Brand', name: SITE_NAME },
+        url: `${SITE_URL}/`,
+        logo: SHARE_IMAGE,
+        email: COMPANY.email,
+        vatID: `DK${COMPANY.cvr}`,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: COMPANY.street,
+          postalCode: COMPANY.postcode,
+          addressLocality: COMPANY.city,
+          addressCountry: 'DK',
+        },
       },
-    },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': `${SITE_URL}/#software`,
+        name: da ? 'Qjume – digitalt køsystem' : 'Qjume – digital queue system',
+        alternateName: da ? ['Qjume køsystem', 'Qjume kønummersystem'] : ['Qjume queue system'],
+        url: localizedUrl('/', locale),
+        image: SHARE_IMAGE,
+        applicationCategory: 'BusinessApplication',
+        applicationSubCategory: da ? 'Køsystem / køstyring' : 'Queue management',
+        operatingSystem: 'Web, iOS, Android',
+        inLanguage: ['da', 'en'],
+        isAccessibleForFree: true,
+        description: da
+          ? 'Qjume er et papirløst, QR-baseret digitalt køsystem til butikker og klinikker i Danmark. Kunderne stiller sig i kø fra browseren uden app eller login, ser deres plads live og får besked, når det er deres tur. Erstatter kønummersystemer og billetautomater uden hardware.'
+          : 'Qjume is a paperless, QR-based digital queue system for shops and clinics in Denmark. Customers join from the browser with no app or login, see their place live and are told when it is their turn. Replaces ticket number systems and ticket machines with no hardware.',
+        featureList: da
+          ? [
+              'Digital kø via QR-kode – ingen app og intet login for kunden',
+              'Live position og forventet ventetid',
+              'Notifikationer via push og e-mail',
+              'Flere køer og flere kasser pr. forretning',
+              'Walk-ins kan tilføjes af personalet ved skranken',
+              'Monitor-skærm med kø og QR-kode til venteområdet',
+              'Personale-adgang og automatisk håndtering af no-shows',
+              'Dansk og engelsk',
+              'Ingen hardware eller installation',
+            ]
+          : [
+              'Digital queue via QR code – no app and no login for the customer',
+              'Live place in the queue and estimated wait',
+              'Push and email notifications',
+              'Several queues and tills per business',
+              'Staff can add walk-ins at the counter',
+              'Monitor screen with the queue and a QR code for the waiting area',
+              'Staff access and automatic no-show handling',
+              'Danish and English',
+              'No hardware or installation',
+            ],
+        publisher: { '@id': ORGANIZATION_ID },
+        offers: [
+          {
+            '@type': 'Offer',
+            name: da ? 'Gratis – de første 1000 betjente kunder' : 'Free – the first 1000 served customers',
+            price: '0',
+            priceCurrency: 'DKK',
+            availability: 'https://schema.org/InStock',
+            url: localizedUrl('/intro', locale),
+            eligibleQuantity: {
+              '@type': 'QuantitativeValue',
+              maxValue: FREE_SERVICES_DEFAULT,
+              unitText: da ? 'betjente kunder' : 'served customers',
+            },
+          },
+          {
+            '@type': 'Offer',
+            name: da ? 'Abonnement' : 'Subscription',
+            price: String(SUBSCRIPTION_PRICE_DKK),
+            priceCurrency: 'DKK',
+            availability: 'https://schema.org/InStock',
+            url: localizedUrl('/intro', locale),
+            priceSpecification: {
+              '@type': 'UnitPriceSpecification',
+              price: String(SUBSCRIPTION_PRICE_DKK),
+              priceCurrency: 'DKK',
+              valueAddedTaxIncluded: false,
+              referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' },
+            },
+          },
+        ],
+      },
+    ],
+  });
+}
+
+/** The guide's FAQ and breadcrumb, on `/koesystemer`. */
+export function queueSystemsStructuredData(locale: Locale, faq: { q: string; a: string }[]): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: SITE_NAME, item: localizedUrl('/', locale) },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: locale === 'da' ? 'Køsystemer' : 'Queue systems',
+            item: localizedUrl('/koesystemer', locale),
+          },
+        ],
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faq.map(({ q, a }) => ({
+          '@type': 'Question',
+          name: q,
+          acceptedAnswer: { '@type': 'Answer', text: a },
+        })),
+      },
+    ],
   });
 }
 
@@ -165,6 +284,14 @@ export function headHtml(path: string, locale: Locale, meta: PageMeta): string {
   ];
   if (path === '/') {
     tags.push(`<script type="application/ld+json">${structuredData(locale)}</script>`);
+  }
+  if (path === '/koesystemer') {
+    const strings = (locale === 'da' ? daStrings.queueSystems : undefined) ?? en.queueSystems;
+    const faq = ([1, 2, 3, 4, 5] as const).map((n) => ({
+      q: strings[`faq${n}Q`] ?? en.queueSystems[`faq${n}Q`],
+      a: strings[`faq${n}A`] ?? en.queueSystems[`faq${n}A`],
+    }));
+    tags.push(`<script type="application/ld+json">${queueSystemsStructuredData(locale, faq)}</script>`);
   }
   return tags.join('\n    ');
 }

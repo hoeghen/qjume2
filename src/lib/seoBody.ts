@@ -3,6 +3,7 @@ import { da } from './i18n/da.js';
 import type { Locale } from './i18n/locale.js';
 import { localizedUrl, SEO_PAGES } from './seo.js';
 import { COMPANY, COMPANY_LINE } from './company.js';
+import { PRICES_CHECKED, QUEUE_SYSTEMS_FAQ, SUPPLIERS } from './queueSystems.js';
 
 /**
  * The visible content of each public page, as plain HTML, for the build to put
@@ -49,16 +50,53 @@ function legal(locale: Locale, doc: 'terms' | 'privacy'): string {
   return `<h1>${t(locale, `${base}.title`)}</h1><p>${intro}</p>${sections.join('')}`;
 }
 
+/** The queue-system guide, with its price table. */
+function queueSystems(locale: Locale): string {
+  const q = (key: string) => t(locale, `queueSystems.${key}`);
+  const kind = (k: string, pros: string[], cons: string[]) =>
+    `<h2>${q(`${k}Title`)}</h2><p>${q(`${k}Body`)}</p><ul>${[...pros, ...cons]
+      .map((key) => `<li>${q(key)}</li>`)
+      .join('')}</ul>`;
+  const rows = SUPPLIERS.map(
+    (r) => `<tr><th>${esc(r.name)}</th><td>${esc(r.type[locale])}</td><td>${esc(r.price[locale])}</td></tr>`,
+  ).join('');
+  return `<h1>${q('title')}</h1>
+<p>${q('lede')}</p>
+${kind('paper', ['paperPros'], ['paperCons1', 'paperCons2', 'paperCons3'])}
+${kind('electronic', ['electronicPros'], ['electronicCons1', 'electronicCons2'])}
+${kind('digital', ['digitalPros1', 'digitalPros2', 'digitalPros3'], ['digitalCons1', 'digitalCons2'])}
+<h2>${q('pricesTitle')}</h2>
+<table><thead><tr><th>${q('colSupplier')}</th><th>${q('colType')}</th><th>${q('colPrice')}</th></tr></thead><tbody>${rows}</tbody></table>
+<p>${esc((text(locale, 'queueSystems.pricesChecked') ?? '').replace('{date}', PRICES_CHECKED[locale]))}</p>
+<h2>${q('whichTitle')}</h2>
+<ul><li>${q('which1')}</li><li>${q('which2')}</li><li>${q('which3')}</li></ul>
+<h2>${q('qjumeTitle')}</h2>
+<p>${q('qjumeBody')}</p>
+<h2>${q('faqTitle')}</h2>
+${QUEUE_SYSTEMS_FAQ.map((n) => `<h3>${q(`faq${n}Q`)}</h3><p>${q(`faq${n}A`)}</p>`).join('\n')}`;
+}
+
 function main(path: string, locale: Locale): string {
   switch (path) {
     case '/':
-      return `<h1>Qjume</h1>
+      return `<h1>${t(locale, 'splash.title')}</h1>
 <p>${t(locale, 'splash.lede')}</p>
 <h2><a href="${href('/find', locale)}">${t(locale, 'splash.join')}</a></h2>
 <p>${t(locale, 'discovery.lede')}</p>
 <h2><a href="${href('/intro', locale)}">${t(locale, 'intro.title')}</a></h2>
 <p>${t(locale, 'intro.step2Title')} ${t(locale, 'intro.step2')}</p>
-<p>${t(locale, 'intro.price')}</p>`;
+<p>${t(locale, 'intro.price')}</p>
+<h2>${t(locale, 'splash.businessTitle')}</h2>
+<p>${t(locale, 'splash.businessBody')}</p>
+<h2>${t(locale, 'splash.noHardwareTitle')}</h2>
+<p>${t(locale, 'splash.noHardwareBody')}</p>
+<h2>${t(locale, 'splash.featuresTitle')}</h2>
+<ul>${[1, 2, 3, 4, 5].map((n) => `<li>${t(locale, `splash.feature${n}`)}</li>`).join('')}</ul>
+<h2>${t(locale, 'splash.priceTitle')}</h2>
+<p>${t(locale, 'splash.priceBody')}</p>
+<p><a href="${href('/koesystemer', locale)}">${t(locale, 'splash.compare')}</a></p>`;
+    case '/koesystemer':
+      return queueSystems(locale);
     case '/find':
       return `<h1>${t(locale, 'discovery.titleLight')} ${t(locale, 'discovery.titleRest')}</h1>
 <p>${t(locale, 'discovery.lede')}</p>`;
