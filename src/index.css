@@ -301,6 +301,12 @@ button.link.danger { color: var(--danger); }
   border-radius: var(--r-panel);
 }
 .notice.warn { background: var(--warn-bg); color: var(--warn-fg); }
+/* Back from Stripe: the spinner beside what is happening, large enough to
+   read as "wait", not as a stray icon. */
+.billing-confirming { display: flex; gap: 14px; align-items: flex-start; font-size: 1.05rem; }
+.billing-confirming .spinner { width: 1.5em; height: 1.5em; margin-top: 2px; }
+.billing-confirming p { margin: 4px 0 0; font-size: 0.9rem; }
+.billing-done { border-left: 4px solid var(--link-on-dark); }
 /* The install suggestion sits above the notification controls it is about,
    ruled off so it reads as advice rather than another button row. */
 .install-hint {

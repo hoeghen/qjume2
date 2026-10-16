@@ -10,6 +10,7 @@ import {
   servicesUsed,
 } from '../../lib/freeServices.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
+import { Spinner } from '../../components/Spinner.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { useShopContext } from './ShopHome.js';
 
@@ -25,20 +26,53 @@ export function Billing() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // What just finished, shown as a confirmation until the owner leaves.
+  const [completed, setCompleted] = useState<'paid' | 'free' | null>(null);
+
   // Returning from the provider. The session id is a lookup key, not proof —
   // the server asks the provider whether it was really paid.
   const session = params.get('session');
+  // A cancellation comes back the same way as a payment; its id says which.
+  const cancelling = !!session && (session.startsWith('cancelled_') || session.includes('_free_'));
   useEffect(() => {
     if (!session) return;
     setBusy(true);
+    setError(null);
     completeCheckout({ sessionId: session })
-      .then(() => navigate('/shop/billing', { replace: true }))
+      .then(({ plan }) => {
+        setCompleted(plan);
+        // An acceptance belongs to one subscription; a new one asks again.
+        setAcceptedTerms(false);
+        navigate('/shop/billing', { replace: true });
+      })
       .catch((e: unknown) => setError(messageOf(e)))
       .finally(() => setBusy(false));
   }, [session, navigate]);
 
   if (shop.loading) return <p className="panel">{t('common.loading')}</p>;
   if (!shop.data) return <p className="panel">{t('shop.billing.shopNotFound')}</p>;
+
+  // Back from paying, the shop still reads "free" until the server has asked
+  // Stripe and changed the plan — a few seconds. Say so, instead of showing
+  // the plan the owner just paid to leave.
+  // Keyed on the session still being in the address, not on `busy`, so the
+  // very first render after the redirect already shows it.
+  if (session && !error) {
+    return (
+      <main className="panel">
+        <h1>{t('shop.billing.title')}</h1>
+        <div className="notice billing-confirming" role="status">
+          <Spinner />
+          <div>
+            <strong>
+              {cancelling ? t('shop.billing.confirmingCancel') : t('shop.billing.confirmingPayment')}
+            </strong>
+            <p className="muted">{t('shop.billing.confirmingHint')}</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const paid = shop.data.plan === 'paid';
 
@@ -73,6 +107,11 @@ export function Billing() {
   return (
     <main className="panel">
       <h1>{t('shop.billing.title')}</h1>
+      {completed && (
+        <p className="notice billing-done" role="status">
+          {completed === 'paid' ? t('shop.billing.donePaid') : t('shop.billing.doneFree')}
+        </p>
+      )}
       <p className="muted">
         {t('shop.billing.onPlanBefore')}
         <strong>{paid ? t('shop.billing.planPaid') : t('shop.billing.planFree')}</strong>
