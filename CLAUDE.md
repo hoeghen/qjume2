@@ -556,6 +556,15 @@ The home page's JSON-LD is a `SoftwareApplication` with two offers — the
 free services (a count, not a trial) and the subscription excluding VAT —
 and no `aggregateRating` until there are real reviews to give one.
 
+**One landing page per trade, reached from the menu only.** `/brancher`
+lists them and each lives at `/koesystem-til-<slug>` (`src/lib/industries.ts`,
+plain data read by the page, `SEO_PAGES` and the static text). "Brancher" is
+a ☰ menu item; the owner asked that the landing page not carry a list of
+trades, so do not add one there. Each page is written for its own trade, not
+a template with the name swapped — near-identical pages are what Google
+discounts — and claims only what the app does (no booking, no SMS; "Lukker
+snart", not pause, is what stops new joiners while still serving).
+
 ## Emulator blind spot: indexes
 
 The emulator needs no indexes, so a query that production refuses for want of

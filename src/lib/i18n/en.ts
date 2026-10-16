@@ -82,6 +82,7 @@ export const en = {
     shopSettings: 'Shop settings',
     plan: 'Plan',
     info: 'Info',
+    industries: 'Industries',
     signOut: 'Sign out',
     signedInAs: 'Signed in as {name}',
     signedInAsOwner: 'Signed in as {name} (owner)',
@@ -107,6 +108,15 @@ export const en = {
     priceBody: 'Then 100 kr a month excluding VAT. No setup fee, no hardware.',
     startFree: 'Create your free queue',
     compare: 'Compare queue systems',
+  },
+
+  industries: {
+    title: 'A queue system for your industry',
+    lede: 'Qjume works wherever people stand in line. Pick your trade to see how a digital queue fits the way you already work.',
+    whyTitle: 'What changes',
+    setupTitle: 'How to set it up',
+    otherTitle: 'Other industries',
+    allIndustries: 'All industries',
   },
 
   queueSystems: {

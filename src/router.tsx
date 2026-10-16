@@ -14,6 +14,8 @@ import { MonitorHome } from './routes/monitor/MonitorHome.js';
 import { Terms } from './routes/legal/Terms.js';
 import { Intro } from './routes/Intro.js';
 import { QueueSystems } from './routes/QueueSystems.js';
+import { Industries, IndustryPage } from './routes/Industries.js';
+import { INDUSTRIES, industryPath } from './lib/industries.js';
 import { Privacy } from './routes/legal/Privacy.js';
 import { Info } from './routes/legal/Info.js';
 import { AdminHome } from './routes/admin/AdminHome.js';
@@ -58,6 +60,11 @@ const ROUTE_CHILDREN = [
   { path: 'monitor', element: <MonitorHome /> },
   { path: 'intro', element: <Intro /> },
   { path: 'koesystemer', element: <QueueSystems /> },
+  { path: 'brancher', element: <Industries /> },
+  ...INDUSTRIES.map((industry) => ({
+    path: industryPath(industry).slice(1),
+    element: <IndustryPage industry={industry} />,
+  })),
   { path: 'terms', element: <Terms /> },
   { path: 'privacy', element: <Privacy /> },
   { path: 'info', element: <Info /> },
