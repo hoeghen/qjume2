@@ -79,6 +79,7 @@ export const da: DeepPartial<typeof en> = {
     shopSettings: 'Butiksindstillinger',
     plan: 'Abonnement',
     info: 'Info',
+    industries: 'Brancher',
     signOut: 'Log ud',
     signedInAs: 'Logget ind som {name}',
     signedInAsOwner: 'Logget ind som {name} (ejer)',
@@ -104,6 +105,15 @@ export const da: DeepPartial<typeof en> = {
     priceBody: 'Derefter 100 kr om måneden ekskl. moms. Intet opstartsgebyr, ingen hardware.',
     startFree: 'Opret din gratis kø',
     compare: 'Sammenlign køsystemer',
+  },
+
+  industries: {
+    title: 'Køsystem til din branche',
+    lede: 'Qjume virker alle steder, hvor folk står i kø. Vælg din branche og se, hvordan en digital kø passer ind i den måde, I allerede arbejder på.',
+    whyTitle: 'Det ændrer sig',
+    setupTitle: 'Sådan kommer I i gang',
+    otherTitle: 'Andre brancher',
+    allIndustries: 'Alle brancher',
   },
 
   queueSystems: {

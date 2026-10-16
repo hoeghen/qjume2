@@ -3,6 +3,7 @@ import { da } from './i18n/da.js';
 import type { Locale } from './i18n/locale.js';
 import { localizedUrl, SEO_PAGES } from './seo.js';
 import { COMPANY, COMPANY_LINE } from './company.js';
+import { INDUSTRIES, industryPath } from './industries.js';
 import { PRICES_CHECKED, QUEUE_SYSTEMS_FAQ, SUPPLIERS } from './queueSystems.js';
 
 /**
@@ -76,6 +77,18 @@ ${kind('digital', ['digitalPros1', 'digitalPros2', 'digitalPros3'], ['digitalCon
 ${QUEUE_SYSTEMS_FAQ.map((n) => `<h3>${q(`faq${n}Q`)}</h3><p>${q(`faq${n}A`)}</p>`).join('\n')}`;
 }
 
+/** One trade's page, as its static text. */
+function industryHtml(i: (typeof INDUSTRIES)[number], locale: Locale): string {
+  return `<h1>${esc(i.h1[locale])}</h1>
+<p>${esc(i.intro[locale])}</p>
+<h2>${t(locale, 'industries.whyTitle')}</h2>
+<ul>${i.points.map((p) => `<li>${esc(p[locale])}</li>`).join('')}</ul>
+<h2>${t(locale, 'industries.setupTitle')}</h2>
+<p>${esc(i.setup[locale])}</p>
+<h2>${t(locale, 'splash.priceTitle')}</h2>
+<p>${t(locale, 'splash.priceBody')}</p>`;
+}
+
 function main(path: string, locale: Locale): string {
   switch (path) {
     case '/':
@@ -97,6 +110,12 @@ function main(path: string, locale: Locale): string {
 <p><a href="${href('/koesystemer', locale)}">${t(locale, 'splash.compare')}</a></p>`;
     case '/koesystemer':
       return queueSystems(locale);
+    case '/brancher':
+      return `<h1>${t(locale, 'industries.title')}</h1>
+<p>${t(locale, 'industries.lede')}</p>
+<ul>${INDUSTRIES.map(
+        (i) => `<li><a href="${href(industryPath(i), locale)}">${esc(i.h1[locale])}</a> — ${esc(i.description[locale])}</li>`,
+      ).join('')}</ul>`;
     case '/find':
       return `<h1>${t(locale, 'discovery.titleLight')} ${t(locale, 'discovery.titleRest')}</h1>
 <p>${t(locale, 'discovery.lede')}</p>`;
@@ -114,8 +133,10 @@ function main(path: string, locale: Locale): string {
       return `<h1>${t(locale, 'contact.title')}</h1>
 <p>${esc((text(locale, 'contact.intro') ?? '').replace('{company}', COMPANY.name))}</p>
 <p>${esc(COMPANY_LINE)} · <a href="mailto:${COMPANY.email}">${COMPANY.email}</a></p>`;
-    default:
-      return '';
+    default: {
+      const industry = INDUSTRIES.find((i) => industryPath(i) === path);
+      return industry ? industryHtml(industry, locale) : '';
+    }
   }
 }
 

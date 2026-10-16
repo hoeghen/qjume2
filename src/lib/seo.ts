@@ -1,6 +1,7 @@
 import type { Locale } from './i18n/locale.js';
 import { COMPANY } from './company.js';
 import { en } from './i18n/en.js';
+import { INDUSTRIES, industryPath } from './industries.js';
 import { da as daStrings } from './i18n/da.js';
 import { FREE_SERVICES_DEFAULT, SUBSCRIPTION_PRICE_DKK } from '../types/limits.js';
 
@@ -79,6 +80,27 @@ export const SEO_PAGES: Record<string, Words> = {
         'Compare ticket number systems, electronic queue management and digital queue systems. Prices, pros and cons — and what suits your shop or clinic.',
     },
   },
+  '/brancher': {
+    da: {
+      title: 'Køsystem til din branche — bager, apotek, frisør m.fl. | Qjume',
+      description:
+        'Digitalt køsystem til bager, slagter, apotek, frisør, dyrlæge, værksted, klinik og mange flere. Se hvordan Qjume passer til netop din branche.',
+    },
+    en: {
+      title: 'A queue system for your industry | Qjume',
+      description:
+        'A digital queue system for bakeries, butchers, pharmacies, hairdressers, vets, garages, clinics and more. See how Qjume fits your trade.',
+    },
+  },
+  ...Object.fromEntries(
+    INDUSTRIES.map((i) => [
+      industryPath(i),
+      {
+        da: { title: i.title.da, description: i.description.da },
+        en: { title: i.title.en, description: i.description.en },
+      },
+    ]),
+  ),
   '/terms': {
     da: { title: 'Vilkår — Qjume', description: 'Vilkårene for at bruge Qjume.' },
     en: { title: 'Terms — Qjume', description: 'The terms for using Qjume.' },

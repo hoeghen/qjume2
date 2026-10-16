@@ -52,6 +52,7 @@ export function AppHeader() {
   // Who runs Qjume — company, CVR, address, email — one tap from every
   // page, which is what e-handelsloven § 7 asks of "permanently reachable".
   const info = <InfoItem />;
+  const industries = <IndustriesItem />;
 
   // The landing page carries the mark at full size already, so it gets the
   // menu alone: the language switch, Info and the platform admin's way in,
@@ -61,6 +62,7 @@ export function AppHeader() {
       <header className="app-header app-header-landing">
         <AppMenu>
           {languageSwitch}
+          {industries}
           {info}
           <Link to={withLocale('/admin', locale)}>Admin</Link>
           <SignOutItem />
@@ -99,6 +101,7 @@ export function AppHeader() {
       {home}
       <AppMenu>
         {languageSwitch}
+        {industries}
         {info}
         <SignOutItem />
       </AppMenu>
@@ -111,6 +114,13 @@ function InfoItem() {
   const { t } = useT();
   const locale = detectLocaleFromPath(useLocation().pathname);
   return <Link to={withLocale('/info', locale)}>{t('menu.info')}</Link>;
+}
+
+/** The industry pages' way in — kept in the menu, off the landing page. */
+function IndustriesItem() {
+  const { t } = useT();
+  const locale = detectLocaleFromPath(useLocation().pathname);
+  return <Link to={withLocale('/brancher', locale)}>{t('menu.industries')}</Link>;
 }
 
 /**
