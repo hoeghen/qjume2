@@ -22,7 +22,11 @@ export function Splash() {
 
       <Logo size={44} />
 
-      <h1 className="splash-wordmark">QjuMe</h1>
+      <p className="splash-wordmark" aria-hidden="true">
+        QjuMe
+      </p>
+
+      <h1 className="splash-title">{t('splash.title')}</h1>
 
       <p className="splash-lede">{t('splash.lede')}</p>
 
@@ -35,6 +39,50 @@ export function Splash() {
         <LocalizedLink className="splash-secondary" to="/shop">
           {t('splash.createLink')}
         </LocalizedLink>
+      </div>
+
+      <BusinessSection />
+    </section>
+  );
+}
+
+/**
+ * What a business searching for a queue system came for, below the fold so a
+ * customer arriving to join a queue never has to read past it. Its headings
+ * carry the words people search with ("køsystem", "kønummersystem",
+ * "køstyring"), and every claim here is something the app actually does.
+ */
+function BusinessSection() {
+  const { t } = useT();
+  return (
+    <section className="splash-business" aria-labelledby="splash-business-title">
+      <p className="eyebrow">{t('splash.businessEyebrow')}</p>
+      <h2 id="splash-business-title">{t('splash.businessTitle')}</h2>
+      <p className="splash-business-lede">{t('splash.businessBody')}</p>
+
+      <div className="splash-business-cards">
+        <div className="splash-business-card">
+          <h2>{t('splash.noHardwareTitle')}</h2>
+          <p>{t('splash.noHardwareBody')}</p>
+        </div>
+        <div className="splash-business-card">
+          <h2>{t('splash.featuresTitle')}</h2>
+          <ul className="splash-checks">
+            {([1, 2, 3, 4, 5] as const).map((n) => (
+              <li key={n}>{t(`splash.feature${n}`)}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="splash-business-card">
+          <h2>{t('splash.priceTitle')}</h2>
+          <p>{t('splash.priceBody')}</p>
+          <div className="splash-business-actions">
+            <LocalizedLink className="button" to="/shop?create=1">
+              {t('splash.startFree')}
+            </LocalizedLink>
+            <LocalizedLink to="/koesystemer">{t('splash.compare')} →</LocalizedLink>
+          </div>
+        </div>
       </div>
     </section>
   );
