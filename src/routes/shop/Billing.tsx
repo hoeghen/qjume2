@@ -112,11 +112,26 @@ export function Billing() {
           {completed === 'paid' ? t('shop.billing.donePaid') : t('shop.billing.doneFree')}
         </p>
       )}
-      <p className="muted">
-        {t('shop.billing.onPlanBefore')}
-        <strong>{paid ? t('shop.billing.planPaid') : t('shop.billing.planFree')}</strong>
-        {t('shop.billing.onPlanAfter')}
-      </p>
+      {paid ? (
+        <div className="plan-active" role="status">
+          <span className="plan-active-check" aria-hidden="true">✓</span>
+          <div>
+            <strong>{t('shop.billing.activeTitle')}</strong>
+            <p>
+              {t('shop.billing.paidSummary', {
+                price: SUBSCRIPTION_PRICE_DKK,
+                served: servicesUsed(shop.data),
+              })}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="muted">
+          {t('shop.billing.onPlanBefore')}
+          <strong>{t('shop.billing.planFree')}</strong>
+          {t('shop.billing.onPlanAfter')}
+        </p>
+      )}
 
       {!paid && (
         <>
@@ -163,14 +178,6 @@ export function Billing() {
         </>
       )}
 
-      {paid && (
-        <p>
-          {t('shop.billing.paidSummary', {
-            price: SUBSCRIPTION_PRICE_DKK,
-            served: servicesUsed(shop.data),
-          })}
-        </p>
-      )}
 
       {paid && (
         <>

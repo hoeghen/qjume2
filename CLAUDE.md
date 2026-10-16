@@ -273,7 +273,9 @@ kept unedited.
       (`adminGrantFreeServices`, logged to `adminAuditLog` in the same
       transaction). It is a gift, not a payment: `plan` never changes there.
     - The counter shows on the serve screen (owner gets a subscribe link),
-      the billing page and both admin pages — never on the monitor.
+      the billing page and both admin pages — never on the monitor. On a
+      subscription the shop's own pages hide it and say "Abonnement aktivt"
+      instead (prominently on the billing page); the admin pages keep it.
     - **No App Store or Play billing, by design.** Qjume is a website/PWA,
       so Apple's and Google's in-app cuts do not apply; Apple Pay and Google
       Pay arrive as ordinary Stripe Checkout payment methods. Wrapping it as
