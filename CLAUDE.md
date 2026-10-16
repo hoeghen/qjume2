@@ -548,6 +548,14 @@ keeps `/shop`, `/admin` and `/monitor` out. A new public page goes in
 `SEO_PAGES`, nowhere else. Google Search Console (domain verification,
 submitting the sitemap) is the owner's to do, by DNS.
 
+**`/koesystemer` compares queue systems with real prices** (`src/lib/
+queueSystems.ts`), each read off the supplier's own site and dated by
+`PRICES_CHECKED`. Never estimate a competitor's price: a stale or guessed
+one is misleading marketing. Re-check them, move the date, or drop the row.
+The home page's JSON-LD is a `SoftwareApplication` with two offers — the
+free services (a count, not a trial) and the subscription excluding VAT —
+and no `aggregateRating` until there are real reviews to give one.
+
 ## Emulator blind spot: indexes
 
 The emulator needs no indexes, so a query that production refuses for want of
