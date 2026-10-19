@@ -6,7 +6,7 @@ import { ticketDoc } from '../../lib/firestore/paths.js';
 import { ticketsAhead } from '../../lib/firestore/queries.js';
 import { leaveQueue, messageOf } from '../../lib/functions.js';
 import { forgetTicket } from '../../lib/myTickets.js';
-import { formatOrdinalSuffix, formatWait } from '../../lib/format.js';
+import { formatWait } from '../../lib/format.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { EnableNotifications } from './components/EnableNotifications.js';
 import type { Queue } from '../../types/index.js';
@@ -105,6 +105,14 @@ export function TicketView({
   const peopleAhead = ahead?.length ?? 0;
   const wait = estimatedWaitSeconds(peopleAhead, queue, tills);
 
+  /** "About 10 minutes' wait" under an hour; the general wording otherwise. */
+  function waitLine(seconds: number): string {
+    const minutes = Math.round(seconds / 60);
+    return seconds >= 60 && minutes < 60
+      ? tn(minutes, 'ticketView.waitMinutes')
+      : t('ticketView.waitOther', { wait: formatWait(seconds, t) });
+  }
+
   function leave() {
     setBusy(true);
     setError(null);
@@ -122,29 +130,18 @@ export function TicketView({
 
   return (
     <>
+      {/* One panel, read as one sentence: who you are, your place, your wait.
+          The wait stays "about": it moves with the pace of the counter. */}
       <section className="ticket">
-        <p className="label">{t('ticketView.youAre')}</p>
-        <p className="called-name">
+        <p className="called-name">{ticketData.displayName}</p>
+        <p className="ticket-place">
           {peopleAhead === 0
-            ? t('ticketView.next')
-            : `${peopleAhead + 1}${formatOrdinalSuffix(peopleAhead + 1, locale)}`}
+            ? t('ticketView.placeNext')
+            : t('ticketView.place', { n: peopleAhead + 1 })}
         </p>
         <p className="called-station">
-          {peopleAhead === 0
-            ? t('ticketView.calledAnyMoment')
-            : tn(peopleAhead, 'ticketView.peopleAhead')}
+          {peopleAhead === 0 ? t('ticketView.calledAnyMoment') : waitLine(wait)}
         </p>
-      </section>
-
-      <section className="stats">
-        <div>
-          <span className="stat-value">{formatWait(wait, t)}</span>
-          <span className="stat-label">{t('ticketView.estimatedWait')}</span>
-        </div>
-        <div>
-          <span className="stat-value">{ticketData.displayName}</span>
-          <span className="stat-label">{t('ticketView.calledAs')}</span>
-        </div>
       </section>
 
       {ticketData.noShowCount > 0 && (
