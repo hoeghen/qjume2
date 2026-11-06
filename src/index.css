@@ -917,6 +917,35 @@ button.link.danger { color: var(--danger); }
  * past it, a shop owner scrolls into it. Left-aligned prose in white cards,
  * three across where there is room for them.
  */
+/*
+ * "Vil du vide mere?" rests at the foot of the first screen, so it is always
+ * in view without covering anything: the auto margins above the page's own
+ * content and above this split the spare height evenly, keeping the rest
+ * centred and this at the bottom. Opened, the page simply grows and scrolls.
+ */
+.splash::before { content: ''; margin-bottom: auto; }
+.splash:has(> .splash-more) { padding-bottom: 0; }
+.splash-more { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: auto; }
+.splash-more > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--on-dark-faint);
+}
+.splash-more > summary::-webkit-details-marker { display: none; }
+.splash-more > summary::after { content: ' ↓'; }
+.splash-more[open] > summary::after { content: ' ↑'; }
+.splash-more > summary:hover { color: var(--on-dark); }
+.splash-more[open] .splash-business { margin-top: 16px; }
+/* A short phone (an SE, a small Android) cannot fit the full-size splash and
+   the toggle on one screen; tighten the spacing and the drawing so it can. */
+@media (max-height: 740px) {
+  .splash { gap: 14px; padding-top: 8px; }
+  .splash-queue { width: min(100%, 280px); margin: 0; }
+  .splash-more > summary { padding: 4px; }
+}
 .splash-business {
   width: 100%;
   margin-top: clamp(32px, 8vh, 72px);
