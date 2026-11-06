@@ -556,6 +556,12 @@ The home page's JSON-LD is a `SoftwareApplication` with two offers — the
 free services (a count, not a trial) and the subscription excluding VAT —
 and no `aggregateRating` until there are real reviews to give one.
 
+**The landing page's business section is folded, not moved.** It sits in a
+closed `<details>` ("Vil du vide mere?") pinned to the foot of the first
+screen, so the page stays about joining while the text stays in the HTML and
+in the static copy for crawlers. Never move it behind "Jeg er en
+forretning": that leads to `/shop`, which robots.txt keeps out of search.
+
 **One landing page per trade, reached from the menu only.** `/brancher`
 lists them and each lives at `/koesystem-til-<slug>` (`src/lib/industries.ts`,
 plain data read by the page, `SEO_PAGES` and the static text). "Brancher" is
