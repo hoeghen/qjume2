@@ -41,7 +41,15 @@ export function Splash() {
         </LocalizedLink>
       </div>
 
-      <BusinessSection />
+      {/* Folded away so the page stays about joining, but in the HTML all the
+          same: search engines index text inside a closed <details>, and the
+          build's static copy (seoBody.ts) carries it for crawlers that run
+          no JavaScript. Never move it behind /shop — robots.txt shuts that
+          out of search entirely. */}
+      <details className="splash-more">
+        <summary>{t('splash.moreToggle')}</summary>
+        <BusinessSection />
+      </details>
     </section>
   );
 }

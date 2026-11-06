@@ -917,6 +917,21 @@ button.link.danger { color: var(--danger); }
  * past it, a shop owner scrolls into it. Left-aligned prose in white cards,
  * three across where there is room for them.
  */
+.splash-more { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.splash-more > summary {
+  list-style: none;
+  cursor: pointer;
+  margin-top: clamp(16px, 4vh, 40px);
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--on-dark-faint);
+}
+.splash-more > summary::-webkit-details-marker { display: none; }
+.splash-more > summary::after { content: ' ↓'; }
+.splash-more[open] > summary::after { content: ' ↑'; }
+.splash-more > summary:hover { color: var(--on-dark); }
+.splash-more[open] .splash-business { margin-top: 16px; }
 .splash-business {
   width: 100%;
   margin-top: clamp(32px, 8vh, 72px);

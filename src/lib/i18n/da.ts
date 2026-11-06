@@ -86,6 +86,7 @@ export const da: DeepPartial<typeof en> = {
   },
 
   splash: {
+    moreToggle: 'Vil du vide mere?',
     lede: 'Se ventetiden, inden du tager af sted. Tilslut dig en kø hvor som helst — ingen login nødvendig.',
     join: 'Tilslut dig en kø',
     createLink: 'Jeg er en forretning',
