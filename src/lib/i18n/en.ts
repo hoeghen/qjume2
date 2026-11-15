@@ -224,6 +224,7 @@ export const en = {
     join: 'Join this queue',
     notTakingJoiners: 'Not taking joiners',
     joinHint: 'No account needed — just a name to be called by.',
+    sessionLost: 'We lost track of your session on this device. Enter your resume code below to get back to your place in the queue.',
   },
 
   joinQueue: {
