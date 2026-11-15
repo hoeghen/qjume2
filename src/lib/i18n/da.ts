@@ -221,6 +221,7 @@ export const da: DeepPartial<typeof en> = {
     join: 'Tilslut dig denne kø',
     notTakingJoiners: 'Tager ikke imod nye',
     joinHint: 'Ingen konto nødvendig — bare et navn at blive kaldt ved.',
+    sessionLost: 'Vi mistede forbindelsen til din session på denne enhed. Indtast din genoptagelseskode nedenfor for at komme tilbage til din plads i køen.',
   },
 
   joinQueue: {

@@ -5,6 +5,7 @@ import { queueDoc } from '../../lib/firestore/paths.js';
 import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
 import { estimatedWaitSeconds, staffedTills } from '../../lib/queue/waitTime.js';
 import { formatWait } from '../../lib/format.js';
+import { useAuth } from '../../lib/hooks/useAuth.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { JoinQueue } from './JoinQueue.js';
@@ -28,6 +29,7 @@ export function QueueDetail() {
     heldTicket(shopId, queueId),
   );
 
+  const { user, loading: authLoading } = useAuth();
   const queue = useDoc(shopId && queueId ? queueDoc(shopId, queueId) : null);
   const { data: stations } = useCollection(
     shopId && queueId ? stationsOf(shopId, queueId) : null,
@@ -40,6 +42,16 @@ export function QueueDetail() {
 
   if (queue.loading) return <p>{t('common.loading')}</p>;
   if (!queue.data) return <p>{t('queueDetail.notFound')}</p>;
+
+  // A ticket id cached in localStorage survives even when this device's
+  // Firebase session doesn't (the browser can evict the auth SDK's own
+  // storage while leaving plain localStorage alone) — rendering TicketView
+  // then would show a ticket whose every mutation fails with "Sign-in
+  // required.", with no way out. Wait for the first auth state before
+  // deciding, so a normal reload doesn't flash the resume screen while
+  // watchAuth is still settling.
+  if (ticketId && authLoading) return <p>{t('common.loading')}</p>;
+  const sessionLost = Boolean(ticketId) && !user;
 
   const q = queue.data;
   // Read live here rather than from the queue's `servingStations` copy: this
@@ -96,7 +108,7 @@ export function QueueDetail() {
       {/* Once someone holds a ticket, their own position and wait replace the
           queue-level figures. Showing both invites the reader to compare two
           numbers that answer different questions. */}
-      {!ticketId && (
+      {(!ticketId || sessionLost) && (
         // Compact while joining, so the form and its button fit on a phone.
         <section className={joining ? 'stats compact' : 'stats'}>
           <div>
@@ -118,7 +130,7 @@ export function QueueDetail() {
           while joining too: the decision is made, and the form and its button
           should fit on a phone without scrolling (a QR scan opens straight
           into it). */}
-      {!ticketId && !joining && (
+      {(!ticketId || sessionLost) && !joining && (
         <>
           {q.description && <p>{q.description}</p>}
 
@@ -143,7 +155,7 @@ export function QueueDetail() {
         </>
       )}
 
-      {ticketId ? (
+      {ticketId && !sessionLost ? (
         <TicketView
           shopId={shopId}
           queueId={queueId}
@@ -180,9 +192,16 @@ export function QueueDetail() {
 
       {/* Rarely needed — a customer only has a code when staff gave them one
           (a lost phone, a walk-in) — so it sits last on the page, quietly,
-          rather than competing with joining. */}
-      {!ticketId && !joining && (
+          rather than competing with joining. Also where a lost session (no
+          signed-in user behind a held ticket id) sends someone instead of the
+          dead-end TicketView it would otherwise render. */}
+      {(!ticketId || sessionLost) && !joining && (
         <div className="resume-quiet">
+          {sessionLost && (
+            <p className="notice" role="status">
+              {t('queueDetail.sessionLost')}
+            </p>
+          )}
           <ResumeForm
             shopId={shopId}
             queueId={queueId}
