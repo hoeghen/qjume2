@@ -31,7 +31,7 @@ const ids = (fx: Fixture, ticketId: string) => ({
 });
 
 describe('moving a place from Safari to the installed app', () => {
-  it('hands the ticket to the app, which can then act on it, and Safari no longer can', async () => {
+  it('hands the ticket to the app, which can then act on it', async () => {
     const fx = await seedQueue();
     const ticket = await joinInSafari(fx);
     await performStartTransfer(testDb, safari, { ...ids(fx, ticket.ticketId), token: TOKEN });
@@ -42,9 +42,12 @@ describe('moving a place from Safari to the installed app', () => {
     const contact = await ticketContact(fx, ticket.ticketId);
     expect(contact.anonymousId).toBe('app-uid');
     expect(contact.transferTokenHash).toBeNull();
+
+    // The ticket id is what authorizes leaving now, not who holds it — so
+    // Safari, despite no longer owning the ticket, can still leave it too.
     await expect(
-      performLeaveQueue(testDb, safari, ids(fx, ticket.ticketId)),
-    ).rejects.toMatchObject({ code: 'permission-denied' });
+      performLeaveQueue(testDb, ids(fx, ticket.ticketId)),
+    ).resolves.toEqual({ ok: true });
   });
 
   it('works once only', async () => {
@@ -102,7 +105,7 @@ describe('moving a place from Safari to the installed app', () => {
     const fx = await seedQueue();
     const ticket = await joinInSafari(fx);
     await performStartTransfer(testDb, safari, { ...ids(fx, ticket.ticketId), token: TOKEN });
-    await performLeaveQueue(testDb, safari, ids(fx, ticket.ticketId));
+    await performLeaveQueue(testDb, ids(fx, ticket.ticketId));
 
     await expect(
       performClaimTransfer(testDb, app, { ...ids(fx, ticket.ticketId), token: TOKEN }),

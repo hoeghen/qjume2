@@ -6,12 +6,13 @@ import { queuesOf, stationsOf } from '../../lib/firestore/queries.js';
 import { estimatedWaitSeconds, staffedTills } from '../../lib/queue/waitTime.js';
 import { formatWait } from '../../lib/format.js';
 import { useAuth } from '../../lib/hooks/useAuth.js';
+import { leaveQueue, messageOf } from '../../lib/functions.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { JoinQueue } from './JoinQueue.js';
 import { TicketView } from './TicketView.js';
 import { ResumeForm } from './components/ResumeForm.js';
-import { heldTicket } from '../../lib/myTickets.js';
+import { forgetTicket, heldTicket } from '../../lib/myTickets.js';
 import type { QueueStatus } from '../../types/index.js';
 
 const NOTE_STATUSES: QueueStatus[] = ['drainMode', 'paused', 'unavailable', 'closed'];
@@ -28,6 +29,8 @@ export function QueueDetail() {
   const [ticketId, setTicketId] = useState<string | null>(() =>
     heldTicket(shopId, queueId),
   );
+  const [leaveBusy, setLeaveBusy] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
 
   const { user, loading: authLoading } = useAuth();
   const queue = useDoc(shopId && queueId ? queueDoc(shopId, queueId) : null);
@@ -52,6 +55,22 @@ export function QueueDetail() {
   // watchAuth is still settling.
   if (ticketId && authLoading) return <p>{t('common.loading')}</p>;
   const sessionLost = Boolean(ticketId) && !user;
+
+  function leaveAnyway() {
+    if (!ticketId) return;
+    setLeaveBusy(true);
+    setLeaveError(null);
+    void (async () => {
+      try {
+        await leaveQueue({ shopId, queueId, ticketId });
+        forgetTicket(shopId, queueId);
+        setTicketId(null);
+      } catch (e) {
+        setLeaveError(messageOf(e));
+        setLeaveBusy(false);
+      }
+    })();
+  }
 
   const q = queue.data;
   // Read live here rather than from the queue's `servingStations` copy: this
@@ -198,9 +217,24 @@ export function QueueDetail() {
       {(!ticketId || sessionLost) && !joining && (
         <div className="resume-quiet">
           {sessionLost && (
-            <p className="notice" role="status">
-              {t('queueDetail.sessionLost')}
-            </p>
+            <>
+              <p className="notice" role="status">
+                {t('queueDetail.sessionLost')}
+              </p>
+              <button
+                type="button"
+                className="secondary leave-queue"
+                disabled={leaveBusy}
+                onClick={leaveAnyway}
+              >
+                {t('ticketView.leaveQueue')}
+              </button>
+              {leaveError && (
+                <p className="error" role="alert">
+                  {leaveError}
+                </p>
+              )}
+            </>
           )}
           <ResumeForm
             shopId={shopId}

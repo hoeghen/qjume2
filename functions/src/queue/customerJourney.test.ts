@@ -66,7 +66,7 @@ describe('reclaiming a ticket on another device', () => {
     ).resolves.toMatchObject({ ticketId: joined.ticketId });
   });
 
-  it('lets the old device go once the ticket has moved', async () => {
+  it('lets the ticket be left by id alone, even after it moved to a new device', async () => {
     const fx = await seedQueue();
     const joined = await join(fx, 1);
     await performClaimTicket(testDb, phone(2), {
@@ -75,22 +75,25 @@ describe('reclaiming a ticket on another device', () => {
       resumeCode: joined.resumeCode,
     });
 
-    // The first phone no longer holds it and cannot give up someone's place.
+    // The ticket id is what authorizes leaving now, not who holds it — the
+    // original device can still give up the place, even though it no longer
+    // "owns" this ticket.
     await expect(
-      performLeaveQueue(testDb, phone(1), {
-        shopId: fx.shopId,
-        queueId: fx.queueId,
-        ticketId: joined.ticketId,
-      }),
-    ).rejects.toThrow(/not your ticket/i);
-
-    await expect(
-      performLeaveQueue(testDb, phone(2), {
+      performLeaveQueue(testDb, {
         shopId: fx.shopId,
         queueId: fx.queueId,
         ticketId: joined.ticketId,
       }),
     ).resolves.toEqual({ ok: true });
+
+    // ...but only once: it's no longer waiting.
+    await expect(
+      performLeaveQueue(testDb, {
+        shopId: fx.shopId,
+        queueId: fx.queueId,
+        ticketId: joined.ticketId,
+      }),
+    ).rejects.toThrow(/no longer active/i);
   });
 
   it('rejects a wrong code without saying what was wrong', async () => {
