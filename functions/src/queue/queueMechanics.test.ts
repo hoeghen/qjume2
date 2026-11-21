@@ -470,7 +470,7 @@ describe('leaving and removal', () => {
     const fx = await seedQueue();
     const ids = await joinMany(fx, 2);
 
-    await performLeaveQueue(testDb, customer(1), {
+    await performLeaveQueue(testDb, {
       shopId: fx.shopId,
       queueId: fx.queueId,
       ticketId: ids[0] as string,
@@ -481,17 +481,22 @@ describe('leaving and removal', () => {
     expect(await waitingOrder(fx)).toEqual(['Customer 2']);
   });
 
-  it("refuses to let one customer leave another's ticket", async () => {
+  it('lets a ticket be left by id alone, with no owner check at all', async () => {
     const fx = await seedQueue();
     const ids = await joinMany(fx, 2);
 
+    // Knowing the ticket id is the only thing that matters now — there is no
+    // caller identity to check it against (see leaveQueue.ts).
     await expect(
-      performLeaveQueue(testDb, customer(2), {
+      performLeaveQueue(testDb, {
         shopId: fx.shopId,
         queueId: fx.queueId,
         ticketId: ids[0] as string,
       }),
-    ).rejects.toThrow(/not your ticket/i);
+    ).resolves.toEqual({ ok: true });
+
+    expect((await ticket(fx, ids[0] as string)).state).toBe('left');
+    expect((await getQueue(fx)).waitingCount).toBe(1);
   });
 
   it('lets the shop remove a customer outright', async () => {
