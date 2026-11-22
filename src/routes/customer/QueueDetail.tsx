@@ -145,29 +145,15 @@ export function QueueDetail() {
 
       {/* In the queue, the place and the wait are the page: they come straight
           after the name, and the details someone needed for deciding where to
-          go — description, address, category, till count — step aside. They
-          step aside while joining too: the decision is made, and the form and
-          its button should fit on a phone without scrolling (a QR scan opens
-          straight into it). */}
+          go — description, till count — step aside. They step aside while
+          joining too: the decision is made, and the form and its button
+          should fit on a phone without scrolling (a QR scan opens straight
+          into it). */}
       {(!ticketId || sessionLost) && !joining && (
         <>
           {q.description && <p>{q.description}</p>}
 
           <dl className="detail">
-            <dt>{t('queueDetail.address')}</dt>
-            <dd>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q.address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {q.address}
-              </a>
-            </dd>
-
-            <dt>{t('queueDetail.category')}</dt>
-            <dd>{t(`categories.${q.category}`)}</dd>
-
             {/* A single till tells a customer nothing they didn't already
                 know — only worth a line once there's more than one. */}
             {stations && stations.length > 1 && (

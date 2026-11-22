@@ -214,8 +214,6 @@ export const da: DeepPartial<typeof en> = {
     notFound: 'Denne kø findes ikke længere.',
     peopleWaiting: { one: '{count} person venter', other: '{count} personer venter' },
     estimatedWait: 'anslået ventetid',
-    address: 'Adresse',
-    category: 'Kategori',
     tills: 'Kasser',
     alsoAtShop: 'Også hos denne butik',
     otherQueues: { one: '{count} anden kø', other: '{count} andre køer' },
