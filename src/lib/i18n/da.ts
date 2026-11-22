@@ -216,11 +216,11 @@ export const da: DeepPartial<typeof en> = {
     estimatedWait: 'anslået ventetid',
     address: 'Adresse',
     category: 'Kategori',
+    tills: 'Kasser',
     alsoAtShop: 'Også hos denne butik',
     otherQueues: { one: '{count} anden kø', other: '{count} andre køer' },
     join: 'Tilslut dig denne kø',
     notTakingJoiners: 'Tager ikke imod nye',
-    joinHint: 'Ingen konto nødvendig — bare et navn at blive kaldt ved.',
     sessionLost: 'Vi mistede forbindelsen til din session på denne enhed.',
   },
 
