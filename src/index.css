@@ -1298,6 +1298,23 @@ button.link.danger { color: var(--danger); }
   outline-offset: 3px;
 }
 
+/* Platform-admin only — see PageNameBadge. Fixed, so it's visible on every
+   screen regardless of that screen's own scroll length; out of the way in a
+   bottom corner since it's a debugging aid, not part of the product. */
+.page-name-badge {
+  position: fixed;
+  right: calc(env(safe-area-inset-right) + 8px);
+  bottom: calc(env(safe-area-inset-bottom) + 8px);
+  z-index: 30;
+  padding: 4px 8px;
+  border-radius: var(--r-pill);
+  background: rgb(0 0 0 / 0.55);
+  color: var(--on-dark-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  pointer-events: none;
+}
+
 .build-info {
   margin-top: clamp(12px, 2vw, 20px);
   text-align: right;
