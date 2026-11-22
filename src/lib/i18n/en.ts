@@ -217,8 +217,6 @@ export const en = {
     notFound: 'This queue no longer exists.',
     peopleWaiting: { one: '{count} person waiting', other: '{count} people waiting' },
     estimatedWait: 'estimated wait',
-    address: 'Address',
-    category: 'Category',
     tills: 'Tills',
     alsoAtShop: 'Also at this shop',
     otherQueues: { one: '{count} other queue', other: '{count} other queues' },

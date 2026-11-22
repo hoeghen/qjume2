@@ -87,6 +87,7 @@ export function ShopQueues() {
                       </span>
                     )}
                   </div>
+                  <p className="muted">{t(`categories.${q.category}`)}</p>
                   {q.description && <p className="muted">{q.description}</p>}
                 </div>
                 <div className="queue-card-meta">
