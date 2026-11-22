@@ -145,20 +145,37 @@ export function QueueDetail() {
 
       {/* In the queue, the place and the wait are the page: they come straight
           after the name, and the details someone needed for deciding where to
-          go — address, category, description — step aside. They step aside
-          while joining too: the decision is made, and the form and its button
-          should fit on a phone without scrolling (a QR scan opens straight
-          into it). */}
+          go — description, address, category, till count — step aside. They
+          step aside while joining too: the decision is made, and the form and
+          its button should fit on a phone without scrolling (a QR scan opens
+          straight into it). */}
       {(!ticketId || sessionLost) && !joining && (
         <>
           {q.description && <p>{q.description}</p>}
 
           <dl className="detail">
             <dt>{t('queueDetail.address')}</dt>
-            <dd>{q.address}</dd>
+            <dd>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {q.address}
+              </a>
+            </dd>
 
             <dt>{t('queueDetail.category')}</dt>
             <dd>{t(`categories.${q.category}`)}</dd>
+
+            {/* A single till tells a customer nothing they didn't already
+                know — only worth a line once there's more than one. */}
+            {stations && stations.length > 1 && (
+              <>
+                <dt>{t('queueDetail.tills')}</dt>
+                <dd>{tn(stations.length, 'shop.queueList.tills')}</dd>
+              </>
+            )}
 
             {otherQueues > 0 && (
               <>
@@ -196,17 +213,14 @@ export function QueueDetail() {
           onCancel={() => setJoining(false)}
         />
       ) : (
-        <>
-          <button
-            type="button"
-            disabled={!joinable}
-            title={note ?? undefined}
-            onClick={() => setJoining(true)}
-          >
-            {joinable ? t('queueDetail.join') : t('queueDetail.notTakingJoiners')}
-          </button>
-          {joinable && <p className="hint">{t('queueDetail.joinHint')}</p>}
-        </>
+        <button
+          type="button"
+          disabled={!joinable}
+          title={note ?? undefined}
+          onClick={() => setJoining(true)}
+        >
+          {joinable ? t('queueDetail.join') : t('queueDetail.notTakingJoiners')}
+        </button>
       )}
 
       {/* Rarely needed — a customer only has a code when staff gave them one

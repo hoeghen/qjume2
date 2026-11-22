@@ -219,11 +219,11 @@ export const en = {
     estimatedWait: 'estimated wait',
     address: 'Address',
     category: 'Category',
+    tills: 'Tills',
     alsoAtShop: 'Also at this shop',
     otherQueues: { one: '{count} other queue', other: '{count} other queues' },
     join: 'Join this queue',
     notTakingJoiners: 'Not taking joiners',
-    joinHint: 'No account needed — just a name to be called by.',
     sessionLost: 'We lost track of your session on this device.',
   },
 
