@@ -50,6 +50,10 @@ export function ShopQueues() {
   if (!name) return <p>{t('shopQueues.shopGone')}</p>;
 
   const address = queues?.[0]?.address ?? null;
+  // Borrowed from the first queue, the same way the address is: a shop has
+  // one category in the common case, and when its queues differ, the first
+  // one is still a reasonable headline rather than showing none at all.
+  const category = queues?.[0]?.category ?? null;
   const sorted = [...(queues ?? [])].sort((a, b) => {
     const openA = OPEN_FIRST.includes(a.status) ? 0 : 1;
     const openB = OPEN_FIRST.includes(b.status) ? 0 : 1;
@@ -66,6 +70,7 @@ export function ShopQueues() {
 
       <div className="screen-intro">
         <h1>{name}</h1>
+        {category && <p className="screen-lede">{t(`categories.${category}`)}</p>}
         {address && <p className="screen-lede">{address}</p>}
       </div>
 
