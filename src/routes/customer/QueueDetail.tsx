@@ -107,13 +107,15 @@ export function QueueDetail() {
       </p>
 
       {/* The shop is a place with possibly several lines; its name leads to
-          all of them. The queue's own name is what this page is about. */}
+          all of them. The queue's own name only tells two queues apart, so
+          it says nothing when this is the only one — same rule `Queue.name`
+          itself is built on. */}
       <h1>
         <LocalizedLink to={`/s/${shopId}`} className="shop-link">
           {q.shopName}
         </LocalizedLink>
       </h1>
-      {q.name && <p className="queue-name">{q.name}</p>}
+      {q.name && otherQueues > 0 && <p className="queue-name">{q.name}</p>}
 
       {note && (
         <p
