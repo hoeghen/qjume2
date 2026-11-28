@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc, shopOwnerDoc } from '../../lib/firestore/paths.js';
-import { queuesOf } from '../../lib/firestore/queries.js';
+import { queuesOf, staffOf } from '../../lib/firestore/queries.js';
 import {
   adminGrantFreeServices,
   adminUpdateShop,
@@ -31,6 +31,10 @@ export function AdminShopDetail() {
   const navigate = useNavigate();
   const shop = useDoc(shopId ? shopDoc(shopId) : null);
   const owner = useDoc(shopId ? shopOwnerDoc(shopId) : null);
+  const { data: staff } = useCollection(
+    shopId ? staffOf(shopId) : null,
+    `admin/${shopId}/staff`,
+  );
   const { data: queuesList, loading: queuesLoading } = useCollection(
     shopId ? queuesOf(shopId) : null,
     `admin/${shopId}/queues`,
@@ -99,6 +103,23 @@ export function AdminShopDetail() {
         {s.suspended && <span className="badge status-closed">{t('admin.shopList.suspended')}</span>}
       </header>
       <p className="muted">{t('admin.shopDetail.owner', { who: owner.data?.email ?? s.ownerUid })}</p>
+
+      <h2>{tn(staff?.length ?? 0, 'admin.shopDetail.staffHeading')}</h2>
+      {staff && staff.length === 0 && (
+        <p className="muted">{t('admin.shopDetail.noStaff')}</p>
+      )}
+      {staff && staff.length > 0 && (
+        <ul className="queue-list">
+          {staff.map((member) => (
+            <li key={member.id}>
+              <div>
+                <strong>{member.name || member.email}</strong>
+                {member.name && member.email && <p className="muted">{member.email}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="row tight">
         <button type="button" disabled={busy} onClick={toggleSuspension}>

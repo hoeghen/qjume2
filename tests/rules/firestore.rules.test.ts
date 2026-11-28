@@ -545,6 +545,13 @@ describe('staff records', () => {
     await assertFails(getDoc(doc(db, STAFF)));
   });
 
+  it('lets a platform admin see the staff list too', async () => {
+    const db = env
+      .authenticatedContext('admin-uid', { platformAdmin: true })
+      .firestore();
+    await assertSucceeds(getDoc(doc(db, STAFF)));
+  });
+
   it('lets a staff member on a free shop pause the queue', async () => {
     // Staff are part of the whole app on every plan.
     const db = env.authenticatedContext('staff-uid').firestore();
@@ -598,8 +605,8 @@ describe('staff memberships', () => {
 });
 
 // An owner's email sits beside the shop, not on it, because a shop document
-// is public. Only the owner and a platform admin read it, and the owner can
-// write nothing but their own signed-in address.
+// is public. The owner, the shop's own staff and a platform admin read it;
+// the owner can write nothing but their own signed-in address.
 describe('shop owner emails', () => {
   const OWNER_DOC = 'shopOwners/shop1';
   const ownerDb = () =>
@@ -622,7 +629,7 @@ describe('shop owner emails', () => {
     await assertFails(setDoc(doc(db, OWNER_DOC), { uid: OTHER, email: 'other@example.com' }));
   });
 
-  it('is readable by the owner and a platform admin, and nobody else', async () => {
+  it('is readable by the owner, a platform admin, and a stranger refused', async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
       await setDoc(doc(ctx.firestore(), OWNER_DOC), { uid: OWNER, email: 'owner@example.com' });
     });
@@ -631,6 +638,21 @@ describe('shop owner emails', () => {
     await assertSucceeds(getDoc(doc(admin, OWNER_DOC)));
     await assertFails(getDoc(doc(env.authenticatedContext(OTHER).firestore(), OWNER_DOC)));
     await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), OWNER_DOC)));
+  });
+
+  it('is also readable by the shop’s own staff, so they can tell whose shop it is', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), OWNER_DOC), { uid: OWNER, email: 'owner@example.com' });
+      await setDoc(doc(ctx.firestore(), STAFF), {
+        email: 'staff@example.com',
+        addedAt: 1,
+        addedBy: OWNER,
+      });
+    });
+    const db = env.authenticatedContext('staff-uid').firestore();
+    await assertSucceeds(getDoc(doc(db, OWNER_DOC)));
+    // Someone who isn't staff at this shop still can't.
+    await assertFails(getDoc(doc(env.authenticatedContext(OTHER).firestore(), OWNER_DOC)));
   });
 });
 

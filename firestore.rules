@@ -91,11 +91,13 @@ service cloud.firestore {
 
       // Staff records are server-written: a client that could write here
       // would grant itself serving rights.
-      // Readable by the owner, and by the person it names, so a staff member's
-      // app can tell it has access.
+      // Readable by the owner, by the person it names (so a staff member's
+      // app can tell it has access), and by a platform admin browsing the
+      // shop.
       match /staff/{uid} {
         allow read: if isShopOwner(shopId)
-          || (signedIn() && request.auth.uid == uid);
+          || (signedIn() && request.auth.uid == uid)
+          || isPlatformAdmin();
         allow write: if false;
       }
 
@@ -176,12 +178,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Who owns a shop, by email, for the platform admin. Beside the shop, not
-    // on it, because a shop document is public. The owner may write only
-    // their own uid and signed-in email — nobody else's address can be
-    // planted here — and only the owner and a platform admin can read it.
+    // Who owns a shop, by email, for the platform admin — and for the shop's
+    // own staff, who otherwise have no way to tell whose shop they work at.
+    // Beside the shop, not on it, because a shop document is public. The
+    // owner may write only their own uid and signed-in email — nobody else's
+    // address can be planted here.
     match /shopOwners/{shopId} {
-      allow read: if isPlatformAdmin() || isShopOwner(shopId);
+      allow read: if isPlatformAdmin() || canServe(shopId);
       allow create, update: if isShopOwner(shopId)
         && request.resource.data.keys().hasOnly(['uid', 'email'])
         && request.resource.data.uid == request.auth.uid

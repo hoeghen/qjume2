@@ -373,6 +373,8 @@ export const da: DeepPartial<typeof en> = {
       waitingAddress: '{count} venter · {address}',
       serve: 'Betjen',
       settings: 'Indstillinger',
+      shopSettings: 'Butiksindstillinger',
+      owner: 'Ejer: {email}',
       monitor: 'Monitor',
       newQueue: 'Ny kø',
       tills: { one: '{count} kasse', other: '{count} kasser' },
@@ -383,6 +385,7 @@ export const da: DeepPartial<typeof en> = {
     settings: {
       title: 'Butiksindstillinger',
       back: '← Køer',
+      owner: 'Ejer: {email}',
       ownerOnly: 'Kun butikkens ejer kan ændre butiksindstillingerne.',
       staffTitle: 'Personale',
       staffHint: 'Personale kan betjene køerne. De kan ikke ændre indstillinger eller se abonnementet.',
@@ -636,6 +639,8 @@ export const da: DeepPartial<typeof en> = {
     shopDetail: {
       allShops: '← Alle butikker',
       owner: 'Ejer: {who}',
+      staffHeading: { one: '{count} medarbejder', other: '{count} medarbejdere' },
+      noStaff: 'Intet personale endnu.',
       reinstate: 'Genindsæt butik',
       suspend: 'Suspender butik',
       delete: 'Slet butik',
