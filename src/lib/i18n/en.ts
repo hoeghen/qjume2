@@ -377,6 +377,8 @@ export const en = {
       waitingAddress: '{count} waiting · {address}',
       serve: 'Serve',
       settings: 'Settings',
+      shopSettings: 'Shop settings',
+      owner: 'Owner: {email}',
       monitor: 'Monitor',
       newQueue: 'New queue',
       tills: { one: '{count} till', other: '{count} tills' },
@@ -387,6 +389,7 @@ export const en = {
     settings: {
       title: 'Shop settings',
       back: '← Queues',
+      owner: 'Owner: {email}',
       ownerOnly: 'Only the shop’s owner can change the shop settings.',
       staffTitle: 'Staff',
       staffHint: 'Staff can serve the queues. They cannot change settings or see the subscription.',
@@ -640,6 +643,8 @@ export const en = {
     shopDetail: {
       allShops: '← All shops',
       owner: 'Owner: {who}',
+      staffHeading: { one: '{count} staff member', other: '{count} staff members' },
+      noStaff: 'No staff yet.',
       reinstate: 'Reinstate shop',
       suspend: 'Suspend shop',
       delete: 'Delete shop',

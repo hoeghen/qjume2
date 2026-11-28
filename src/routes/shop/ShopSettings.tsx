@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { useCollection } from '../../lib/hooks/useFirestore.js';
+import { useCollection, useDoc } from '../../lib/hooks/useFirestore.js';
 import { staffOf } from '../../lib/firestore/queries.js';
+import { shopOwnerDoc } from '../../lib/firestore/paths.js';
 import { addStaff, messageOf, removeStaff } from '../../lib/functions.js';
 import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
@@ -20,6 +21,7 @@ export function ShopSettings() {
     isOwner ? staffOf(shopId) : null,
     `${shopId}/staff`,
   );
+  const owner = useDoc(isOwner ? shopOwnerDoc(shopId) : null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -69,6 +71,9 @@ export function ShopSettings() {
 
       <section className="stack">
         <RenameShop shopId={shopId} shopName={shopName} heading="h2" />
+        {owner.data?.email && (
+          <p className="muted">{t('shop.settings.owner', { email: owner.data.email })}</p>
+        )}
       </section>
 
       <section className="stack">

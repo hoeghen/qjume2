@@ -4,7 +4,7 @@ import { LocalizedLink } from '../../lib/i18n/LocalizedLink.js';
 import { useT } from '../../lib/i18n/LanguageContext.js';
 import { FreeServicesBar } from './components/FreeServicesBar.js';
 import { SignedInAs } from './components/SignedInAs.js';
-import { shopDoc } from '../../lib/firestore/paths.js';
+import { shopDoc, shopOwnerDoc } from '../../lib/firestore/paths.js';
 
 export function QueueList({
   shopId,
@@ -22,15 +22,30 @@ export function QueueList({
     `${shopId}/queues`,
   );
   const shop = useDoc(shopDoc(shopId));
+  const owner = useDoc(shopOwnerDoc(shopId));
 
   return (
     <main className="panel">
-      {/* Shop settings, billing and signing out live in the ☰ menu in the
-          app header (AppHeader), with the language switch. */}
-      <header>
+      {/* Billing and signing out still live only in the ☰ menu (AppHeader),
+          with the language switch — settings also gets a direct icon here,
+          the same pattern as a queue's own gear below. */}
+      <header className="serving-header">
         <h1>{shopName}</h1>
-        <SignedInAs shopId={shopId} isOwner={isOwner} />
+        {isOwner && (
+          <LocalizedLink
+            className="icon-link"
+            to="/shop/settings"
+            aria-label={t('shop.queueList.shopSettings')}
+            title={t('shop.queueList.shopSettings')}
+          >
+            <GearIcon />
+          </LocalizedLink>
+        )}
       </header>
+      <SignedInAs shopId={shopId} isOwner={isOwner} />
+      {owner.data?.email && (
+        <p className="muted">{t('shop.queueList.owner', { email: owner.data.email })}</p>
+      )}
 
       {shop.data && <FreeServicesBar shop={shop.data} isOwner={isOwner} />}
 
