@@ -36,4 +36,11 @@ export interface PaymentProvider {
    * trusting what the browser came back with. Returns null if it did not.
    */
   verifyCheckout(sessionId: string): Promise<CompletedCheckout | null>;
+  /**
+   * A link to the provider's own self-serve invoice history, for a shop that
+   * has one. Optional: the stub has no real invoices to show. Returns null
+   * when this particular shop has nothing to show one for (never checked
+   * out), as distinct from the provider simply not offering one at all.
+   */
+  createPortalSession?(shopId: string): Promise<{ url: string } | null>;
 }

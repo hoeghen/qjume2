@@ -581,6 +581,7 @@ export const da: DeepPartial<typeof en> = {
       doneFree: 'Dit abonnement er opsagt. Butikken er tilbage på den gratis plan.',
       leavingTitle: 'Opsig abonnement',
       moveToFree: 'Opsig abonnement',
+      viewInvoices: 'Se fakturaer (Stripe)',
     },
   },
 

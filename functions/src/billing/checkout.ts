@@ -118,6 +118,31 @@ export async function performCompleteCheckout(
   return { plan: completed.plan };
 }
 
+export async function performCreateBillingPortalSession(
+  firestore: Firestore,
+  callerUid: string,
+  input: { shopId: string },
+  provider?: PaymentProvider,
+): Promise<{ url: string }> {
+  const { shopId } = input;
+  if (!shopId) {
+    throw fail('invalid-argument', 'shop-not-found', 'shopId is required.');
+  }
+
+  await requireOwner(firestore, shopId, callerUid);
+
+  const chosen = provider ?? providerFromEnv();
+  const session = await chosen.createPortalSession?.(shopId);
+  if (!session) {
+    throw fail(
+      'failed-precondition',
+      'no-billing-portal',
+      'This shop has no billing history to show yet.',
+    );
+  }
+  return session;
+}
+
 export const startCheckout = onCall<StartCheckoutRequest, Promise<{ url: string }>>(
   { secrets: PAYMENT_SECRETS_IF_ENABLED },
   (request: CallableRequest<StartCheckoutRequest>) =>
@@ -129,4 +154,13 @@ export const completeCheckout = onCall<
   Promise<{ plan: Plan }>
 >({ secrets: PAYMENT_SECRETS_IF_ENABLED }, (request: CallableRequest<CompleteCheckoutRequest>) =>
   performCompleteCheckout(db, requireCaller(request).uid, request.data),
+);
+
+export const createBillingPortalSession = onCall<
+  { shopId: string },
+  Promise<{ url: string }>
+>(
+  { secrets: PAYMENT_SECRETS_IF_ENABLED },
+  (request: CallableRequest<{ shopId: string }>) =>
+    performCreateBillingPortalSession(db, requireCaller(request).uid, request.data),
 );

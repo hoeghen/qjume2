@@ -28,4 +28,6 @@ export type QueueErrorReason =
   | 'not-platform-admin'
   | 'address-not-found'
   /** A subscription was started without ticking "I accept the terms". */
-  | 'terms-not-accepted';
+  | 'terms-not-accepted'
+  /** No provider portal, or nothing yet for this shop to show one for. */
+  | 'no-billing-portal';

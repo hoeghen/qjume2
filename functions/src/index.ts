@@ -42,7 +42,11 @@ export { reverseGeocode } from './geocoding/reverse.js';
  * Billing. The plan is server-owned — every free-tier limit reads it, so an
  * owner who could write it would lift all of them at once.
  */
-export { startCheckout, completeCheckout } from './billing/checkout.js';
+export {
+  startCheckout,
+  completeCheckout,
+  createBillingPortalSession,
+} from './billing/checkout.js';
 export { stripeWebhook } from './billing/webhook.js';
 
 /**
