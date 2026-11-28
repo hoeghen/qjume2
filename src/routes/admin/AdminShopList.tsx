@@ -62,6 +62,17 @@ export function AdminShopList() {
           <LocalizedLink className="link" to="/admin/log">
             {t('admin.shopList.auditLog')}
           </LocalizedLink>
+          {/* The real payment picture — every shop's invoices and totals —
+              lives in Stripe itself, not duplicated here (see CLAUDE.md
+              decision 9: this console is view-only on `plan`). */}
+          <a
+            className="link"
+            href="https://dashboard.stripe.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('admin.shopList.stripeDashboard')}
+          </a>
           <button type="button" className="link" onClick={() => void signOut()}>
             {t('admin.shopList.signOut')}
           </button>

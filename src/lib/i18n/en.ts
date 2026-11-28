@@ -605,6 +605,7 @@ export const en = {
       servedPaid: 'Subscription · {used} served',
       title: 'Shops',
       auditLog: 'Audit log',
+      stripeDashboard: 'Stripe dashboard',
       signOut: 'Sign out',
       searchAndFilter: 'Search and filter',
       clearFilters: { one: 'Clear {count} filter', other: 'Clear {count} filters' },

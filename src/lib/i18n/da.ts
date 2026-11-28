@@ -601,6 +601,7 @@ export const da: DeepPartial<typeof en> = {
       servedPaid: 'Abonnement · {used} betjent',
       title: 'Butikker',
       auditLog: 'Aktivitetslog',
+      stripeDashboard: 'Stripe dashboard',
       signOut: 'Log ud',
       searchAndFilter: 'Søg og filtrer',
       clearFilters: { one: 'Ryd {count} filter', other: 'Ryd {count} filtre' },
