@@ -119,6 +119,11 @@ export const completeCheckout = callable<
   { plan: 'free' | 'paid' }
 >('completeCheckout');
 
+export const createBillingPortalSession = callable<
+  { shopId: string },
+  { url: string }
+>('createBillingPortalSession');
+
 export const addStaff = callable<
   { shopId: string; email: string; name?: string },
   { uid: string }

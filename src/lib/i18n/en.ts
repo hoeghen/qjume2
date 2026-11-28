@@ -585,6 +585,7 @@ export const en = {
       doneFree: 'Your subscription is cancelled. The shop is back on the free plan.',
       leavingTitle: 'Cancel subscription',
       moveToFree: 'Cancel subscription',
+      viewInvoices: 'View invoices (Stripe)',
     },
   },
 

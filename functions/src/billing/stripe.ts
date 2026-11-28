@@ -94,6 +94,18 @@ export function stripeProvider(
         stripeSubscriptionId: idOf(subscription),
       };
     },
+
+    async createPortalSession(shopId): Promise<{ url: string } | null> {
+      const snap = await firestore.doc(`shops/${shopId}`).get();
+      const shop = snap.data() as Shop | undefined;
+      if (!shop?.stripeCustomerId) return null;
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: shop.stripeCustomerId,
+        return_url: `${app}/shop/billing`,
+      });
+      return { url: session.url };
+    },
   };
 }
 

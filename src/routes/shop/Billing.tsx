@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDoc } from '../../lib/hooks/useFirestore.js';
 import { shopDoc } from '../../lib/firestore/paths.js';
-import { completeCheckout, messageOf, startCheckout } from '../../lib/functions.js';
+import {
+  completeCheckout,
+  createBillingPortalSession,
+  messageOf,
+  startCheckout,
+} from '../../lib/functions.js';
 import { SUBSCRIPTION_PRICE_DKK } from '../../types/index.js';
 import {
   freeServicesGranted,
@@ -104,6 +109,20 @@ export function Billing() {
     })();
   }
 
+  function openPortal() {
+    setBusy(true);
+    setError(null);
+    void (async () => {
+      try {
+        const { url } = await createBillingPortalSession({ shopId });
+        window.location.assign(url);
+      } catch (e) {
+        setError(messageOf(e));
+        setBusy(false);
+      }
+    })();
+  }
+
   return (
     <main className="panel">
       <h1>{t('shop.billing.title')}</h1>
@@ -131,6 +150,14 @@ export function Billing() {
           <strong>{t('shop.billing.planFree')}</strong>
           {t('shop.billing.onPlanAfter')}
         </p>
+      )}
+
+      {/* Only once there is a Stripe customer to show a portal for — never
+          for a shop that has never checked out. */}
+      {shop.data.stripeCustomerId && (
+        <button type="button" className="link" disabled={busy} onClick={openPortal}>
+          {t('shop.billing.viewInvoices')}
+        </button>
       )}
 
       {!paid && (
